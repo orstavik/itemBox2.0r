@@ -1,0 +1,154 @@
+<dom-module id="shape-object">
+  <template>
+    <style>
+      :host {
+				position: absolute;
+				pointer-events: none;
+      }
+			:host([selected]) {
+				z-index: 1;
+			}
+			/*:host(:not([selected])) { FOR IVAR
+				z-index: 11;
+			}*/
+			#body {
+				pointer-events: auto;
+			}
+			#innerBody {
+        box-sizing: border-box;
+				width: 50px;
+				height: 50px;
+				border-radius: 0 50% 50% 50%;
+				transform: rotate(45deg);
+				background: forestgreen;
+				border: 1px solid darkgreen;
+				pointer-events: none;
+			}
+			:host([selected]) #innerBody {
+				border: 2px solid black;
+			}
+    </style>
+
+		<div id="body" on-down="_select" on-up="_up">
+			<div id="innerBody"></div>
+		</div>
+
+  </template>
+
+  <script>
+
+    class ShapeObject extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "shape-object";
+      }
+
+      static get properties() {
+        return {
+					selected: {
+						type: Boolean,
+						value: false,
+						observer: "_notifyUI",
+						reflectToAttribute: true
+					},
+					matrixData: {
+						type: Object,
+						value: function() {
+							return {
+								x: Math.random()*(window.innerWidth-100)-window.innerWidth/2+50,
+								y: Math.random()*(window.innerHeight-100)-window.innerHeight/2+50,
+								sx: 1,
+								sy: 1,
+								a: Math.random()*Math.PI*2
+							}
+						}
+					},
+					rect: Object
+				}
+      }
+
+			connectedCallback() {
+				super.connectedCallback();
+				window.addEventListener("resize", this._notifyUI.bind(this));
+				this.update(this.matrixData);
+				setTimeout(this._notifyUI.bind(this), 0);
+			}
+
+			_notifyUI() {
+				this.rect = this.$.body.getBoundingClientRect();
+				this.dispatchEvent(new CustomEvent("shape-location", {
+					composed: true,
+					bubbles: true,
+					detail: {
+						id: this.id,
+						rect: this.rect,
+						matrix: this.matrixData,
+						selected: this.selected
+					}
+				}));
+			}
+
+			_computeRect(m) {
+				let rect = this.$.body.getBoundingClientRect();
+				if (m.a%Math.PI === 0) {
+					var w = rect.width;
+					var h = rect.height;
+				} else if (m.a%Math.PI === Math.PI/2) {
+					var w = rect.height;
+					var h = rect.width;
+				} else {
+					let sin = Math.abs(Math.sin(m.a));
+					let cos = Math.abs(Math.cos(m.a));
+					var w = (rect.width/sin-rect.height/cos)/(cos/sin-sin/cos);
+					var h = (rect.width/cos-rect.height/sin)/(sin/cos-cos/sin);
+				}
+				return {
+					left: rect.left+(rect.width-w)/2,
+					top: rect.top+(rect.height-h)/2,
+					right: rect.right-(rect.width-w)/2,
+					bottom: rect.bottom-(rect.height-h)/2,
+					width: w,
+					height: h,
+					angle: m.a
+				}
+			}
+
+			_select(e) {
+				e.stopPropagation();
+				if (e.detail.sourceEvent instanceof Touch)
+					this.selectionTimer = setTimeout(function() {
+						this.dispatchEvent(new CustomEvent("new-selection", { composed: true,	bubbles: true, detail: {shape: this.id, multi: true}}));
+						this.selectionTimer = undefined;
+					}.bind(this), 600);
+				else
+					this.dispatchEvent(new CustomEvent("new-selection", { composed: true,	bubbles: true, detail: {shape: this.id, multi: false}}));
+			}
+
+			_up(e) {
+				e.stopPropagation();
+				if (this.selectionTimer) {
+					clearTimeout(this.selectionTimer);
+					this.dispatchEvent(new CustomEvent("new-selection", { composed: true,	bubbles: true, detail: {shape: this.id, multi: false}}));
+				}
+			}
+
+			update(m) {
+				this.set("matrixData", m);
+				this.$.body.style.transform = this._computeMatrix(m);
+				this._notifyUI();
+			}
+
+			_computeMatrix(m) {
+				let matrix = [
+					m.sx * Math.cos(m.a),
+					m.sx * Math.sin(m.a),
+					-m.sy * Math.sin(m.a),
+					m.sy * Math.cos(m.a), 
+					m.x,
+					m.y
+				];
+				return "matrix(" + matrix.join(",") + ")";
+			}
+    }
+    customElements.define(ShapeObject.is, ShapeObject);
+  </script>
+</dom-module>

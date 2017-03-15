@@ -1,0 +1,81 @@
+<link rel="import" href="shape-object.html">
+
+<dom-module id="shape-plain">
+  <template>
+    <style>
+      :host {
+        display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+        pointer-events: none;
+      }
+    </style>
+
+		<template is="dom-repeat" items="[0,1,2,3,4,5,6,7,8,9]">
+		<!--<template is="dom-repeat" items="[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,39]">-->
+			<shape-object id$="shape[[item]]" on-new-selection="_select"></shape-object>
+		</template>
+
+  </template>
+
+  <script>
+
+    class ShapePlain extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "shape-plain";
+      }
+
+      static get properties() {
+        return {
+          shift: {
+            type: Boolean,
+            value: false
+          }
+        }
+      }
+
+      constructor() {
+        super();
+        window.addEventListener("keydown", function(e) {
+          if (e.key === "Shift")
+            this.shift = true;
+        }.bind(this))
+        window.addEventListener("keyup", function(e) {
+          if (e.key === "Shift")
+            this.shift = false;
+        }.bind(this))
+      }
+
+      changeShapes(shapes) {
+        for (let key in shapes) {
+          let shape = shapes[key];
+          let node = this.shadowRoot.querySelector("#"+key);
+          node.update(shape.matrix);
+        }
+      }
+
+      _select(e) {
+        if (!this.shift && !e.detail.multi)
+          this.deselect();
+        e.target.selected = true;
+      }
+
+      deselect() {
+        let selected = this.shadowRoot.querySelectorAll("[selected]");
+          if (selected)
+            for (let i = 0; i<selected.length; i++)
+              selected[i].selected = false;
+      }
+
+      boxSelect(selected) {
+        this.deselect();
+        selected.forEach(function(id) {
+          let node = this.shadowRoot.querySelector("#"+id);
+          node.selected = true;
+        }.bind(this))
+      }
+    }
+    customElements.define(ShapePlain.is, ShapePlain);
+  </script>
+</dom-module>

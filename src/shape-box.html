@@ -1,0 +1,375 @@
+<dom-module id="shape-box">
+  <template>
+    <style>
+      #boxBody {
+        position: absolute;
+        left: 0;
+        top: 0;
+        border: 1px solid gray;
+        pointer-events: none;
+        z-index: 10;
+      }
+      [type=point] {
+        box-sizing: border-box;
+        width: 12px;
+        height: 12px;
+        transform: translate(-50%,-50%);
+        position: absolute;
+        background: white;
+        border: 1px solid black;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+      [type=point]:hover, [type=rotator]:hover { background: coral; }
+      [type=point][active], [type=rotator][active] { background: crimson; }
+      #top-left { top: 0; left: 0; }
+      #top { top: 0; left: 50%; }
+      #top-right { top: 0; left: 100%; }
+      #right { top: 50%; left: 100%; }
+      #bottom-right { top: 100%; left: 100%; }
+      #bottom { top: 100%; left: 50%; }
+      #bottom-left { top: 100%; left: 0; }
+      #left { top: 50%; left: 0; }
+
+      [type=rotator] {
+        box-sizing: border-box;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        background: white;
+        border: 1px solid black;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      [type=grabber] {
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      .cross {
+        box-sizing: border-box;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        background: black;
+        pointer-events: none;
+      }
+      #horiz { width: 12px; height: 2px; }
+      #vert { width: 2px; height: 12px; }
+    </style>
+
+    <div id="boxBody" hidden="[[empty]]" type="box">
+      <div id="top-left" type="point" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="top" type="point" hidden="[[multi]]" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="top-right" type="point" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="right" type="point" hidden="[[multi]]" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="bottom-right" type="point" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="bottom" type="point" hidden="[[multi]]" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="bottom-left" type="point" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="left" type="point" hidden="[[multi]]" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="rotator" type="rotator" on-down="_startTracking" on-track="_doTracking"></div>
+      <div type="grabber" on-down="_startTracking" on-track="_doTracking"></div>
+      <div id="horiz" class="cross"></div>
+      <div id="vert" class="cross"></div>
+    </div>
+  </template>
+
+  <script>
+
+    class ShapeBox extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "shape-box";
+      }
+
+      static get properties() {
+        return {
+          shapes: Object,
+          rect: Object,
+          multi: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
+          empty: {
+            type: Boolean,
+            value: true,
+            reflectToAttribute: true
+          }
+        }
+      }
+
+      newShapes(shapes) {
+        this.set("shapes", shapes);
+        this._checkState(shapes);
+        if (!this.empty) {
+          this.rect = this._checkBounds(shapes);
+        }
+        this._applyStyle(this.rect);
+      }
+
+      _checkState(shapes) {
+        let i = 0;
+        for (let key in shapes) {
+          i++;
+        }
+        if (i == 0) {
+          this.empty = true;
+        } else if (i == 1) {
+          this.empty = false;
+          this.multi = false;
+        } else {
+          this.empty = false;
+          this.multi = true;
+        }
+      }
+
+      _checkBounds(shapes) {
+        let left, top, right, bottom, width, height, scale, center, angle;
+        if (this.multi) {
+          if (this.$.rotator.hasAttribute("active")) { // BAD CODE. REFACTOR NEED!
+            return this.rect;
+          } else {
+            for (let key in shapes) {
+              var rect = shapes[key].rect;
+              var matrix = shapes[key].matrix;
+              if (!left || left > rect.left)
+                left = rect.left;
+              if (!top || top > rect.top)
+                top = rect.top;
+              if (!right || right < rect.right)
+                right = rect.right;
+              if (!bottom || bottom < rect.bottom)
+                bottom = rect.bottom;
+              scale = {
+                x: matrix.sx/Math.abs(matrix.sx),
+                y: matrix.sy/Math.abs(matrix.sy)
+              };
+            }
+            width = right - left;
+            height = bottom - top;
+            center = {
+              x: left+width/2,
+              y: top+height/2,
+            };
+            angle = 0;
+          }
+        } else {
+          for (let key in shapes) {
+            var rect = shapes[key].rect;
+            var matrix = shapes[key].matrix;
+            angle = shapes[key].matrix.a;
+          }
+          if (angle%Math.PI === 0) {
+            var w = rect.width;
+            var h = rect.height;
+          } else if (angle%Math.PI === Math.PI/2) {
+            var w = rect.height;
+            var h = rect.width;
+          } else {
+            let sin = Math.abs(Math.sin(angle));
+            let cos = Math.abs(Math.cos(angle));
+            var w = (rect.width/sin-rect.height/cos)/(cos/sin-sin/cos);
+            var h = (rect.width/cos-rect.height/sin)/(sin/cos-cos/sin);
+          }
+          left = rect.left+(rect.width-w)/2;
+          top = rect.top+(rect.height-h)/2;
+          right = rect.right-(rect.width-w)/2;
+          bottom = rect.bottom-(rect.height-h)/2;
+          width = w;
+          height = h;
+          scale = {
+            x: matrix.sx/Math.abs(matrix.sx),
+            y: matrix.sy/Math.abs(matrix.sy)
+          };
+          center = {
+            x: left+width/2,
+            y: top+height/2,
+          }
+        }
+
+        return {
+          left: left,
+          top: top,
+          right: right,
+          bottom: bottom,
+          width: width,
+          height: height,
+          center: center,
+          scale: scale,
+          angle: angle
+        }
+      }
+
+      _applyStyle(r) {
+        if (this.empty) {
+          this.$.boxBody.style.cssText = "";
+        } else {
+          this.$.boxBody.style.width = r.width+"px";
+          this.$.boxBody.style.height = r.height+"px";
+          this.$.boxBody.style.transform = "translate("+r.left+"px,"+r.top+"px) rotate("+r.angle+"rad) scale("+r.scale.x+","+r.scale.y+")";
+        }
+      }
+      
+      _startTracking(e) {
+        e.preventDefault();
+      }
+
+      _doTracking(e) {
+        e.preventDefault();
+        switch(e.detail.state) {
+          case 'start':
+            e.currentTarget.setAttribute("active", "");
+            this._pointerMove(e.currentTarget, e.detail)
+            break;
+          case 'track':
+            this._pointerMove(e.currentTarget, e.detail);
+            break;
+          case 'end':
+            e.currentTarget.removeAttribute("active");
+            this.rect = this._checkBounds(this.shapes);
+            this._applyStyle(this.rect);
+            break;
+        }
+      }
+
+      _pointerMove(target, e) {
+        if (e.ddx == undefined || e.ddy == undefined) {
+          var ddx = e.dx;
+          var ddy = e.dy;
+        } else {
+          var ddx = e.ddx;
+          var ddy = e.ddy;
+        }
+        switch (target.getAttribute("type")) {
+          case "grabber":
+            this._moveShapes(ddx, ddy);
+            break;
+          case "point":
+            this._scaleShapes(target.id,ddx,ddy,e.x,e.y);
+            break;
+          case "rotator":
+            this._rotateShapes(e.x,e.y,ddx,ddy);
+            break;
+        }
+      }
+
+      _moveShapes(x,y) {
+        for (let key in this.shapes) {
+          let matrix = this.shapes[key].matrix;
+          matrix.x += x;
+          matrix.y += y;
+        }
+        this._changeShapes(this.shapes);
+      }
+
+      _rotateShapes(x,y,ddx,ddy) {
+        let dx = (x-ddx)-this.rect.center.x;
+        let dy = (y-ddy)-this.rect.center.y;
+        let a0 = Math.atan2(dx, dy);
+        dx = x-this.rect.center.x;
+        dy = y-this.rect.center.y;
+        let a = Math.atan2(dx, dy);
+        this.startPoint = {
+          x: x,
+          y: y
+        }
+        for (let key in this.shapes) {
+          let matrix = this.shapes[key].matrix;
+          let rect = this.shapes[key].rect;
+          if (!this.multi) {
+            matrix.a += a0-a;
+          } else {
+            let center = {
+              x: rect.left+rect.width/2,
+              y: rect.top+rect.height/2
+            }
+            let rx = center.x-this.rect.center.x;
+            let ry = center.y-this.rect.center.y;
+            let nx = rx*Math.cos(a0-a) - ry*Math.sin(a0-a);
+            let ny = rx*Math.sin(a0-a) + ry*Math.cos(a0-a);
+
+            matrix.x += nx-rx;
+            matrix.y += ny-ry;
+            matrix.a += a0-a;
+          }
+        }
+        if (this.multi)
+          this.rect.angle += a0-a;
+
+        this._changeShapes(this.shapes);
+      }
+
+      _scaleShapes(id,dx,dy) {
+        let dir = {x: 1,y: 1};
+        let ax = dx*Math.cos(-this.rect.angle) - dy*Math.sin(-this.rect.angle);
+        let ay = dx*Math.sin(-this.rect.angle) + dy*Math.cos(-this.rect.angle);
+        let max = ax;
+        let may = ay;
+        if (id.indexOf("top") != -1) {
+          may = -ay;
+          dir.y = -1;
+        }
+        if (id.indexOf("left") != -1) {
+          max = -ax;
+          dir.x = -1;
+        }
+        if (id == "top-left" || id == "top-right" || id == "bottom-right" || id == "bottom-left") {
+          let prop = this.rect.height/this.rect.width;
+          may = max*prop;
+          ay = ax*prop*dir.x*dir.y;
+        }       
+        else if (id == "left" || id == "right") {
+          may = 0;
+          ay = 0;
+        }
+        else if (id == "top" || id == "bottom") {
+          max = 0;
+          ax = 0
+        }
+        let nx = ax*Math.cos(this.rect.angle) - ay*Math.sin(this.rect.angle);
+        let ny = ax*Math.sin(this.rect.angle) + ay*Math.cos(this.rect.angle);
+        for (let key in this.shapes) {
+          let matrix = this.shapes[key].matrix;
+          let rect = this.shapes[key].rect;
+          if (this.multi) {
+            let center = {
+              x: rect.left+rect.width/2,
+              y: rect.top+rect.height/2
+            }
+            let bx, by;
+            if (dir.x*this.rect.scale.x == -1)
+              bx = center.x - this.rect.right;
+            else
+              bx = center.x - this.rect.left;
+            if (dir.y*this.rect.scale.y == -1)
+              by = center.y - this.rect.bottom;
+            else
+              by = center.y - this.rect.top;
+            matrix.x += Math.abs(bx/this.rect.width)*nx;
+            matrix.y += Math.abs(by/this.rect.height)*ny;
+            
+          } else {
+            matrix.x += nx/2;
+            matrix.y += ny/2;
+          }
+          matrix.sx *= (this.rect.scale.x*this.rect.width+max)/(this.rect.scale.x*this.rect.width);
+          matrix.sy *= (this.rect.scale.y*this.rect.height+may)/(this.rect.scale.y*this.rect.height);
+        }        
+        this._changeShapes(this.shapes);
+      }
+
+      _changeShapes(shapes) {
+        this.dispatchEvent(new CustomEvent("change-shapes", {composed: true, bubbles: true, detail: shapes}));
+      }
+    }
+    customElements.define(ShapeBox.is, ShapeBox);
+  </script>
+</dom-module>

@@ -1,0 +1,129 @@
+<dom-module id="selection-box">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+      }
+      #body {
+        display: block;
+        width: 0;
+        height: 0;
+        box-sizing: border-box;
+        border: 1px dashed crimson;
+      }
+      #body:not(.active) {
+        display: none;
+      }
+    </style>
+
+		<div id="body"></div>
+
+  </template>
+
+  <script>
+
+    class SelectionBox extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "selection-box";
+      }
+
+      static get properties() {
+        return {
+          shapes: Object,
+          selected: {
+            type: Array,
+            value: function() {
+              return []
+            }
+          },
+          rect: {
+            type: Object,
+            value: function() {
+              return {}
+            }
+          }
+				}
+      }
+
+      constructor() {
+        super();
+        Polymer.Gestures.addListener(this, "down", e => this._down(e));
+        Polymer.Gestures.addListener(this, "track", e => this._track(e));
+      }
+
+      _down(e) {
+        e.preventDefault();
+        this.selected = [];
+        this.dispatchEvent(new CustomEvent("deselection", { composed: true,	bubbles: true }));
+        this.start = {
+          x: e.detail.x,
+          y: e.detail.y
+        }
+      }
+
+      _track(e) {
+        e.preventDefault();
+        if (e.detail.state == "end") {
+          this.$.body.classList.remove("active");
+          // this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
+        }
+        else {
+          this.end = {
+            x: e.detail.x,
+            y: e.detail.y
+          };
+          this._calcRect();
+          this._selectShapes();
+          this.$.body.classList.add("active");
+        }
+      }
+
+      _calcRect() {
+        this.rect.left = this.start.x < this.end.x ? this.start.x : this.end.x;
+        this.rect.top = this.start.y < this.end.y ? this.start.y : this.end.y;
+        this.rect.right = this.start.x > this.end.x ? this.start.x : this.end.x;
+        this.rect.bottom = this.start.y > this.end.y ? this.start.y : this.end.y;
+        this.rect.width = Math.abs(this.start.x-this.end.x);
+        this.rect.height = Math.abs(this.start.y-this.end.y);
+        this._makeBox();
+      }
+
+      _makeBox() {
+        let r = this.rect;
+        this.$.body.style.transform = "translate("+r.left+"px,"+r.top+"px)";
+        this.$.body.style.width = r.width+"px";
+        this.$.body.style.height = r.height+"px";
+      }
+
+      _selectShapes() {
+        for (let key in this.shapes) {
+          let shape = this.shapes[key];
+          let center = {
+            x: shape.rect.left+shape.rect.width/2,
+            y: shape.rect.top+shape.rect.height/2
+          }
+          let index = this.selected.indexOf(shape.id);
+          if (center.x >= this.rect.left &&
+              center.x <= this.rect.right &&
+              center.y >= this.rect.top &&
+              center.y <= this.rect.bottom) {
+            if (index == -1) {
+              this.selected.push(shape.id);
+              this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
+            }
+          } else {
+            if (index !== -1) {
+              this.selected.splice(index, 1);
+              this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
+            }
+          }
+        }
+      }
+    }
+    customElements.define(SelectionBox.is, SelectionBox);
+  </script>
+</dom-module>

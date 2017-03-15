@@ -1,0 +1,47 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="ui-plain.html">
+<link rel="import" href="shape-plain.html">
+
+<dom-module id="my-app">
+  <template>
+    <style>
+      :host {
+				height: 100%;
+      }
+    </style>
+
+    <ui-plain on-change-shapes="_changeShapes"
+              on-deselection="_deselect"
+              on-new-box-selection="_select">
+      <shape-plain id="shapePlain"></shape-plain>
+    </ui-plain>
+
+  </template>
+
+  <script>
+
+    class MyApp extends Polymer.Element {
+      static get is() {
+        return "my-app";
+      }
+
+      static get properties() {
+        return {}
+      }
+
+      _changeShapes(e) {
+        this.$.shapePlain.changeShapes(e.detail);
+      }
+
+      _deselect() {
+        this.$.shapePlain.deselect();
+      }
+
+      _select(e) {
+        this.$.shapePlain.boxSelect(e.detail);
+      }
+    }
+    customElements.define(MyApp.is, MyApp);
+  </script>
+</dom-module>

@@ -1,0 +1,6 @@
+{
+  "name": "Item Box",
+  "short_name": "Item Box",
+  "start_url": "/",
+  "display": "standalone"
+}
