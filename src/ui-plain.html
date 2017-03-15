@@ -5,14 +5,14 @@
   <template>
     <style>
       :host {
-				height: 100%;
+        height: 100%;
       }
     </style>
-		
-		<selection-box id="selection"
-									 shapes="[[shapesRegistry]]"></selection-box>
-		<slot></slot>
-		<shape-box id="shapeBox"></shape-box>
+
+    <selection-box id="selection"
+                   shapes="[[shapesRegistry]]"></selection-box>
+    <slot></slot>
+    <shape-box id="shapeBox"></shape-box>
 
   </template>
 
@@ -25,35 +25,35 @@
 
       static get properties() {
         return {
-					shapesRegistry: {
-						type: Object,
-						value: function() {
-							return {}
-						}
-					},
-					selectedRegistry: {
-						type: Object,
-						value: function() {
-							return {}
-						}
-					}
-				}
+          shapesRegistry: {
+            type: Object,
+            value: function () {
+              return {}
+            }
+          },
+          selectedRegistry: {
+            type: Object,
+            value: function () {
+              return {}
+            }
+          }
+        }
       }
 
-			constructor() {
-				super();
-				this.addEventListener("shape-location", this._shapeLocation.bind(this));
-			}
+      constructor() {
+        super();
+        this.addEventListener("shape-location", this._shapeLocation.bind(this));
+      }
 
-			_shapeLocation(e) {
-				this.set("shapesRegistry."+e.detail.id, e.detail);
-				if (e.detail.selected) {
-					this.set("selectedRegistry."+e.detail.id, e.detail);
-				} else {
-					delete this.selectedRegistry[e.detail.id];
-				}
-				this.$.shapeBox.newShapes(this.selectedRegistry);
-			}
+      _shapeLocation(e) {
+        this.set("shapesRegistry." + e.detail.id, e.detail);
+        if (e.detail.selected) {
+          this.set("selectedRegistry." + e.detail.id, e.detail);
+        } else {
+          delete this.selectedRegistry[e.detail.id];
+        }
+        this.$.shapeBox.newShapes(this.selectedRegistry);
+      }
     }
     customElements.define(UiPlain.is, UiPlain);
   </script>

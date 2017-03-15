@@ -20,7 +20,7 @@
       }
     </style>
 
-		<div id="body"></div>
+    <div id="body"></div>
 
   </template>
 
@@ -36,17 +36,17 @@
           shapes: Object,
           selected: {
             type: Array,
-            value: function() {
+            value: function () {
               return []
             }
           },
           rect: {
             type: Object,
-            value: function() {
+            value: function () {
               return {}
             }
           }
-				}
+        }
       }
 
       constructor() {
@@ -58,7 +58,7 @@
       _down(e) {
         e.preventDefault();
         this.selected = [];
-        this.dispatchEvent(new CustomEvent("deselection", { composed: true,	bubbles: true }));
+        this.dispatchEvent(new CustomEvent("deselection", {composed: true, bubbles: true}));
         this.start = {
           x: e.detail.x,
           y: e.detail.y
@@ -87,38 +87,46 @@
         this.rect.top = this.start.y < this.end.y ? this.start.y : this.end.y;
         this.rect.right = this.start.x > this.end.x ? this.start.x : this.end.x;
         this.rect.bottom = this.start.y > this.end.y ? this.start.y : this.end.y;
-        this.rect.width = Math.abs(this.start.x-this.end.x);
-        this.rect.height = Math.abs(this.start.y-this.end.y);
+        this.rect.width = Math.abs(this.start.x - this.end.x);
+        this.rect.height = Math.abs(this.start.y - this.end.y);
         this._makeBox();
       }
 
       _makeBox() {
         let r = this.rect;
-        this.$.body.style.transform = "translate("+r.left+"px,"+r.top+"px)";
-        this.$.body.style.width = r.width+"px";
-        this.$.body.style.height = r.height+"px";
+        this.$.body.style.transform = "translate(" + r.left + "px," + r.top + "px)";
+        this.$.body.style.width = r.width + "px";
+        this.$.body.style.height = r.height + "px";
       }
 
       _selectShapes() {
         for (let key in this.shapes) {
           let shape = this.shapes[key];
           let center = {
-            x: shape.rect.left+shape.rect.width/2,
-            y: shape.rect.top+shape.rect.height/2
+            x: shape.rect.left + shape.rect.width / 2,
+            y: shape.rect.top + shape.rect.height / 2
           }
           let index = this.selected.indexOf(shape.id);
           if (center.x >= this.rect.left &&
-              center.x <= this.rect.right &&
-              center.y >= this.rect.top &&
-              center.y <= this.rect.bottom) {
+            center.x <= this.rect.right &&
+            center.y >= this.rect.top &&
+            center.y <= this.rect.bottom) {
             if (index == -1) {
               this.selected.push(shape.id);
-              this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
+              this.dispatchEvent(new CustomEvent("new-box-selection", {
+                composed: true,
+                bubbles: true,
+                detail: this.selected
+              }));
             }
           } else {
             if (index !== -1) {
               this.selected.splice(index, 1);
-              this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
+              this.dispatchEvent(new CustomEvent("new-box-selection", {
+                composed: true,
+                bubbles: true,
+                detail: this.selected
+              }));
             }
           }
         }

@@ -13,7 +13,7 @@
         box-sizing: border-box;
         width: 12px;
         height: 12px;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         position: absolute;
         background: white;
         border: 1px solid black;
@@ -30,7 +30,6 @@
       #bottom { top: 100%; left: 50%; }
       #bottom-left { top: 100%; left: 0; }
       #left { top: 50%; left: 0; }
-
       [type=rotator] {
         box-sizing: border-box;
         width: 18px;
@@ -39,26 +38,24 @@
         position: absolute;
         bottom: -40px;
         left: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         background: white;
         border: 1px solid black;
         cursor: pointer;
         pointer-events: auto;
       }
-
       [type=grabber] {
         width: 100%;
         height: 100%;
         cursor: pointer;
         pointer-events: auto;
       }
-
       .cross {
         box-sizing: border-box;
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         background: black;
         pointer-events: none;
       }
@@ -149,15 +146,15 @@
               if (!bottom || bottom < rect.bottom)
                 bottom = rect.bottom;
               scale = {
-                x: matrix.sx/Math.abs(matrix.sx),
-                y: matrix.sy/Math.abs(matrix.sy)
+                x: matrix.sx / Math.abs(matrix.sx),
+                y: matrix.sy / Math.abs(matrix.sy)
               };
             }
             width = right - left;
             height = bottom - top;
             center = {
-              x: left+width/2,
-              y: top+height/2,
+              x: left + width / 2,
+              y: top + height / 2,
             };
             angle = 0;
           }
@@ -167,31 +164,31 @@
             var matrix = shapes[key].matrix;
             angle = shapes[key].matrix.a;
           }
-          if (angle%Math.PI === 0) {
+          if (angle % Math.PI === 0) {
             var w = rect.width;
             var h = rect.height;
-          } else if (angle%Math.PI === Math.PI/2) {
+          } else if (angle % Math.PI === Math.PI / 2) {
             var w = rect.height;
             var h = rect.width;
           } else {
             let sin = Math.abs(Math.sin(angle));
             let cos = Math.abs(Math.cos(angle));
-            var w = (rect.width/sin-rect.height/cos)/(cos/sin-sin/cos);
-            var h = (rect.width/cos-rect.height/sin)/(sin/cos-cos/sin);
+            var w = (rect.width / sin - rect.height / cos) / (cos / sin - sin / cos);
+            var h = (rect.width / cos - rect.height / sin) / (sin / cos - cos / sin);
           }
-          left = rect.left+(rect.width-w)/2;
-          top = rect.top+(rect.height-h)/2;
-          right = rect.right-(rect.width-w)/2;
-          bottom = rect.bottom-(rect.height-h)/2;
+          left = rect.left + (rect.width - w) / 2;
+          top = rect.top + (rect.height - h) / 2;
+          right = rect.right - (rect.width - w) / 2;
+          bottom = rect.bottom - (rect.height - h) / 2;
           width = w;
           height = h;
           scale = {
-            x: matrix.sx/Math.abs(matrix.sx),
-            y: matrix.sy/Math.abs(matrix.sy)
+            x: matrix.sx / Math.abs(matrix.sx),
+            y: matrix.sy / Math.abs(matrix.sy)
           };
           center = {
-            x: left+width/2,
-            y: top+height/2,
+            x: left + width / 2,
+            y: top + height / 2,
           }
         }
 
@@ -212,19 +209,19 @@
         if (this.empty) {
           this.$.boxBody.style.cssText = "";
         } else {
-          this.$.boxBody.style.width = r.width+"px";
-          this.$.boxBody.style.height = r.height+"px";
-          this.$.boxBody.style.transform = "translate("+r.left+"px,"+r.top+"px) rotate("+r.angle+"rad) scale("+r.scale.x+","+r.scale.y+")";
+          this.$.boxBody.style.width = r.width + "px";
+          this.$.boxBody.style.height = r.height + "px";
+          this.$.boxBody.style.transform = "translate(" + r.left + "px," + r.top + "px) rotate(" + r.angle + "rad) scale(" + r.scale.x + "," + r.scale.y + ")";
         }
       }
-      
+
       _startTracking(e) {
         e.preventDefault();
       }
 
       _doTracking(e) {
         e.preventDefault();
-        switch(e.detail.state) {
+        switch (e.detail.state) {
           case 'start':
             e.currentTarget.setAttribute("active", "");
             this._pointerMove(e.currentTarget, e.detail)
@@ -253,15 +250,15 @@
             this._moveShapes(ddx, ddy);
             break;
           case "point":
-            this._scaleShapes(target.id,ddx,ddy,e.x,e.y);
+            this._scaleShapes(target.id, ddx, ddy, e.x, e.y);
             break;
           case "rotator":
-            this._rotateShapes(e.x,e.y,ddx,ddy);
+            this._rotateShapes(e.x, e.y, ddx, ddy);
             break;
         }
       }
 
-      _moveShapes(x,y) {
+      _moveShapes(x, y) {
         for (let key in this.shapes) {
           let matrix = this.shapes[key].matrix;
           matrix.x += x;
@@ -270,12 +267,12 @@
         this._changeShapes(this.shapes);
       }
 
-      _rotateShapes(x,y,ddx,ddy) {
-        let dx = (x-ddx)-this.rect.center.x;
-        let dy = (y-ddy)-this.rect.center.y;
+      _rotateShapes(x, y, ddx, ddy) {
+        let dx = (x - ddx) - this.rect.center.x;
+        let dy = (y - ddy) - this.rect.center.y;
         let a0 = Math.atan2(dx, dy);
-        dx = x-this.rect.center.x;
-        dy = y-this.rect.center.y;
+        dx = x - this.rect.center.x;
+        dy = y - this.rect.center.y;
         let a = Math.atan2(dx, dy);
         this.startPoint = {
           x: x,
@@ -285,32 +282,32 @@
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
           if (!this.multi) {
-            matrix.a += a0-a;
+            matrix.a += a0 - a;
           } else {
             let center = {
-              x: rect.left+rect.width/2,
-              y: rect.top+rect.height/2
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2
             }
-            let rx = center.x-this.rect.center.x;
-            let ry = center.y-this.rect.center.y;
-            let nx = rx*Math.cos(a0-a) - ry*Math.sin(a0-a);
-            let ny = rx*Math.sin(a0-a) + ry*Math.cos(a0-a);
+            let rx = center.x - this.rect.center.x;
+            let ry = center.y - this.rect.center.y;
+            let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
+            let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
 
-            matrix.x += nx-rx;
-            matrix.y += ny-ry;
-            matrix.a += a0-a;
+            matrix.x += nx - rx;
+            matrix.y += ny - ry;
+            matrix.a += a0 - a;
           }
         }
         if (this.multi)
-          this.rect.angle += a0-a;
+          this.rect.angle += a0 - a;
 
         this._changeShapes(this.shapes);
       }
 
-      _scaleShapes(id,dx,dy) {
-        let dir = {x: 1,y: 1};
-        let ax = dx*Math.cos(-this.rect.angle) - dy*Math.sin(-this.rect.angle);
-        let ay = dx*Math.sin(-this.rect.angle) + dy*Math.cos(-this.rect.angle);
+      _scaleShapes(id, dx, dy) {
+        let dir = {x: 1, y: 1};
+        let ax = dx * Math.cos(-this.rect.angle) - dy * Math.sin(-this.rect.angle);
+        let ay = dx * Math.sin(-this.rect.angle) + dy * Math.cos(-this.rect.angle);
         let max = ax;
         let may = ay;
         if (id.indexOf("top") != -1) {
@@ -322,10 +319,10 @@
           dir.x = -1;
         }
         if (id == "top-left" || id == "top-right" || id == "bottom-right" || id == "bottom-left") {
-          let prop = this.rect.height/this.rect.width;
-          may = max*prop;
-          ay = ax*prop*dir.x*dir.y;
-        }       
+          let prop = this.rect.height / this.rect.width;
+          may = max * prop;
+          ay = ax * prop * dir.x * dir.y;
+        }
         else if (id == "left" || id == "right") {
           may = 0;
           ay = 0;
@@ -334,35 +331,35 @@
           max = 0;
           ax = 0
         }
-        let nx = ax*Math.cos(this.rect.angle) - ay*Math.sin(this.rect.angle);
-        let ny = ax*Math.sin(this.rect.angle) + ay*Math.cos(this.rect.angle);
+        let nx = ax * Math.cos(this.rect.angle) - ay * Math.sin(this.rect.angle);
+        let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
         for (let key in this.shapes) {
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
           if (this.multi) {
             let center = {
-              x: rect.left+rect.width/2,
-              y: rect.top+rect.height/2
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2
             }
             let bx, by;
-            if (dir.x*this.rect.scale.x == -1)
+            if (dir.x * this.rect.scale.x == -1)
               bx = center.x - this.rect.right;
             else
               bx = center.x - this.rect.left;
-            if (dir.y*this.rect.scale.y == -1)
+            if (dir.y * this.rect.scale.y == -1)
               by = center.y - this.rect.bottom;
             else
               by = center.y - this.rect.top;
-            matrix.x += Math.abs(bx/this.rect.width)*nx;
-            matrix.y += Math.abs(by/this.rect.height)*ny;
-            
+            matrix.x += Math.abs(bx / this.rect.width) * nx;
+            matrix.y += Math.abs(by / this.rect.height) * ny;
+
           } else {
-            matrix.x += nx/2;
-            matrix.y += ny/2;
+            matrix.x += nx / 2;
+            matrix.y += ny / 2;
           }
-          matrix.sx *= (this.rect.scale.x*this.rect.width+max)/(this.rect.scale.x*this.rect.width);
-          matrix.sy *= (this.rect.scale.y*this.rect.height+may)/(this.rect.scale.y*this.rect.height);
-        }        
+          matrix.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);
+          matrix.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);
+        }
         this._changeShapes(this.shapes);
       }
 
