@@ -142,10 +142,6 @@
             }
             width = right - left;
             height = bottom - top;
-            center = {
-              x: left + width / 2,
-              y: top + height / 2,
-            };
             angle = 0;
           }
         } else {
@@ -176,23 +172,11 @@
             x: matrix.sx / Math.abs(matrix.sx),
             y: matrix.sy / Math.abs(matrix.sy)
           };
-          center = {
-            x: left + width / 2,
-            y: top + height / 2,
-          }
         }
 
-        return {
-          left: left,
-          top: top,
-          right: right,
-          bottom: bottom,
-          width: width,
-          height: height,
-          center: center,
-          scale: scale,
-          angle: angle
-        }
+        let res = new Rectangle(left, right, top, bottom, width, height);
+        res.setScaleAngle(scale, angle);
+        return res;
       }
 
       _applyStyle(r) {
@@ -253,10 +237,6 @@
         dx = x - this.rect.center.x;
         dy = y - this.rect.center.y;
         let a = Math.atan2(dx, dy);
-        this.startPoint = {                                            //todo unused
-          x: x,
-          y: y
-        };
         for (let key in this.shapes) {
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
@@ -315,10 +295,6 @@
           let rect = this.shapes[key].rect;
           if (this.multi) {
             let center = rect.center;
-//            let center = {
-//              x: rect.left + rect.width / 2,
-//              y: rect.top + rect.height / 2
-//            };
             let bx, by;
             if (dir.x * this.rect.scale.x == -1)
               bx = center.x - this.rect.right;
