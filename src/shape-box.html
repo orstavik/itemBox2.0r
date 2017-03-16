@@ -118,46 +118,46 @@
         this.multi = l > 1;
       }
 
-      static _getFirstShape(shapes){
+      static _getFirstShape(shapes) {
         for (let key in shapes)
           return shapes[key];
       }
 
       _checkBounds(shapes) {      //todo rename to _makeRectangle     //todo which then might be a computed property
-        let left, top, right, bottom, width, height, scale, center, angle;
         if (this.multi) {
           if (this.$.rotator.hasAttribute("active")) // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
             return this.rect;
 
           let matrix = ShapeBox._getFirstShape(shapes).matrix;
           let rects = Object.keys(shapes).map(key => shapes[key].rect);
-
           return TransformableRectangle.makeFromManyRects(rects, matrix);
-        } else {
-          let shape = ShapeBox._getFirstShape(shapes);
-            var rect = shape.rect;
-            var matrix = shape.matrix;
-            angle = shape.matrix.a;
-          if (angle % Math.PI === 0) {
-            var w = rect.width;
-            var h = rect.height;
-          } else if (angle % Math.PI === Math.PI / 2) {
-            var w = rect.height;
-            var h = rect.width;
-          } else {
-            let sin = Math.abs(Math.sin(angle));
-            let cos = Math.abs(Math.cos(angle));
-            var w = (rect.width / sin - rect.height / cos) / (cos / sin - sin / cos);
-            var h = (rect.width / cos - rect.height / sin) / (sin / cos - cos / sin);
-          }
-          left = rect.left + (rect.width - w) / 2;
-          top = rect.top + (rect.height - h) / 2;
-          right = rect.right - (rect.width - w) / 2;
-          bottom = rect.bottom - (rect.height - h) / 2;
-          width = w;
-          height = h;
-//          return TransformableRectangle.makeFromSingleRect(rects, matrix);
         }
+
+
+        let shape = ShapeBox._getFirstShape(shapes);
+        let rect = shape.rect;
+        let matrix = shape.matrix;
+        let angle = shape.matrix.a;
+
+        let width, height;
+        if (angle % Math.PI === 0) {
+          width = rect.width;
+          height = rect.height;
+        } else if (angle % Math.PI === Math.PI / 2) {
+          width = rect.height;
+          height = rect.width;
+        } else {
+          let sin = Math.abs(Math.sin(angle));
+          let cos = Math.abs(Math.cos(angle));
+          width = (rect.width / sin - rect.height / cos) / (cos / sin - sin / cos);
+          height = (rect.width / cos - rect.height / sin) / (sin / cos - cos / sin);
+        }
+        let left = rect.left + (rect.width - width) / 2;
+        let top = rect.top + (rect.height - height) / 2;
+        let right = rect.right - (rect.width - width) / 2;
+        let bottom = rect.bottom - (rect.height - height) / 2;
+
+//          return TransformableRectangle.makeFromSingleRect(rects, matrix);
 
         let res = new Rectangle({left: left, right: right, top: top, bottom: bottom, width: width, height: height});
         return new TransformableRectangle(res, angle, matrix.sx, matrix.sy);
