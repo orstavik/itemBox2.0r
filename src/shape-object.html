@@ -82,6 +82,38 @@
       static makeFromManyRects(rects, matrix) {
         return new TransformableRectangle(Rectangle.union(rects), 0, matrix.sx, matrix.sy);
       }
+
+      static makeFromSingleShape(rect, matrix) {
+        let r = TransformableRectangle.calcRotatedRectangle(matrix.a, rect);
+        return new TransformableRectangle(r, matrix.a, matrix.sx, matrix.sy);
+      }
+
+      static calcRotatedRectangle(angle, rect) {
+        let wh = TransformableRectangle.calculateRotatedWidthAndHeight(angle, rect.width, rect.height);
+        return {
+          left: rect.left + (rect.width - wh.width) / 2,
+          top: rect.top + (rect.height - wh.height) / 2,
+          right: rect.right - (rect.width - wh.width) / 2,
+          bottom: rect.bottom - (rect.height - wh.height) / 2,
+          width: wh.width,
+          height: wh.height
+        };
+      }
+
+      static calculateRotatedWidthAndHeight(angle, w, h) {
+        if (angle % Math.PI === 0)
+          return {width: w, height: h};
+
+        if (angle % Math.PI === Math.PI / 2)
+          return {width: h, height: w};
+
+        let sin = Math.abs(Math.sin(angle));
+        let cos = Math.abs(Math.cos(angle));
+        return {
+          width: (w / sin - h / cos) / (cos / sin - sin / cos),
+          height: (w / cos - h / sin) / (sin / cos - cos / sin)
+        };
+      }
     }
 
     class ShapeObject extends Polymer.GestureEventListeners(Polymer.Element) {

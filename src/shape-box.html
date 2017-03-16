@@ -128,39 +128,12 @@
           if (this.$.rotator.hasAttribute("active")) // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
             return this.rect;
 
-          let matrix = ShapeBox._getFirstShape(shapes).matrix;
+          let shape = ShapeBox._getFirstShape(shapes);
           let rects = Object.keys(shapes).map(key => shapes[key].rect);
-          return TransformableRectangle.makeFromManyRects(rects, matrix);
+          return TransformableRectangle.makeFromManyRects(rects, shape.matrix);
         }
-
-
         let shape = ShapeBox._getFirstShape(shapes);
-        let rect = shape.rect;
-        let matrix = shape.matrix;
-        let angle = shape.matrix.a;
-
-        let width, height;
-        if (angle % Math.PI === 0) {
-          width = rect.width;
-          height = rect.height;
-        } else if (angle % Math.PI === Math.PI / 2) {
-          width = rect.height;
-          height = rect.width;
-        } else {
-          let sin = Math.abs(Math.sin(angle));
-          let cos = Math.abs(Math.cos(angle));
-          width = (rect.width / sin - rect.height / cos) / (cos / sin - sin / cos);
-          height = (rect.width / cos - rect.height / sin) / (sin / cos - cos / sin);
-        }
-        let left = rect.left + (rect.width - width) / 2;
-        let top = rect.top + (rect.height - height) / 2;
-        let right = rect.right - (rect.width - width) / 2;
-        let bottom = rect.bottom - (rect.height - height) / 2;
-
-//          return TransformableRectangle.makeFromSingleRect(rects, matrix);
-
-        let res = new Rectangle({left: left, right: right, top: top, bottom: bottom, width: width, height: height});
-        return new TransformableRectangle(res, angle, matrix.sx, matrix.sy);
+        return TransformableRectangle.makeFromSingleShape(shape.rect, shape.matrix);
       }
 
       _applyStyle(r) {
