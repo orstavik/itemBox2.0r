@@ -50,8 +50,25 @@
           y: (this.top + this.bottom) / 2
         };
       }
+
+      static union(rects) {
+        let left, top, right, bottom, width, height;
+        for (let rect of rects) {
+          if (!left || left > rect.left)
+            left = rect.left;
+          if (!top || top > rect.top)
+            top = rect.top;
+          if (!right || right < rect.right)
+            right = rect.right;
+          if (!bottom || bottom < rect.bottom)
+            bottom = rect.bottom;
+        }
+        width = right - left;
+        height = bottom - top;
+        return new Rectangle({left: left, top: top, right: right, bottom: bottom, width: width, height: height});
+      }
     }
-    
+
     class TransformableRectangle extends Rectangle {
       constructor(rect, angle, sx, sy) {
         super(rect);
@@ -60,6 +77,10 @@
           y: sy / Math.abs(sy)
         };
         this.angle = angle;
+      }
+
+      static makeFromManyRects(rects, matrix) {
+        return new TransformableRectangle(Rectangle.union(rects), 0, matrix.sx, matrix.sy);
       }
     }
 
