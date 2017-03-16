@@ -51,10 +51,7 @@
             observer: "_notifyUI",
             reflectToAttribute: true
           },
-          matrixData: {
-            type: Object,
-//            value: ShapeObject._randomMatrixData              //todo MatrixData as an object??
-          },
+          matrixData: Object,
           _style: {
             type: String,
             computed: "_makeStyle(matrixData)"
@@ -66,14 +63,11 @@
       connectedCallback() {
         super.connectedCallback();
         window.addEventListener("resize", this._notifyUI.bind(this));
-//        this.$.body.style.transform = ShapeObject._computeMatrix(this.matrixData);
-//        this._notifyUI();
-//        this.update(this.matrixData);
         setTimeout(this._notifyUI.bind(this), 0);
       }
 
       _makeStyle(matrixData){
-        return "transform: " + ShapeObject._computeMatrix(matrixData) + ";";
+        return "transform: " + matrixData.compute() + ";";
       }
 
       _notifyUI() {
@@ -107,35 +101,13 @@
       }
 
       update(m) {
-        this.set("matrixData", Object.assign({},m));
+        this.set("matrixData", m.clone());
 //        this.$.body.style.transform = ShapeObject._computeMatrix(m);
         this._notifyUI();
       }
 
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
-      }
-
-      static _computeMatrix(m) {
-        let matrix = [
-          m.sx * Math.cos(m.a),
-          m.sx * Math.sin(m.a),
-          -m.sy * Math.sin(m.a),
-          m.sy * Math.cos(m.a),
-          m.x,
-          m.y
-        ];
-        return "matrix(" + matrix.join(",") + ")";
-      }
-
-      static _randomMatrixData() {
-        return {
-          x: Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
-          y: Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
-          sx: 1,
-          sy: 1,
-          a: Math.random() * Math.PI * 2
-        }
       }
     }
     customElements.define(ShapeObject.is, ShapeObject);

@@ -28,16 +28,7 @@
 
       static get properties() {
         return {
-          shapes: {
-            type: Array,
-            value: function(){
-              const res = [];
-              for (let i = 0; i < 10; i++) {
-                res[i] = ShapeObject._randomMatrixData();
-              }
-              return res;
-            }
-          },
+          shapes: Array,
           shift: {
             type: Boolean,
             value: false
