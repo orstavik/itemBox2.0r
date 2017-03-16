@@ -187,11 +187,18 @@
         }
       }
 
+      //TODO
+      //TODO make these three methods return the result without mutating the shapes.
+      //TODO then merge the previous shapes in my-app with the changes coming from here
+      //TODO and then pass those new "shapes" down into the app.
+      //TODO To do this, we should make a new Matrix Object that has immutable methods.
+      //TODO and also make sure that shapes has immutable methods if we need. maybe array.slice()
+      //TODO or Object.assign({}, ..) is enough.
+
       _moveShapes(x, y) {
         for (let key in this.shapes) {
-          let matrix = this.shapes[key].matrix;
-          matrix.x += x;
-          matrix.y += y;
+          this.shapes[key].matrix.x += x;                                     //mutation
+          this.shapes[key].matrix.y += y;                                     //mutation
         }
         this._changeShapes(this.shapes);
       }
@@ -204,10 +211,9 @@
         dy = y - this.rect.center.y;
         let a = Math.atan2(dx, dy);
         for (let key in this.shapes) {
-          let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
           if (!this.multi) {
-            matrix.a += a0 - a;
+            this.shapes[key].matrix.a += a0 - a;            //mutation
           } else {
             let center = rect.center;
             let rx = center.x - this.rect.center.x;
@@ -215,9 +221,9 @@
             let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
             let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
 
-            matrix.x += nx - rx;
-            matrix.y += ny - ry;
-            matrix.a += a0 - a;
+            this.shapes[key].matrix.x += nx - rx;           //mutation
+            this.shapes[key].matrix.y += ny - ry;           //mutation
+            this.shapes[key].matrix.a += a0 - a;            //mutation
           }
         }
         if (this.multi)
@@ -257,7 +263,6 @@
         let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
         //todo above is the course of action, below is the action applied to the object??
         for (let key in this.shapes) {
-          let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
           if (this.multi) {
             let center = rect.center;
@@ -270,15 +275,15 @@
               by = center.y - this.rect.bottom;
             else
               by = center.y - this.rect.top;
-            matrix.x += Math.abs(bx / this.rect.width) * nx;
-            matrix.y += Math.abs(by / this.rect.height) * ny;
+            this.shapes[key].matrix.x += Math.abs(bx / this.rect.width) * nx;               //mutation
+            this.shapes[key].matrix.y += Math.abs(by / this.rect.height) * ny;              //mutation
 
           } else {
-            matrix.x += nx / 2;
-            matrix.y += ny / 2;
+            this.shapes[key].matrix.x += nx / 2;                                            //mutation
+            this.shapes[key].matrix.y += ny / 2;                                            //mutation
           }
-          matrix.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);
-          matrix.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);
+          this.shapes[key].matrix.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);    //mutation
+          this.shapes[key].matrix.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);  //mutation
         }
         this._changeShapes(this.shapes);
       }
