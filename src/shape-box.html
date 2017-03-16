@@ -135,10 +135,6 @@
                 right = rect.right;
               if (!bottom || bottom < rect.bottom)
                 bottom = rect.bottom;
-              scale = {                                            //todo hm.. is this correct?? are we just using the last scale from the last shape??
-                x: matrix.sx / Math.abs(matrix.sx),
-                y: matrix.sy / Math.abs(matrix.sy)                  //todo are all the shapes scaled equally??
-              };
             }
             width = right - left;
             height = bottom - top;
@@ -168,15 +164,10 @@
           bottom = rect.bottom - (rect.height - h) / 2;
           width = w;
           height = h;
-          scale = {
-            x: matrix.sx / Math.abs(matrix.sx),
-            y: matrix.sy / Math.abs(matrix.sy)
-          };
         }
 
-        let res = new Rectangle(left, right, top, bottom, width, height);
-        res.setScaleAngle(scale, angle);
-        return res;
+        let res = new Rectangle({left: left, right: right, top: top, bottom: bottom, width: width, height: height});
+        return new TransformableRectangle(res, angle, matrix.sx, matrix.sy);
       }
 
       _applyStyle(r) {

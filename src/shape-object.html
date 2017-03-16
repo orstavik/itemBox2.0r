@@ -38,27 +38,32 @@
   <script>
 
     class Rectangle {
-      constructor(left, right, top, bottom, width, height){
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
-        this.width = width;
-        this.height = height;
+      constructor(rect) {
+        this.left = rect.left;
+        this.right = rect.right;
+        this.top = rect.top;
+        this.bottom = rect.bottom;
+        this.width = rect.width;
+        this.height = rect.height;
         this.center = {
           x: (this.left + this.right) / 2,
           y: (this.top + this.bottom) / 2
         };
       }
 
-      setScaleAngle(scale, angle){
-        this.scale = scale;
-        this.angle = angle;
+      static fromElement(el) {
+        return new Rectangle(el.getBoundingClientRect());
       }
-
-      static fromElement(el){
-        let r = el.getBoundingClientRect();
-        return new Rectangle(r.left, r.right, r.top, r.bottom, r.width, r.height);
+    }
+    
+    class TransformableRectangle extends Rectangle {
+      constructor(rect, angle, sx, sy) {
+        super(rect);
+        this.scale = {
+          x: sx / Math.abs(sx),
+          y: sy / Math.abs(sy)
+        };
+        this.angle = angle;
       }
     }
 
