@@ -102,10 +102,7 @@
       _selectShapes() {
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          let center = {
-            x: shape.rect.left + shape.rect.width / 2,
-            y: shape.rect.top + shape.rect.height / 2
-          };
+          let center = shape.rect.center;
           let index = this.selected.indexOf(shape.id);
           if (center.x >= this.rect.left &&
             center.x <= this.rect.right &&

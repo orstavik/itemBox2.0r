@@ -263,10 +263,7 @@
           if (!this.multi) {
             matrix.a += a0 - a;
           } else {
-            let center = {
-              x: rect.left + rect.width / 2,
-              y: rect.top + rect.height / 2
-            };
+            let center = rect.center;
             let rx = center.x - this.rect.center.x;
             let ry = center.y - this.rect.center.y;
             let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
@@ -317,10 +314,11 @@
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
           if (this.multi) {
-            let center = {
-              x: rect.left + rect.width / 2,
-              y: rect.top + rect.height / 2
-            };
+            let center = rect.center;
+//            let center = {
+//              x: rect.left + rect.width / 2,
+//              y: rect.top + rect.height / 2
+//            };
             let bx, by;
             if (dir.x * this.rect.scale.x == -1)
               bx = center.x - this.rect.right;

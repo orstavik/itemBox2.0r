@@ -45,10 +45,14 @@
         this.addEventListener("shape-location", this._shapeLocation.bind(this));
       }
 
+      //todo here we have a State object that is an array of the selected id's
+      //todo a) this selected state might be kept with the rest of the data of the element, such as widdth and height
+      //todo b) but it might also be kept in a separate list of just the id's
+      //todo I think plan a) is best..
       _shapeLocation(e) {
         this.set("shapesRegistry." + e.detail.id, e.detail);
         if (e.detail.selected) {
-          this.set("selectedRegistry." + e.detail.id, e.detail);         //todo why is this done twice??
+          this.set("selectedRegistry." + e.detail.id, e.detail);
         } else {
           delete this.selectedRegistry[e.detail.id];
         }
