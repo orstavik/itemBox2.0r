@@ -92,7 +92,10 @@
             type: Object,
             observer: "shapesChanged"
           },
-          rect: Object,
+          rect: {
+            type: Object,
+            computed: "_makeRectangle(shapes)"
+          },
           multi: {
             type: Boolean,
             computed: "_isMulti(shapes)",
@@ -115,7 +118,6 @@
       }
 
       shapesChanged() {
-        this.rect = this._makeRectangle(this.shapes);
         this._applyStyle(this.rect);
       }
 
