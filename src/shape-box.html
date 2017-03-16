@@ -104,39 +104,29 @@
       }
 
       newShapes(shapes) {
-        this.set("shapes", shapes);
-        this._checkState(shapes);
+        this.set("shapes", shapes);                    //todo pass shapes in via bindings instead?? makes it easier to get them from the state in the future??
+        this._checkState(shapes);                      //todo if we do that, then this empty and multi can be set from the outside..
         if (!this.empty) {
-          this.rect = this._checkBounds(shapes);
+          this.rect = this._checkBounds(shapes);       //todo apply the test for empty inside the _checkBounds
         }
-        this._applyStyle(this.rect);
+        this._applyStyle(this.rect);                   //todo maybe this rect is not something we should store, but get all the time when we use it??
       }
 
       _checkState(shapes) {
-        let i = 0;
-        for (let key in shapes) {
-          i++;
-        }
-        if (i == 0) {
-          this.empty = true;
-        } else if (i == 1) {
-          this.empty = false;
-          this.multi = false;
-        } else {
-          this.empty = false;
-          this.multi = true;
-        }
+        const l = Object.keys(shapes).length;
+        this.empty = l == 0;
+        this.multi = l > 1;
       }
 
-      _checkBounds(shapes) {
+      _checkBounds(shapes) {      //todo rename to _makeRectangle     //todo which then might be a computed property
         let left, top, right, bottom, width, height, scale, center, angle;
         if (this.multi) {
-          if (this.$.rotator.hasAttribute("active")) { // BAD CODE. REFACTOR NEED!
+          if (this.$.rotator.hasAttribute("active")) { // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
             return this.rect;
           } else {
             for (let key in shapes) {
-              var rect = shapes[key].rect;
-              var matrix = shapes[key].matrix;
+              var rect = shapes[key].rect;          //todo this is trouble..
+              var matrix = shapes[key].matrix;      //todo this is trouble..
               if (!left || left > rect.left)
                 left = rect.left;
               if (!top || top > rect.top)
@@ -145,9 +135,9 @@
                 right = rect.right;
               if (!bottom || bottom < rect.bottom)
                 bottom = rect.bottom;
-              scale = {
+              scale = {                                            //todo hm.. is this correct?? are we just using the last scale from the last shape??
                 x: matrix.sx / Math.abs(matrix.sx),
-                y: matrix.sy / Math.abs(matrix.sy)
+                y: matrix.sy / Math.abs(matrix.sy)                  //todo are all the shapes scaled equally??
               };
             }
             width = right - left;
@@ -224,37 +214,26 @@
         switch (e.detail.state) {
           case 'start':
             e.currentTarget.setAttribute("active", "");
-            this._pointerMove(e.currentTarget, e.detail)
-            break;
+            return this._transformShapes(e.currentTarget, e.detail);
           case 'track':
-            this._pointerMove(e.currentTarget, e.detail);
-            break;
+            return this._transformShapes(e.currentTarget, e.detail);
           case 'end':
             e.currentTarget.removeAttribute("active");
-            this.rect = this._checkBounds(this.shapes);
-            this._applyStyle(this.rect);
-            break;
+            this.rect = this._checkBounds(this.shapes);          //todo this might be done automatically if the shapes are coming in as binding
+            this._applyStyle(this.rect);                         //todo this one too
         }
       }
 
-      _pointerMove(target, e) {
-        if (e.ddx == undefined || e.ddy == undefined) {
-          var ddx = e.dx;
-          var ddy = e.dy;
-        } else {
-          var ddx = e.ddx;
-          var ddy = e.ddy;
-        }
+      _transformShapes(target, e) {
+        const ddx = e.ddx != undefined ? e.ddx : e.dx;
+        const ddy = e.ddy != undefined ? e.ddy : e.dy;
         switch (target.getAttribute("type")) {
           case "grabber":
-            this._moveShapes(ddx, ddy);
-            break;
+            return this._moveShapes(ddx, ddy);
           case "point":
-            this._scaleShapes(target.id, ddx, ddy, e.x, e.y);
-            break;
+            return this._scaleShapes(target.id, ddx, ddy, e.x, e.y);
           case "rotator":
-            this._rotateShapes(e.x, e.y, ddx, ddy);
-            break;
+            return this._rotateShapes(e.x, e.y, ddx, ddy);
         }
       }
 
@@ -274,10 +253,10 @@
         dx = x - this.rect.center.x;
         dy = y - this.rect.center.y;
         let a = Math.atan2(dx, dy);
-        this.startPoint = {
+        this.startPoint = {                                            //todo unused
           x: x,
           y: y
-        }
+        };
         for (let key in this.shapes) {
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
@@ -287,7 +266,7 @@
             let center = {
               x: rect.left + rect.width / 2,
               y: rect.top + rect.height / 2
-            }
+            };
             let rx = center.x - this.rect.center.x;
             let ry = center.y - this.rect.center.y;
             let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
@@ -333,6 +312,7 @@
         }
         let nx = ax * Math.cos(this.rect.angle) - ay * Math.sin(this.rect.angle);
         let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
+        //todo above is the course of action, below is the action applied to the object??
         for (let key in this.shapes) {
           let matrix = this.shapes[key].matrix;
           let rect = this.shapes[key].rect;
@@ -340,7 +320,7 @@
             let center = {
               x: rect.left + rect.width / 2,
               y: rect.top + rect.height / 2
-            }
+            };
             let bx, by;
             if (dir.x * this.rect.scale.x == -1)
               bx = center.x - this.rect.right;

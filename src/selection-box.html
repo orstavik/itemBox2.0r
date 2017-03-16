@@ -58,7 +58,7 @@
       _down(e) {
         e.preventDefault();
         this.selected = [];
-        this.dispatchEvent(new CustomEvent("deselection", {composed: true, bubbles: true}));
+        this._fire("deselection");         //deselect-all
         this.start = {
           x: e.detail.x,
           y: e.detail.y
@@ -105,7 +105,7 @@
           let center = {
             x: shape.rect.left + shape.rect.width / 2,
             y: shape.rect.top + shape.rect.height / 2
-          }
+          };
           let index = this.selected.indexOf(shape.id);
           if (center.x >= this.rect.left &&
             center.x <= this.rect.right &&
@@ -113,23 +113,18 @@
             center.y <= this.rect.bottom) {
             if (index == -1) {
               this.selected.push(shape.id);
-              this.dispatchEvent(new CustomEvent("new-box-selection", {
-                composed: true,
-                bubbles: true,
-                detail: this.selected
-              }));
+              this._fire("new-box-selection", this.selected);
             }
           } else {
             if (index !== -1) {
               this.selected.splice(index, 1);
-              this.dispatchEvent(new CustomEvent("new-box-selection", {
-                composed: true,
-                bubbles: true,
-                detail: this.selected
-              }));
+              this._fire("new-box-selection", this.selected);
             }
           }
         }
+      }
+      _fire(name, detail){
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
     customElements.define(SelectionBox.is, SelectionBox);

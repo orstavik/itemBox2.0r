@@ -48,7 +48,7 @@
       _shapeLocation(e) {
         this.set("shapesRegistry." + e.detail.id, e.detail);
         if (e.detail.selected) {
-          this.set("selectedRegistry." + e.detail.id, e.detail);
+          this.set("selectedRegistry." + e.detail.id, e.detail);         //todo why is this done twice??
         } else {
           delete this.selectedRegistry[e.detail.id];
         }

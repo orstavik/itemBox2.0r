@@ -38,6 +38,7 @@
   <script>
 
     class ShapeObject extends Polymer.GestureEventListeners(Polymer.Element) {
+
       static get is() {
         return "shape-object";
       }
@@ -52,15 +53,7 @@
           },
           matrixData: {
             type: Object,
-            value: function () {
-              return {
-                x: Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
-                y: Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
-                sx: 1,
-                sy: 1,
-                a: Math.random() * Math.PI * 2
-              }
-            }
+            value: ShapeObject._randomMatrixData              //todo MatrixData as an object??
           },
           rect: Object
         }
@@ -75,19 +68,16 @@
 
       _notifyUI() {
         this.rect = this.$.body.getBoundingClientRect();
-        this.dispatchEvent(new CustomEvent("shape-location", {
-          composed: true,
-          bubbles: true,
-          detail: {
-            id: this.id,
-            rect: this.rect,
-            matrix: this.matrixData,
-            selected: this.selected
-          }
-        }));
+        let info = {
+          id: this.id,
+          rect: this.rect,                               //todo this.rect I am guessing is being accessed from outside??
+          matrix: this.matrixData,
+          selected: this.selected
+        };
+        this._fire("shape-location", info);
       }
 
-      _computeRect(m) {
+      _computeRect(m) {                               //todo unused method??
         let rect = this.$.body.getBoundingClientRect();
         if (m.a % Math.PI === 0) {
           var w = rect.width;
@@ -116,30 +106,18 @@
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
           this.selectionTimer = setTimeout(function () {
-            this.dispatchEvent(new CustomEvent("new-selection", {
-              composed: true,
-              bubbles: true,
-              detail: {shape: this.id, multi: true}
-            }));
+            this._fire("new-selection", {shape: this.id, multi: true});
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else
-          this.dispatchEvent(new CustomEvent("new-selection", {
-            composed: true,
-            bubbles: true,
-            detail: {shape: this.id, multi: false}
-          }));
+          this._fire("new-selection", {shape: this.id, multi: false});
       }
 
       _up(e) {
         e.stopPropagation();
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
-          this.dispatchEvent(new CustomEvent("new-selection", {
-            composed: true,
-            bubbles: true,
-            detail: {shape: this.id, multi: false}
-          }));
+          this._fire("new-selection", {shape: this.id, multi: false});
         }
       }
 
@@ -149,7 +127,7 @@
         this._notifyUI();
       }
 
-      _computeMatrix(m) {
+      _computeMatrix(m) {                                  //todo make this static so it can be moved into a Matrix object
         let matrix = [
           m.sx * Math.cos(m.a),
           m.sx * Math.sin(m.a),
@@ -159,6 +137,20 @@
           m.y
         ];
         return "matrix(" + matrix.join(",") + ")";
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      static _randomMatrixData(){
+        return {
+          x: Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
+          y: Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
+          sx: 1,
+          sy: 1,
+          a: Math.random() * Math.PI * 2
+        }
       }
     }
     customElements.define(ShapeObject.is, ShapeObject);
