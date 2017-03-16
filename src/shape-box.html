@@ -88,34 +88,35 @@
 
       static get properties() {
         return {
-          shapes: Object,
+          shapes: {
+            type: Object,
+            observer: "shapesChanged"
+          },
           rect: Object,
           multi: {
             type: Boolean,
-            value: false,
+            computed: "_isMulti(shapes)",
             reflectToAttribute: true
           },
           empty: {
             type: Boolean,
-            value: true,
+            computed: "_isEmpty(shapes)",
             reflectToAttribute: true
           }
         }
       }
 
-      newShapes(shapes) {
-        this.set("shapes", shapes);                    //todo pass shapes in via bindings instead?? makes it easier to get them from the state in the future??
-        this._checkState(shapes);                      //todo if we do that, then this empty and multi can be set from the outside..
-        if (!this.empty) {
-          this.rect = this._checkBounds(shapes);       //todo apply the test for empty inside the _checkBounds
-        }
-        this._applyStyle(this.rect);                   //todo maybe this rect is not something we should store, but get all the time when we use it??
+      _isEmpty(shapes) {
+        return !shapes || !Object.keys(shapes).length;
       }
 
-      _checkState(shapes) {
-        const l = Object.keys(shapes).length;
-        this.empty = l == 0;
-        this.multi = l > 1;
+      _isMulti(shapes) {
+        return shapes && Object.keys(shapes).length > 1;
+      }
+
+      shapesChanged() {
+        this.rect = this._makeRectangle(this.shapes);
+        this._applyStyle(this.rect);
       }
 
       static _getFirstShape(shapes) {
@@ -123,8 +124,10 @@
           return shapes[key];
       }
 
-      _checkBounds(shapes) {      //todo rename to _makeRectangle     //todo which then might be a computed property
-        if (this.multi) {
+      _makeRectangle(shapes) {
+        if (this._isEmpty(shapes))
+          return undefined;
+        if (this._isMulti(shapes)) {
           if (this.$.rotator.hasAttribute("active")) // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
             return this.rect;
 
@@ -137,7 +140,7 @@
       }
 
       _applyStyle(r) {
-        if (this.empty) {
+        if (!r) {
           this.$.boxBody.style.cssText = "";
         } else {
           this.$.boxBody.style.width = r.width + "px";
@@ -160,7 +163,7 @@
             return this._transformShapes(e.currentTarget, e.detail);
           case 'end':
             e.currentTarget.removeAttribute("active");
-            this.rect = this._checkBounds(this.shapes);          //todo this might be done automatically if the shapes are coming in as binding
+            this.rect = this._makeRectangle(this.shapes);          //todo this might be done automatically if the shapes are coming in as binding
             this._applyStyle(this.rect);                         //todo this one too
         }
       }

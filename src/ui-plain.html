@@ -12,7 +12,8 @@
     <selection-box id="selection"
                    shapes="[[shapesRegistry]]"></selection-box>
     <slot></slot>
-    <shape-box id="shapeBox"></shape-box>
+    <shape-box id="shapeBox"
+               shapes="[[selectedRegistry]]"></shape-box>
 
   </template>
 
@@ -52,11 +53,11 @@
       _shapeLocation(e) {
         this.set("shapesRegistry." + e.detail.id, e.detail);
         if (e.detail.selected) {
-          this.set("selectedRegistry." + e.detail.id, e.detail);
+          this.selectedRegistry[e.detail.id] = e.detail;
         } else {
           delete this.selectedRegistry[e.detail.id];
         }
-        this.$.shapeBox.newShapes(this.selectedRegistry);
+        this.set("selectedRegistry", Object.assign({}, this.selectedRegistry));
       }
     }
     customElements.define(UiPlain.is, UiPlain);
