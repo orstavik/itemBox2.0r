@@ -20,7 +20,7 @@
       }
     </style>
 
-    <div id="body"></div>
+    <div id="body" style$="[[_style]]"></div>
 
   </template>
 
@@ -40,11 +40,10 @@
               return []
             }
           },
-          rect: {
-            type: Object,
-            value: function () {
-              return {}
-            }
+          rect: Object,
+          _style: {
+            type: String,
+            computed: "_makeStyle(rect)"
           }
         }
       }
@@ -69,34 +68,36 @@
         e.preventDefault();
         if (e.detail.state == "end") {
           this.$.body.classList.remove("active");
+          return;
           // this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
         }
-        else {
-          this.end = {
-            x: e.detail.x,
-            y: e.detail.y
-          };
-          this._calcRect();
-          this._selectShapes();
-          this.$.body.classList.add("active");
-        }
+
+        this.end = {
+          x: e.detail.x,
+          y: e.detail.y
+        };
+        this.set("rect", SelectionBox.makeRectangleFromTwoPoints(this.start, this.end));
+        this._selectShapes();
+        this.$.body.classList.add("active");
       }
 
-      _calcRect() {
-        this.rect.left = this.start.x < this.end.x ? this.start.x : this.end.x;
-        this.rect.top = this.start.y < this.end.y ? this.start.y : this.end.y;
-        this.rect.right = this.start.x > this.end.x ? this.start.x : this.end.x;
-        this.rect.bottom = this.start.y > this.end.y ? this.start.y : this.end.y;
-        this.rect.width = Math.abs(this.start.x - this.end.x);
-        this.rect.height = Math.abs(this.start.y - this.end.y);
-        this._makeBox();
+      static makeRectangleFromTwoPoints(start, end) {
+        let rect = {};
+        rect.left = start.x < end.x ? start.x : end.x;
+        rect.top = start.y < end.y ? start.y : end.y;
+        rect.right = start.x > end.x ? start.x : end.x;
+        rect.bottom = start.y > end.y ? start.y : end.y;
+        rect.width = Math.abs(start.x - end.x);
+        rect.height = Math.abs(start.y - end.y);
+        return rect;
       }
 
-      _makeBox() {
-        let r = this.rect;
-        this.$.body.style.transform = "translate(" + r.left + "px," + r.top + "px)";
-        this.$.body.style.width = r.width + "px";
-        this.$.body.style.height = r.height + "px";
+      _makeStyle(r) {
+        if (!r)
+          return "";
+        return "transform: translate(" + r.left + "px," + r.top + "px); " +
+               "width: " + r.width + "px; " +
+               "height: " + r.height + "px;";
       }
 
       _selectShapes() {
@@ -120,7 +121,8 @@
           }
         }
       }
-      _fire(name, detail){
+
+      _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
