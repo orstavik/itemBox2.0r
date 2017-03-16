@@ -8,15 +8,15 @@
         position: absolute;
         top: 0;
       }
-      #body {
+      :host([active]) #body {
         display: block;
+      }
+      #body {
+        display: none;
         width: 0;
         height: 0;
         box-sizing: border-box;
         border: 1px dashed crimson;
-      }
-      #body:not(.active) {
-        display: none;
       }
     </style>
 
@@ -34,16 +34,18 @@
       static get properties() {
         return {
           shapes: Object,
-          selected: {
-            type: Array,
-            value: function () {
-              return []
-            }
+          rect: {
+            type: Object,
+            observer: "_rectChanged"
           },
-          rect: Object,
           _style: {
             type: String,
             computed: "_makeStyle(rect)"
+          } ,
+          active: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
           }
         }
       }
@@ -56,70 +58,35 @@
 
       _down(e) {
         e.preventDefault();
-        this.selected = [];
-        this._fire("deselection");         //deselect-all
-        this.start = {
-          x: e.detail.x,
-          y: e.detail.y
-        }
+        this._fire("deselect-all");
+        this.start = e.detail;
       }
 
       _track(e) {
         e.preventDefault();
-        if (e.detail.state == "end") {
-          this.$.body.classList.remove("active");
-          return;
-          // this.dispatchEvent(new CustomEvent("new-box-selection", { composed: true,	bubbles: true, detail: this.selected}));
-        }
+        if (e.detail.state == "end")
+          return this.set("active", false);
 
-        this.end = {
-          x: e.detail.x,
-          y: e.detail.y
-        };
-        this.set("rect", SelectionBox.makeRectangleFromTwoPoints(this.start, this.end));
-        this._selectShapes();
-        this.$.body.classList.add("active");
-      }
-
-      static makeRectangleFromTwoPoints(start, end) {
-        let rect = {};
-        rect.left = start.x < end.x ? start.x : end.x;
-        rect.top = start.y < end.y ? start.y : end.y;
-        rect.right = start.x > end.x ? start.x : end.x;
-        rect.bottom = start.y > end.y ? start.y : end.y;
-        rect.width = Math.abs(start.x - end.x);
-        rect.height = Math.abs(start.y - end.y);
-        return rect;
+        this.set("rect", Rectangle.makeFromTwoPoints(this.start, e.detail));
+        this.set("active", true);
       }
 
       _makeStyle(r) {
         if (!r)
           return "";
         return "transform: translate(" + r.left + "px," + r.top + "px); " +
-               "width: " + r.width + "px; " +
-               "height: " + r.height + "px;";
+          "width: " + r.width + "px; " +
+          "height: " + r.height + "px;";
       }
 
-      _selectShapes() {
+      _rectChanged() {
+        let selected = {};
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          let center = shape.rect.center;
-          let index = this.selected.indexOf(shape.id);
-          if (center.x >= this.rect.left &&
-            center.x <= this.rect.right &&
-            center.y >= this.rect.top &&
-            center.y <= this.rect.bottom) {
-            if (index == -1) {
-              this.selected.push(shape.id);
-              this._fire("new-box-selection", this.selected);
-            }
-          } else {
-            if (index !== -1) {
-              this.selected.splice(index, 1);
-              this._fire("new-box-selection", this.selected);
-            }
-          }
+          if (this.rect.pointIsWithinBorders(shape.rect.center))
+            selected[shape.id] = shape;
         }
+        this._fire("new-box-selection", selected);
       }
 
       _fire(name, detail) {

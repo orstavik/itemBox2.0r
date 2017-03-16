@@ -67,6 +67,21 @@
         height = bottom - top;
         return new Rectangle({left: left, top: top, right: right, bottom: bottom, width: width, height: height});
       }
+
+      static makeFromTwoPoints(a, b) {
+        return new Rectangle({
+          left: a.x < b.x ? a.x : b.x,
+          top: a.y < b.y ? a.y : b.y,
+          right: a.x > b.x ? a.x : b.x,
+          bottom: a.y > b.y ? a.y : b.y,
+          width: Math.abs(a.x - b.x),
+          height: Math.abs(a.y - b.y),
+        });
+      }
+
+      pointIsWithinBorders(p) {
+        return p.x >= this.left && p.x <= this.right && p.y >= this.top && p.y <= this.bottom;
+      }
     }
 
     class TransformableRectangle extends Rectangle {

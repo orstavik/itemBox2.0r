@@ -40,7 +40,7 @@
         window.addEventListener("keydown", function (e) {
           if (e.key === "Shift")
             this.shift = true;
-        }.bind(this))
+        }.bind(this));
         window.addEventListener("keyup", function (e) {
           if (e.key === "Shift")
             this.shift = false;
@@ -70,10 +70,11 @@
 
       boxSelect(selected) {
         this.deselect();
-        selected.forEach(function (id) {
-          let node = this.shadowRoot.querySelector("#" + id);
+        for (let key in selected) {
+          let shape = selected[key];
+          let node = this.shadowRoot.querySelector("#" + shape.id);    //todo this is bad
           node.selected = true;
-        }.bind(this))
+        }
       }
     }
     customElements.define(ShapePlain.is, ShapePlain);
