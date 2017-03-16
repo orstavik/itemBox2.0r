@@ -121,25 +121,16 @@
       _checkBounds(shapes) {      //todo rename to _makeRectangle     //todo which then might be a computed property
         let left, top, right, bottom, width, height, scale, center, angle;
         if (this.multi) {
-          if (this.$.rotator.hasAttribute("active")) { // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
+          if (this.$.rotator.hasAttribute("active")) // BAD CODE. REFACTOR NEED!   //todo we should keep this state info in this object... maybe.. both..
             return this.rect;
-          } else {
-            for (let key in shapes) {
-              var rect = shapes[key].rect;          //todo this is trouble..
-              var matrix = shapes[key].matrix;      //todo this is trouble..
-              if (!left || left > rect.left)
-                left = rect.left;
-              if (!top || top > rect.top)
-                top = rect.top;
-              if (!right || right < rect.right)
-                right = rect.right;
-              if (!bottom || bottom < rect.bottom)
-                bottom = rect.bottom;
-            }
-            width = right - left;
-            height = bottom - top;
-            angle = 0;
-          }
+
+          for (let key in shapes)
+            var matrix = shapes[key].matrix;
+
+          let rects = Object.keys(shapes).map(key => shapes[key].rect);
+          var _rect = ShapeBox.computeBoxOfMany(rects);
+          return new TransformableRectangle(_rect, 0, matrix.sx, matrix.sy);
+
         } else {
           for (let key in shapes) {
             var rect = shapes[key].rect;
@@ -168,6 +159,23 @@
 
         let res = new Rectangle({left: left, right: right, top: top, bottom: bottom, width: width, height: height});
         return new TransformableRectangle(res, angle, matrix.sx, matrix.sy);
+      }
+
+      static computeBoxOfMany(rects) {
+        let left, top, right, bottom, width, height;
+        for (let rect of rects) {
+          if (!left || left > rect.left)
+            left = rect.left;
+          if (!top || top > rect.top)
+            top = rect.top;
+          if (!right || right < rect.right)
+            right = rect.right;
+          if (!bottom || bottom < rect.bottom)
+            bottom = rect.bottom;
+        }
+        width = right - left;
+        height = bottom - top;
+        return {left: left, top: top, right: right, bottom: bottom, width: width, height: height};
       }
 
       _applyStyle(r) {

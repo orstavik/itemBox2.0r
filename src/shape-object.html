@@ -50,10 +50,6 @@
           y: (this.top + this.bottom) / 2
         };
       }
-
-      static fromElement(el) {
-        return new Rectangle(el.getBoundingClientRect());
-      }
     }
     
     class TransformableRectangle extends Rectangle {
@@ -97,7 +93,7 @@
       }
 
       _notifyUI() {
-        this.rect = Rectangle.fromElement(this.$.body);
+        this.rect = new Rectangle(this.$.body.getBoundingClientRect());
         let info = {
           id: this.id,
           rect: this.rect,
