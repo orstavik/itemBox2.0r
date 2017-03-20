@@ -61,9 +61,8 @@
 
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
-            if (mutation.attributeName == "style") {
+            if (mutation.attributeName == "style")
               this._notifyUI();
-            }
           }
         }.bind(this));
         styleChangedObserver.observe(this.$.body, {attributes: true});
@@ -75,12 +74,10 @@
       }
 
       _notifyUI() {
-        this.rect = new Rectangle(this.$.body.getBoundingClientRect());
-        let info = {
+        this._fire("shape-location", {
           key: this.id,
-          rect: this.rect,
-        };
-        this._fire("shape-location", info);
+          rect: new Rectangle(this.$.body.getBoundingClientRect()),
+        });
       }
 
       _fire(name, detail) {
