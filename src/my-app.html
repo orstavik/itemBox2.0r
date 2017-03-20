@@ -1,7 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <link rel="import" href="ui-plain.html">
-<link rel="import" href="shape-plain.html">
 
 <dom-module id="my-app">
   <template>
@@ -13,10 +12,8 @@
               on-change-shapes="_changeShapes"
               on-deselect-all="_deselect"
               on-select="_selectSingle"
-              on-new-box-selection="_select">
-      <shape-plain id="shapePlain" shapes="[[shapes]]"
               on-shape-location="_registerUIshape"
-      ></shape-plain>
+              on-new-box-selection="_select">
     </ui-plain>
 
   </template>
