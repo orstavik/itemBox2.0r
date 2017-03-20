@@ -95,6 +95,7 @@
             type: Object,
             computed: "_makeSelectedShapes(allShapes)"
           },
+          scale: Number, // this one we need here to fix transform bugs
           rect: {
             type: Object,
             computed: "_makeRectangle(shapes, action)"
@@ -120,7 +121,7 @@
           }
         }
       }
-      
+
       _makeSelectedShapes(allShapes){
         const selected ={};
         for (let key in allShapes) {

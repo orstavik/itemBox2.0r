@@ -11,11 +11,9 @@
       }
     </style>
 
+    <shape-box id="shapeBox" all-shapes="[[shapes]]" scale="[[scale]]"></shape-box>
     <selection-box id="selection" shapes="[[shapes]]"></selection-box>
-    <shape-box id="shapeBox" all-shapes="[[shapes]]"></shape-box>
-    <space-camera>
-      <shape-plain id="shapePlain" shapes="[[shapes]]"></shape-plain>
-    </space-camera>
+    <shape-plain id="shapePlain" shapes="[[shapes]]" scale="{{scale}}"></shape-plain>
 
   </template>
 

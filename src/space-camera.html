@@ -1,10 +1,15 @@
 <dom-module id="space-camera">
   <template>
     <style>
-      #host {
+      :host {
+        /*display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
         position: absolute;
         top: 0;
-        left: 0;
+        left: 0;*/
       }
     </style>
 
@@ -24,11 +29,14 @@
             value: function() {
               return {
                 x: 0,
-                y: 0,
-                s: 1,
-                a: 0
+                y: 0
               }
             }
+          },
+          scale: {
+            type: Number,
+            value: 1,
+            notify: true
           },
           buffer: {
             type: Object,
@@ -52,7 +60,7 @@
         let c = this.coordinates;
         c.x += ed.ddx;
         c.y += ed.ddy;
-        this._changeViewport(c);
+        this._changeViewport(c, this.scale);
       }
 
       checkTaps(e) {
@@ -85,23 +93,16 @@
 
       _zoomViewport(ds,sx,sy) {
         let c = this.coordinates;
-        c.s *= ds;
+        this.scale *= ds;
         let ex = sx-window.innerWidth/2;
         let ey = sy-window.innerHeight/2;
         c.x += (ex-c.x)*(1-ds);
         c.y += (ey-c.y)*(1-ds);
-        this._changeViewport(c);
+        this._changeViewport(c, this.scale);
       }
 
-      _changeViewport(c) {
-        let matrix = [
-          c.s * Math.cos(c.a),
-          c.s * Math.sin(c.a),
-          c.s * -Math.sin(c.a),
-          c.s * Math.cos(c.a),
-          c.x,
-          c.y
-        ];
+      _changeViewport(c, s) {
+        let matrix = [s,0,0,s,c.x,c.y];
         this.style.transform = "matrix(" + matrix.join(",") + ")";
       }
     }
