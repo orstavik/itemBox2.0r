@@ -44,10 +44,12 @@ class Rectangle {
     return p.x >= this.left && p.x <= this.right && p.y >= this.top && p.y <= this.bottom;
   }
 
-  centerDistance(A){
+  calculateRotationMovement(satelite, a) {
+    let distX = this.center.x - satelite.x;
+    let distY = this.center.y - satelite.y;
     return {
-      x: this.center.x - A.center.x,
-      y: this.center.y - A.center.y
+      x: distX * Math.cos(a) - distY * Math.sin(a) - distX,
+      y: distX * Math.sin(a) + distY * Math.cos(a) - distY
     };
   }
 }

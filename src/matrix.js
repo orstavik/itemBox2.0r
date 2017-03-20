@@ -32,22 +32,28 @@ class MatrixData {
     return new MatrixData(this.x, this.y, this.sx, this.sy, this.a);
   }
 
-  move(x,y){
+  move(x, y) {
     let m = this.clone();
-    m.x+=x;
-    m.y+=y;
+    m.x += x;
+    m.y += y;
     return m;
   }
 
-  rotate(a0, a, rx, ry){
+  rotate(a, x, y) {
     let m = this.clone();
-    if (rx || ry){
-      let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
-      let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
-      m.x += nx - rx;
-      m.y += ny - ry;
-    }
-    m.a += a0 - a;
+    m.x += x;
+    m.y += y;
+    m.a += a;
     return m;
   }
+
+  scale(x, y, sx, sy) {
+    let m = this.clone();
+    m.x += x;
+    m.y += y;
+    m.sx *= sx;
+    m.sy *= sy;
+    return m;
+  }
+
 }
