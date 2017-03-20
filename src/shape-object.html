@@ -45,12 +45,7 @@
 
       static get properties() {
         return {
-          selected: {
-            type: Boolean,
-            value: false,
-            observer: "_notifyUI",
-            reflectToAttribute: true
-          },
+          selected: Boolean,
           matrixData: Object,
           _style: {
             type: String,
@@ -110,11 +105,11 @@
         }
       }
 
-      update(m) {
-        this.set("matrixData", m.clone());
-        this._notifyUI();
-      }
-
+//      update(m) {
+//        this.set("matrixData", m.clone());
+//        this._notifyUI();
+//      }
+//
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }

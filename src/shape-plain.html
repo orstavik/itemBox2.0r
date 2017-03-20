@@ -13,7 +13,7 @@
     </style>
 
     <template is="dom-repeat" items="[[shapesArray]]">
-      <shape-object id$="[[item.key]]" matrix-data="[[item.value.matrix]]" on-new-selection="_select"></shape-object>
+      <shape-object id$="[[item.key]]" selected$="[[item.value.selected]]" matrix-data="[[item.value.matrix]]" on-new-selection="_select"></shape-object>
     </template>
 
   </template>

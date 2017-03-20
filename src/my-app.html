@@ -73,7 +73,7 @@
         super();
         this.shapes = {};
         for (let i = 0; i < 10; i++)
-          this.shapes["shape" + i] = {matrix: MatrixData.random()};
+          this.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
       }
 
       _changeShapes(e) {
