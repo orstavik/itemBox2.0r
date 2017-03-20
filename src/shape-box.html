@@ -187,23 +187,10 @@
         }
       }
 
-      //TODO
-      //TODO make these three methods return the result without mutating the shapes.
-      //TODO then merge the previous shapes in my-app with the changes coming from here
-      //TODO and then pass those new "shapes" down into the app.
-      //TODO To do this, we should make a new Matrix Object that has immutable methods.
-      //TODO and also make sure that shapes has immutable methods if we need. maybe array.slice()
-      //TODO or Object.assign({}, ..) is enough.
-
       _moveShapes(x, y) {
         let matrices = {};
-        for (let key in this.shapes) {
-//          let m = Object.assign({}, this.shapes[key].matrix);
-          let m = this.shapes[key].matrix.clone();
-          matrices[key] = {matrix: m};
-          m.x += x;                                     //mutation
-          m.y += y;                                     //mutation
-        }
+        for (let key in this.shapes)
+          matrices[key] = {matrix: this.shapes[key].matrix.move(x,y)};
         this._changeShapes(matrices);
       }
 
@@ -216,12 +203,11 @@
         let a = Math.atan2(dx, dy);
         let matrices = {};
         for (let key in this.shapes) {
-//          let m = Object.assign({}, this.shapes[key].matrix);
           let m = this.shapes[key].matrix.clone();
           matrices[key] = {matrix: m};
           let rect = this.shapes[key].rect;
           if (!this.multi) {
-            m.a += a0 - a;            //mutation
+            m.a += a0 - a;             
           } else {
             let center = rect.center;
             let rx = center.x - this.rect.center.x;
@@ -229,9 +215,9 @@
             let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
             let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
 
-            m.x += nx - rx;           //mutation
-            m.y += ny - ry;           //mutation
-            m.a += a0 - a;            //mutation
+            m.x += nx - rx;            
+            m.y += ny - ry;            
+            m.a += a0 - a;             
           }
         }
         if (this.multi)
@@ -241,6 +227,43 @@
       }
 
       _scaleShapes(id, dx, dy) {
+        var __ret = this._calculateScale(dx, dy, id);
+        let dir = __ret.dir;
+        let max = __ret.max;
+        let may = __ret.may;
+        let nx = __ret.nx;
+        let ny = __ret.ny;
+        //todo above is the course of action, below is the action applied to the object??
+        let matrices = {};
+        for (let key in this.shapes) {
+          let m = this.shapes[key].matrix.clone();
+          matrices[key] = {matrix: m};
+          let rect = this.shapes[key].rect;
+          if (this.multi) {
+            let center = rect.center;
+            let bx, by;
+            if (dir.x * this.rect.scale.x == -1)
+              bx = center.x - this.rect.right;
+            else
+              bx = center.x - this.rect.left;
+            if (dir.y * this.rect.scale.y == -1)
+              by = center.y - this.rect.bottom;
+            else
+              by = center.y - this.rect.top;
+            m.x += Math.abs(bx / this.rect.width) * nx;               
+            m.y += Math.abs(by / this.rect.height) * ny;              
+
+          } else {
+            m.x += nx / 2;                                            
+            m.y += ny / 2;                                            
+          }
+          m.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);    
+          m.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);  
+        }
+        this._changeShapes(matrices);
+      }
+
+      _calculateScale(dx, dy, id) {
         let dir = {x: 1, y: 1};
         let ax = dx * Math.cos(-this.rect.angle) - dy * Math.sin(-this.rect.angle);
         let ay = dx * Math.sin(-this.rect.angle) + dy * Math.cos(-this.rect.angle);
@@ -256,8 +279,8 @@
         }
         if (id == "top-left" || id == "top-right" || id == "bottom-right" || id == "bottom-left") {
           let prop = this.rect.height / this.rect.width;
-          may = max*prop*this.rect.scale.x*this.rect.scale.y;
-          ay = ax*prop*dir.x*dir.y*this.rect.scale.x*this.rect.scale.y;
+          may = max * prop * this.rect.scale.x * this.rect.scale.y;
+          ay = ax * prop * dir.x * dir.y * this.rect.scale.x * this.rect.scale.y;
         }
         else if (id == "left" || id == "right") {
           may = 0;
@@ -269,35 +292,7 @@
         }
         let nx = ax * Math.cos(this.rect.angle) - ay * Math.sin(this.rect.angle);
         let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
-        //todo above is the course of action, below is the action applied to the object??
-        let matrices = {};
-        for (let key in this.shapes) {
-//          let m = Object.assign({}, this.shapes[key].matrix);
-          let m = this.shapes[key].matrix.clone();
-          matrices[key] = {matrix: m};
-          let rect = this.shapes[key].rect;
-          if (this.multi) {
-            let center = rect.center;
-            let bx, by;
-            if (dir.x * this.rect.scale.x == -1)
-              bx = center.x - this.rect.right;
-            else
-              bx = center.x - this.rect.left;
-            if (dir.y * this.rect.scale.y == -1)
-              by = center.y - this.rect.bottom;
-            else
-              by = center.y - this.rect.top;
-            m.x += Math.abs(bx / this.rect.width) * nx;               //mutation
-            m.y += Math.abs(by / this.rect.height) * ny;              //mutation
-
-          } else {
-            m.x += nx / 2;                                            //mutation
-            m.y += ny / 2;                                            //mutation
-          }
-          m.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);    //mutation
-          m.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);  //mutation
-        }
-        this._changeShapes(matrices);
+        return {dir: dir, max: max, may: may, nx: nx, ny: ny};
       }
 
       _changeShapes(shapes) {
