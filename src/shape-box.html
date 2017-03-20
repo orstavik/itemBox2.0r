@@ -205,11 +205,15 @@
       //TODO or Object.assign({}, ..) is enough.
 
       _moveShapes(x, y) {
+        let matrices = {};
         for (let key in this.shapes) {
-          this.shapes[key].matrix.x += x;                                     //mutation
-          this.shapes[key].matrix.y += y;                                     //mutation
+//          let m = Object.assign({}, this.shapes[key].matrix);
+          let m = this.shapes[key].matrix.clone();
+          matrices[key] = {matrix: m};
+          m.x += x;                                     //mutation
+          m.y += y;                                     //mutation
         }
-        this._changeShapes(this.shapes);
+        this._changeShapes(matrices);
       }
 
       _rotateShapes(x, y, ddx, ddy) {
@@ -219,10 +223,14 @@
         dx = x - this.rect.center.x;
         dy = y - this.rect.center.y;
         let a = Math.atan2(dx, dy);
+        let matrices = {};
         for (let key in this.shapes) {
+//          let m = Object.assign({}, this.shapes[key].matrix);
+          let m = this.shapes[key].matrix.clone();
+          matrices[key] = {matrix: m};
           let rect = this.shapes[key].rect;
           if (!this.multi) {
-            this.shapes[key].matrix.a += a0 - a;            //mutation
+            m.a += a0 - a;            //mutation
           } else {
             let center = rect.center;
             let rx = center.x - this.rect.center.x;
@@ -230,15 +238,15 @@
             let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
             let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
 
-            this.shapes[key].matrix.x += nx - rx;           //mutation
-            this.shapes[key].matrix.y += ny - ry;           //mutation
-            this.shapes[key].matrix.a += a0 - a;            //mutation
+            m.x += nx - rx;           //mutation
+            m.y += ny - ry;           //mutation
+            m.a += a0 - a;            //mutation
           }
         }
         if (this.multi)
           this.rect.angle += a0 - a;
 
-        this._changeShapes(this.shapes);
+        this._changeShapes(matrices);
       }
 
       _scaleShapes(id, dx, dy) {
@@ -271,7 +279,11 @@
         let nx = ax * Math.cos(this.rect.angle) - ay * Math.sin(this.rect.angle);
         let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
         //todo above is the course of action, below is the action applied to the object??
+        let matrices = {};
         for (let key in this.shapes) {
+//          let m = Object.assign({}, this.shapes[key].matrix);
+          let m = this.shapes[key].matrix.clone();
+          matrices[key] = {matrix: m};
           let rect = this.shapes[key].rect;
           if (this.multi) {
             let center = rect.center;
@@ -284,17 +296,17 @@
               by = center.y - this.rect.bottom;
             else
               by = center.y - this.rect.top;
-            this.shapes[key].matrix.x += Math.abs(bx / this.rect.width) * nx;               //mutation
-            this.shapes[key].matrix.y += Math.abs(by / this.rect.height) * ny;              //mutation
+            m.x += Math.abs(bx / this.rect.width) * nx;               //mutation
+            m.y += Math.abs(by / this.rect.height) * ny;              //mutation
 
           } else {
-            this.shapes[key].matrix.x += nx / 2;                                            //mutation
-            this.shapes[key].matrix.y += ny / 2;                                            //mutation
+            m.x += nx / 2;                                            //mutation
+            m.y += ny / 2;                                            //mutation
           }
-          this.shapes[key].matrix.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);    //mutation
-          this.shapes[key].matrix.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);  //mutation
+          m.sx *= (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width);    //mutation
+          m.sy *= (this.rect.scale.y * this.rect.height + may) / (this.rect.scale.y * this.rect.height);  //mutation
         }
-        this._changeShapes(this.shapes);
+        this._changeShapes(matrices);
       }
 
       _changeShapes(shapes) {

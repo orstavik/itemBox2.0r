@@ -9,11 +9,9 @@
       }
     </style>
 
-    <selection-box id="selection"
-                   shapes="[[shapesRegistry]]"></selection-box>
+    <selection-box id="selection" shapes="[[shapes]]"></selection-box>
     <slot></slot>
-    <shape-box id="shapeBox"
-               shapes="[[selectedRegistry]]"></shape-box>
+    <shape-box id="shapeBox" shapes="[[selectedRegistry]]"></shape-box>
 
   </template>
 
@@ -26,34 +24,21 @@
 
       static get properties() {
         return {
-          shapesRegistry: {
-            type: Object,
-            value: function () {
-              return {}
-            }
-          },
+          shapes: Object,
           selectedRegistry: {
             type: Object,
-            value: function () {
-              return {}
-            }
+            computed: "_makeSelectedRegistry(shapes)"
           }
         }
       }
 
-      constructor() {
-        super();
-        this.addEventListener("shape-location", this._shapeLocation.bind(this));
-      }
-
-      _shapeLocation(e) {
-        this.set("shapesRegistry." + e.detail.id, e.detail);
-        if (e.detail.selected) {
-          this.selectedRegistry[e.detail.id] = e.detail;
-        } else {
-          delete this.selectedRegistry[e.detail.id];
+      _makeSelectedRegistry(shapes){
+        const res ={};
+        for (let key in shapes) {
+          if (shapes[key].selected)
+            res[key] = shapes[key];
         }
-        this.set("selectedRegistry", Object.assign({}, this.selectedRegistry));
+        return res;
       }
     }
     customElements.define(UiPlain.is, UiPlain);

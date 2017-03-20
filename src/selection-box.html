@@ -41,7 +41,7 @@
           _style: {
             type: String,
             computed: "_makeStyle(rect)"
-          } ,
+          },
           active: {
             type: Boolean,
             value: false,
@@ -83,8 +83,7 @@
         let selected = {};
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          if (this.rect.pointIsWithinBorders(shape.rect.center))
-            selected[shape.id] = shape;
+          selected[key] = {selected: this.rect.pointIsWithinBorders(shape.rect.center)};
         }
         this._fire("new-box-selection", selected);
       }

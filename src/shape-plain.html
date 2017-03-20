@@ -12,9 +12,14 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[shapes]]">
-      <!--<template is="dom-repeat" items="[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25,26,27,29,30,31,32,33,34,35,36,37,38,39]">-->
-      <shape-object id$="shape[[index]]" matrix-data="[[item]]" on-new-selection="_select"></shape-object>
+    <template is="dom-repeat" items="[[shapesArray]]">
+      <shape-object id$="[[item.key]]"
+                    selected$="[[item.value.selected]]"
+                    matrix-data="[[item.value.matrix]]"
+
+                    on-down="_select"
+                    on-up="_up"
+                    on-new-selection="_select"></shape-object>
     </template>
 
   </template>
@@ -28,12 +33,22 @@
 
       static get properties() {
         return {
-          shapes: Array,
+          shapes: Object,
           shift: {
             type: Boolean,
             value: false
+          },
+          shapesArray: {
+            type: Array,
+            computed: "_toArray(shapes)"
           }
         }
+      }
+
+      _toArray(shapes) {
+        return Object.keys(shapes).map(function (key) {
+          return {key: key, value: shapes[key]};
+        });
       }
 
       constructor() {
@@ -45,37 +60,33 @@
         window.addEventListener("keyup", function (e) {
           if (e.key === "Shift")
             this.shift = false;
-        }.bind(this))
-      }
-
-      changeShapes(shapes) {
-        for (let key in shapes) {
-          let shape = shapes[key];
-          let node = this.shadowRoot.querySelector("#" + key);
-          node.update(shape.matrix);
-        }
+        }.bind(this));
       }
 
       _select(e) {
-        if (!this.shift && !e.detail.multi)
-          this.deselect();
-        e.target.selected = true;
-      }
-
-      deselect() {
-        let selected = this.shadowRoot.querySelectorAll("[selected]");
-        if (selected)
-          for (let i = 0; i < selected.length; i++)
-            selected[i].selected = false;
-      }
-
-      boxSelect(selected) {
-        this.deselect();
-        for (let key in selected) {
-          let shape = selected[key];
-          let node = this.shadowRoot.querySelector("#" + shape.id);    //todo this is bad
-          node.selected = true;
+        e.stopPropagation();
+        if (e.detail.sourceEvent instanceof Touch)
+          this.selectionTimer = setTimeout(function () {
+            this._fire("select", e.detail.sourceEvent.target.id);
+            this.selectionTimer = undefined;
+          }.bind(this), 600);
+        else{
+          if (!this.shift)
+            this._fire("deselect-all");
+          this._fire("select", e.target.id);
         }
+      }
+
+      _up(e) {
+        e.stopPropagation();
+        if (this.selectionTimer) {
+          clearTimeout(this.selectionTimer);
+          this._fire("select", e.target.id);
+        }
+      }
+
+      _fire(name, detail){
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
     customElements.define(ShapePlain.is, ShapePlain);

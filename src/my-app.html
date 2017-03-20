@@ -9,50 +9,19 @@
       :host { height: 100%; }
     </style>
 
-    <ui-plain on-change-shapes="_changeShapes"
+    <ui-plain shapes="[[shapes]]"
+              on-change-shapes="_changeShapes"
               on-deselect-all="_deselect"
+              on-select="_selectSingle"
               on-new-box-selection="_select">
-      <shape-plain id="shapePlain" shapes="[[shapes]]"></shape-plain>
+      <shape-plain id="shapePlain" shapes="[[shapes]]"
+              on-shape-location="_registerUIshape"
+      ></shape-plain>
     </ui-plain>
 
   </template>
 
   <script>
-
-    class MatrixData {
-      constructor(x, y, sx, sy, a) {
-        this.x = x;
-        this.sx = sx;
-        this.sy = sy;
-        this.y = y;
-        this.a = a;
-      }
-
-      static random() {
-        return new MatrixData(
-          Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
-          Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
-          1,
-          1,
-          Math.random() * Math.PI * 2);
-      }
-
-      compute() {
-        let matrix = [
-          this.sx * Math.cos(this.a),
-          this.sx * Math.sin(this.a),
-          -this.sy * Math.sin(this.a),
-          this.sy * Math.cos(this.a),
-          this.x,
-          this.y
-        ];
-        return "matrix(" + matrix.join(",") + ")";
-      }
-
-      clone(){
-        return new MatrixData(this.x, this.y, this.sx, this.sy, this.a);
-      }
-    }
 
     class MyApp extends Polymer.Element {
       static get is() {
@@ -61,30 +30,51 @@
 
       static get properties() {
         return {
-          shapes: {
-            type: Array,
-            value: function () {
-              const res = [];
-              for (let i = 0; i < 10; i++) {
-                res[i] = MatrixData.random();
-              }
-              return res;
-            }
-          }
+          shapes: Object
         }
       }
 
+      constructor(){
+        super();
+        this.shapes = {};
+        for (let i = 0; i < 20; i++)
+          this.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
+      }
+
       _changeShapes(e) {
-        this.$.shapePlain.changeShapes(e.detail);
-        //change the state shapes object array instead
+        let changed = e.detail;
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in changed){
+          shapes[key] = Object.assign({}, shapes[key]);
+          shapes[key].matrix = changed[key].matrix;
+        }
+        this.set("shapes", shapes);
+      }
+
+      _registerUIshape(e){
+        const shapes = Object.assign({}, this.shapes);
+        shapes[e.detail.key].rect = e.detail.rect;
+        this.set("shapes", shapes);
       }
 
       _deselect() {
-        this.$.shapePlain.deselect();
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in shapes)
+          shapes[key].selected = false;
+        this.set("shapes", shapes);
+      }
+
+      _selectSingle(e){
+        const shapes = Object.assign({}, this.shapes);
+        shapes[e.detail].selected = true;
+        this.set("shapes", shapes);
       }
 
       _select(e) {
-        this.$.shapePlain.boxSelect(e.detail);
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in e.detail)
+          shapes[key].selected = e.detail[key].selected;
+        this.set("shapes", shapes);
       }
     }
     customElements.define(MyApp.is, MyApp);
