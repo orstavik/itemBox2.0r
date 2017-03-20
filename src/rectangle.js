@@ -43,6 +43,13 @@ class Rectangle {
   pointIsWithinBorders(p) {
     return p.x >= this.left && p.x <= this.right && p.y >= this.top && p.y <= this.bottom;
   }
+
+  centerDistance(A){
+    return {
+      x: this.center.x - A.center.x,
+      y: this.center.y - A.center.y
+    };
+  }
 }
 
 class TransformableRectangle extends Rectangle {

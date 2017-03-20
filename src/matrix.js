@@ -33,9 +33,21 @@ class MatrixData {
   }
 
   move(x,y){
-    let res = this.clone();
-    res.x+=x;
-    res.y+=y;
-    return res;
+    let m = this.clone();
+    m.x+=x;
+    m.y+=y;
+    return m;
+  }
+
+  rotate(a0, a, rx, ry){
+    let m = this.clone();
+    if (rx || ry){
+      let nx = rx * Math.cos(a0 - a) - ry * Math.sin(a0 - a);
+      let ny = rx * Math.sin(a0 - a) + ry * Math.cos(a0 - a);
+      m.x += nx - rx;
+      m.y += ny - ry;
+    }
+    m.a += a0 - a;
+    return m;
   }
 }
