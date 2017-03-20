@@ -62,12 +62,11 @@
       static get properties() {
         return {
           shapes: {
-            type: Array,
+            type: Object,
             value: function () {
-              const res = [];
-              for (let i = 0; i < 10; i++) {
-                res[i] = MatrixData.random();
-              }
+              const res = {};
+              for (let i = 0; i < 10; i++)
+                res["shape" + i] = MatrixData.random();
               return res;
             }
           }
