@@ -13,7 +13,13 @@
     </style>
 
     <template is="dom-repeat" items="[[shapesArray]]">
-      <shape-object id$="[[item.key]]" selected$="[[item.value.selected]]" matrix-data="[[item.value.matrix]]" on-new-selection="_select"></shape-object>
+      <shape-object id$="[[item.key]]"
+                    selected$="[[item.value.selected]]"
+                    matrix-data="[[item.value.matrix]]"
+
+                    on-down="_select"
+                    on-up="_up"
+                    on-new-selection="_select"></shape-object>
     </template>
 
   </template>
@@ -54,35 +60,34 @@
         window.addEventListener("keyup", function (e) {
           if (e.key === "Shift")
             this.shift = false;
-        }.bind(this))
+        }.bind(this));
       }
 
       _select(e) {
-        if (!this.shift && !e.detail.multi)
-          this._fire("deselect-all");
-        this._fire("select", e.detail.shape);
+        e.stopPropagation();
+        if (e.detail.sourceEvent instanceof Touch)
+          this.selectionTimer = setTimeout(function () {
+            this._fire("select", e.detail.sourceEvent.target.id);
+            this.selectionTimer = undefined;
+          }.bind(this), 600);
+        else{
+          if (!this.shift)
+            this._fire("deselect-all");
+          this._fire("select", e.target.id);
+        }
+      }
+
+      _up(e) {
+        e.stopPropagation();
+        if (this.selectionTimer) {
+          clearTimeout(this.selectionTimer);
+          this._fire("select", e.target.id);
+        }
       }
 
       _fire(name, detail){
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
-
-//      boxSelect(selected) {
-//        this.deselect();
-//        for (let key in selected) {
-//          let shape = selected[key];
-//          let node = this.shadowRoot.querySelector("#" + shape.id);    //todo this is bad
-//          node.selected = true;
-//        }
-//      }
-//      changeShapes(shapes) {
-//        for (let key in shapes) {
-//          let shape = shapes[key];
-//          let node = this.shadowRoot.querySelector("#" + key);
-//          node.update(shape);
-//        }
-//      }
-//
     }
     customElements.define(ShapePlain.is, ShapePlain);
   </script>

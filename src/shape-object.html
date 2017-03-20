@@ -29,7 +29,7 @@
       }
     </style>
 
-    <div id="body" on-down="_select" on-up="_up" style$="[[_style]]">
+    <div id="body" style$="[[_style]]">
       <div id="innerBody"></div>
     </div>
 
@@ -71,7 +71,6 @@
       }
 
       _makeStyle(matrixData) {
-        console.log("making style");
         return "transform: " + matrixData.compute() + ";";
       }
 
@@ -80,36 +79,10 @@
         let info = {
           key: this.id,
           rect: this.rect,
-//          matrix: this.matrixData,
-//          selected: this.selected
         };
         this._fire("shape-location", info);
       }
 
-      _select(e) {
-        e.stopPropagation();
-        if (e.detail.sourceEvent instanceof Touch)
-          this.selectionTimer = setTimeout(function () {
-            this._fire("new-selection", {shape: this.id, multi: true});
-            this.selectionTimer = undefined;
-          }.bind(this), 600);
-        else
-          this._fire("new-selection", {shape: this.id, multi: false});
-      }
-
-      _up(e) {
-        e.stopPropagation();
-        if (this.selectionTimer) {
-          clearTimeout(this.selectionTimer);
-          this._fire("new-selection", {shape: this.id, multi: false});
-        }
-      }
-
-//      update(m) {
-//        this.set("matrixData", m.clone());
-//        this._notifyUI();
-//      }
-//
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
