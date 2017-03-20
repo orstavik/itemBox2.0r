@@ -1,0 +1,111 @@
+<dom-module id="space-camera">
+  <template>
+    <style>
+      #host {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+
+    <slot></slot>
+
+  </template>
+
+  <script>
+    class SpaceCamera extends Polymer.Element {
+
+      static get is() { return 'space-camera'; }
+
+      static get properties() {
+        return {
+          coordinates: {
+            type: Object,
+            value: function() {
+              return {
+                x: 0,
+                y: 0,
+                s: 1,
+                a: 0
+              }
+            }
+          },
+          buffer: {
+            type: Object,
+            value: function() {
+              return {}
+            }
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          // "_changeViewport(coordinates)"
+        ];
+      }
+
+      moveViewport(e) {
+        let ed = e.detail;
+        if (ed.state !== "track" || this.tapZoom)
+          return;
+        let c = this.coordinates;
+        c.x += ed.ddx;
+        c.y += ed.ddy;
+        this._changeViewport(c);
+      }
+
+      checkTaps(e) {
+        if (e.touches.length !== 2)
+          return;
+        this.tapZoom = true;
+
+        let dx = e.touches[0].clientX - e.touches[1].clientX;
+        let dy = e.touches[0].clientY - e.touches[1].clientY;
+        let d = Math.sqrt(dx*dx+dy*dy);
+
+        if (this.buffer.d) {
+          let ds = d/this.buffer.d;
+          let cx = e.touches[1].clientX+dx/2;
+          let cy = e.touches[1].clientY+dy/2;
+          this._zoomViewport(ds,cx,cy);
+        }
+        this.buffer.d = d;
+      }
+
+      removeTaps() {
+        this.tapZoom = false;
+        this.buffer.d = null;
+      }
+
+      checkScroll(e) {
+        let ds = 1-(e.deltaY/1000);
+        this._zoomViewport(ds,e.x,e.y);
+      }
+
+      _zoomViewport(ds,sx,sy) {
+        let c = this.coordinates;
+        c.s *= ds;
+        let ex = sx-window.innerWidth/2;
+        let ey = sy-window.innerHeight/2;
+        c.x += (ex-c.x)*(1-ds);
+        c.y += (ey-c.y)*(1-ds);
+        this._changeViewport(c);
+      }
+
+      _changeViewport(c) {
+        let matrix = [
+          c.s * Math.cos(c.a),
+          c.s * Math.sin(c.a),
+          c.s * -Math.sin(c.a),
+          c.s * Math.cos(c.a),
+          c.x,
+          c.y
+        ];
+        this.style.transform = "matrix(" + matrix.join(",") + ")";
+      }
+    }
+
+    window.customElements.define(SpaceCamera.is, SpaceCamera);
+  </script>
+</dom-module>

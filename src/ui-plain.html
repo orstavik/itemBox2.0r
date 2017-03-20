@@ -1,5 +1,7 @@
 <link rel="import" href="selection-box.html">
 <link rel="import" href="shape-box.html">
+<link rel="import" href="shape-plain.html">
+<link rel="import" href="space-camera.html">
 
 <dom-module id="ui-plain">
   <template>
@@ -10,8 +12,10 @@
     </style>
 
     <selection-box id="selection" shapes="[[shapes]]"></selection-box>
-    <slot></slot>
     <shape-box id="shapeBox" all-shapes="[[shapes]]"></shape-box>
+    <space-camera>
+      <shape-plain id="shapePlain" shapes="[[shapes]]"></shape-plain>
+    </space-camera>
 
   </template>
 
@@ -24,7 +28,7 @@
 
       static get properties() {
         return {
-          shapes: Object,
+          shapes: Object
         }
       }
     }

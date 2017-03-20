@@ -12,15 +12,15 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[shapesArray]]">
-      <shape-object id$="[[item.key]]"
-                    selected$="[[item.value.selected]]"
-                    matrix-data="[[item.value.matrix]]"
+      <template is="dom-repeat" items="[[shapesArray]]">
+        <shape-object id$="[[item.key]]"
+                      selected$="[[item.value.selected]]"
+                      matrix-data="[[item.value.matrix]]"
 
-                    on-down="_select"
-                    on-up="_up"
-                    on-new-selection="_select"></shape-object>
-    </template>
+                      on-down="_select"
+                      on-up="_up"
+                      on-new-selection="_select"></shape-object>
+      </template>
 
   </template>
 
@@ -70,7 +70,7 @@
             this._fire("select", e.detail.sourceEvent.target.id);
             this.selectionTimer = undefined;
           }.bind(this), 600);
-        else{
+        else {
           if (!this.shift)
             this._fire("deselect-all");
           this._fire("select", e.target.id);
@@ -85,7 +85,7 @@
         }
       }
 
-      _fire(name, detail){
+      _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
