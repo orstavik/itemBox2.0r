@@ -13,7 +13,7 @@
     </style>
 
     <template is="dom-repeat" items="[[shapesArray]]">
-      <shape-object id$="[[item.key]]" matrix-data="[[item.value]]" on-new-selection="_select"></shape-object>
+      <shape-object id$="[[item.key]]" matrix-data="[[item.value.matrix]]" on-new-selection="_select"></shape-object>
     </template>
 
   </template>
@@ -57,35 +57,32 @@
         }.bind(this))
       }
 
-      changeShapes(shapes) {
-        for (let key in shapes) {
-          let shape = shapes[key];
-          let node = this.shadowRoot.querySelector("#" + key);
-          node.update(shape.matrix);
-        }
-      }
-
       _select(e) {
         if (!this.shift && !e.detail.multi)
-          this.deselect();
-        e.target.selected = true;
+          this._fire("deselect-all");
+        this._fire("select", e.detail.shape);
       }
 
-      deselect() {
-        let selected = this.shadowRoot.querySelectorAll("[selected]");
-        if (selected)
-          for (let i = 0; i < selected.length; i++)
-            selected[i].selected = false;
+      _fire(name, detail){
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
 
-      boxSelect(selected) {
-        this.deselect();
-        for (let key in selected) {
-          let shape = selected[key];
-          let node = this.shadowRoot.querySelector("#" + shape.id);    //todo this is bad
-          node.selected = true;
-        }
-      }
+//      boxSelect(selected) {
+//        this.deselect();
+//        for (let key in selected) {
+//          let shape = selected[key];
+//          let node = this.shadowRoot.querySelector("#" + shape.id);    //todo this is bad
+//          node.selected = true;
+//        }
+//      }
+//      changeShapes(shapes) {
+//        for (let key in shapes) {
+//          let shape = shapes[key];
+//          let node = this.shadowRoot.querySelector("#" + key);
+//          node.update(shape);
+//        }
+//      }
+//
     }
     customElements.define(ShapePlain.is, ShapePlain);
   </script>

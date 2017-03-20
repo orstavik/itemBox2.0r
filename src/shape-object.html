@@ -63,20 +63,30 @@
       connectedCallback() {
         super.connectedCallback();
         window.addEventListener("resize", this._notifyUI.bind(this));
+
+        const styleChangedObserver = new MutationObserver(function (mutations) {
+          for (let mutation of mutations) {
+            if (mutation.attributeName == "style") {
+              this._notifyUI();
+            }
+          }
+        }.bind(this));
+        styleChangedObserver.observe(this.$.body, {attributes: true});
         setTimeout(this._notifyUI.bind(this), 0);
       }
 
-      _makeStyle(matrixData){
+      _makeStyle(matrixData) {
+        console.log("making style");
         return "transform: " + matrixData.compute() + ";";
       }
 
       _notifyUI() {
         this.rect = new Rectangle(this.$.body.getBoundingClientRect());
         let info = {
-          id: this.id,
+          key: this.id,
           rect: this.rect,
-          matrix: this.matrixData,
-          selected: this.selected
+//          matrix: this.matrixData,
+//          selected: this.selected
         };
         this._fire("shape-location", info);
       }

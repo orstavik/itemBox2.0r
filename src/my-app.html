@@ -9,10 +9,14 @@
       :host { height: 100%; }
     </style>
 
-    <ui-plain on-change-shapes="_changeShapes"
+    <ui-plain shapes="[[shapes]]"
+              on-change-shapes="_changeShapes"
               on-deselect-all="_deselect"
+              on-select="_selectSingle"
               on-new-box-selection="_select">
-      <shape-plain id="shapePlain" shapes="[[shapes]]"></shape-plain>
+      <shape-plain id="shapePlain" shapes="[[shapes]]"
+              on-shape-location="_registerUIshape"
+      ></shape-plain>
     </ui-plain>
 
   </template>
@@ -49,7 +53,7 @@
         return "matrix(" + matrix.join(",") + ")";
       }
 
-      clone(){
+      clone() {
         return new MatrixData(this.x, this.y, this.sx, this.sy, this.a);
       }
     }
@@ -61,29 +65,51 @@
 
       static get properties() {
         return {
-          shapes: {
-            type: Object,
-            value: function () {
-              const res = {};
-              for (let i = 0; i < 10; i++)
-                res["shape" + i] = MatrixData.random();
-              return res;
-            }
-          }
+          shapes: Object
         }
       }
 
+      constructor(){
+        super();
+        this.shapes = {};
+        for (let i = 0; i < 10; i++)
+          this.shapes["shape" + i] = {matrix: MatrixData.random()};
+      }
+
       _changeShapes(e) {
-        this.$.shapePlain.changeShapes(e.detail);
-        //change the state shapes object array instead
+        let changed = e.detail;
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in changed){
+          shapes[key] = Object.assign({}, shapes[key]);
+          shapes[key].matrix = changed[key].matrix;
+        }
+        this.set("shapes", shapes);
+      }
+
+      _registerUIshape(e){
+        const shapes = Object.assign({}, this.shapes);
+        shapes[e.detail.key].rect = e.detail.rect;
+        this.set("shapes", shapes);
       }
 
       _deselect() {
-        this.$.shapePlain.deselect();
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in shapes)
+          shapes[key].selected = false;
+        this.set("shapes", shapes);
+      }
+
+      _selectSingle(e){
+        const shapes = Object.assign({}, this.shapes);
+        shapes[e.detail].selected = true;
+        this.set("shapes", shapes);
       }
 
       _select(e) {
-        this.$.shapePlain.boxSelect(e.detail);
+        const shapes = Object.assign({}, this.shapes);
+        for (let key in e.detail)
+          shapes[key].selected = e.detail[key].selected;
+        this.set("shapes", shapes);
       }
     }
     customElements.define(MyApp.is, MyApp);

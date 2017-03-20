@@ -84,7 +84,9 @@
         for (let key in this.shapes) {
           let shape = this.shapes[key];
           if (this.rect.pointIsWithinBorders(shape.rect.center))
-            selected[shape.id] = shape;
+            selected[key] = {selected: true};
+          else
+            selected[key] = {selected: false};
         }
         this._fire("new-box-selection", selected);
       }
