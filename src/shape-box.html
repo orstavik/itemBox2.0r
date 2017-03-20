@@ -117,6 +117,15 @@
         }
       }
 
+      // _storeOldCopy() {
+      //   if (this.bufferShapes)
+      //     var res = Object.keys(this.bufferShapes).length == Object.keys(this.shapes).length;
+      //   else
+      //     var res = false;
+      //   this.bufferShapes = this.shapes;
+      //   return res;
+      // }
+
       _isEmpty(shapes) {
         return !shapes || !Object.keys(shapes).length;
       }
@@ -248,8 +257,8 @@
         }
         if (id == "top-left" || id == "top-right" || id == "bottom-right" || id == "bottom-left") {
           let prop = this.rect.height / this.rect.width;
-          may = max * prop;
-          ay = ax * prop * dir.x * dir.y;
+          may = max*prop*this.rect.scale.x*this.rect.scale.y;
+          ay = ax*prop*dir.x*dir.y*this.rect.scale.x*this.rect.scale.y;
         }
         else if (id == "left" || id == "right") {
           may = 0;
