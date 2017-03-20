@@ -90,7 +90,11 @@
 
       static get properties() {
         return {
-          shapes: Object,
+          allShapes: Object,
+          shapes: {
+            type: Object,
+            computed: "_makeSelectedShapes(allShapes)"
+          },
           rect: {
             type: Object,
             computed: "_makeRectangle(shapes, action)"
@@ -115,6 +119,15 @@
             reflectToAttribute: true
           }
         }
+      }
+
+      _makeSelectedShapes(allShapes){
+        const selected ={};
+        for (let key in allShapes) {
+          if (allShapes[key].selected)
+            selected[key] = allShapes[key];
+        }
+        return selected;
       }
 
       _isEmpty(shapes) {

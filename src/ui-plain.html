@@ -11,7 +11,7 @@
 
     <selection-box id="selection" shapes="[[shapes]]"></selection-box>
     <slot></slot>
-    <shape-box id="shapeBox" shapes="[[selectedRegistry]]"></shape-box>
+    <shape-box id="shapeBox" all-shapes="[[shapes]]"></shape-box>
 
   </template>
 
@@ -25,20 +25,7 @@
       static get properties() {
         return {
           shapes: Object,
-          selectedRegistry: {
-            type: Object,
-            computed: "_makeSelectedRegistry(shapes)"
-          }
         }
-      }
-
-      _makeSelectedRegistry(shapes){
-        const res ={};
-        for (let key in shapes) {
-          if (shapes[key].selected)
-            res[key] = shapes[key];
-        }
-        return res;
       }
     }
     customElements.define(UiPlain.is, UiPlain);
