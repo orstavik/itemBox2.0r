@@ -9,12 +9,12 @@
     </style>
 
     <controller-ui state="[[state]]"
-              on-change-shapes="_changeShapes"
-              on-deselect-all="_deselect"
-              on-select="_selectSingle"
-              on-shape-location="_registerUIshape"
-              on-new-box-selection="_select"
-    on-view-changed="_viewChanged">
+                   on-change-shapes="_changeShapes"
+                   on-deselect-all="_deselect"
+                   on-select="_selectSingle"
+                   on-shape-location="_registerUIshape"
+                   on-new-box-selection="_select"
+                   on-view-changed="_viewChanged">
     </controller-ui>
 
   </template>
@@ -28,57 +28,59 @@
 
       static get properties() {
         return {
-          state: Object
+          defaultState: {
+            type: State,
+            value: function () {
+              const shapes = {};
+              for (let i = 0; i < 20; i++)
+                shapes["shape" + i] = {matrix: MatrixData.random(), selected: false};
+              return new State(new ViewPort(0, 0, 1), shapes);
+            }
+          },
+          fluidState: {
+            type: State,
+            value: function(){
+              return new State();
+            }
+          },
+          state:{
+            type: Object,
+            computed: "_mergeFinal(defaultState, fluidState)"
+          }
         }
       }
 
-      constructor(){
-        super();
-        this.state = {};
-        this.state.viewPort = new ViewPort(0, 0, 1);
-        this.state.shapes = {};
-        for (let i = 0; i < 20; i++)
-          this.state.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
+      _mergeFinal(defaultState, fluidState){
+        return defaultState.merge(fluidState);
       }
 
       _changeShapes(e) {
-        let changed = e.detail;
-        const shapes = Object.assign({}, this.state.shapes);
-        for (let key in changed){
-          shapes[key] = Object.assign({}, shapes[key]);
-          shapes[key].matrix = changed[key].matrix;
-        }
-        this.set("state.shapes", shapes);
+        this.set("fluidState", this.fluidState.merge({shapes: e.detail}));
       }
 
-      _registerUIshape(e){
-        const shapes = Object.assign({}, this.state.shapes);
-        shapes[e.detail.key].rect = e.detail.rect;
-        this.set("state.shapes", shapes);
+      _registerUIshape(e) {
+        this.set("fluidState", this.fluidState.merge({shapes: e.detail}));
       }
 
       _deselect() {
-        const shapes = Object.assign({}, this.state.shapes);
+        const shapes = Object.assign({}, this.fluidState.shapes);
         for (let key in shapes)
           shapes[key].selected = false;
-        this.set("state.shapes", shapes);
+        this.set("fluidState", new State(this.fluidState.viewPort, shapes));
       }
 
-      _selectSingle(e){
-        const shapes = Object.assign({}, this.state.shapes);
-        shapes[e.detail].selected = true;
-        this.set("state.shapes", shapes);
+      _selectSingle(e) {
+        let res = {};
+        res[e.detail] = {selected: true};
+        this._select({detail: res});
       }
 
       _select(e) {
-        const shapes = Object.assign({}, this.state.shapes);
-        for (let key in e.detail)
-          shapes[key].selected = e.detail[key].selected;
-        this.set("state.shapes", shapes);
+        this.set("fluidState", this.fluidState.mergeShapes(e.detail));
       }
 
-      _viewChanged(e){
-        this.set("state.viewPort", e.detail);
+      _viewChanged(e) {
+        this.set("fluidState", new State(e.detail, this.fluidState.shapes));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);
