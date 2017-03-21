@@ -10,12 +10,14 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0-rc.2"
+    "polymer": "Polymer/polymer#^2.0.0-rc.2",
+    "app-storage": "PolymerElements/app-storage#^0.10.0"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#1.0.0-rc.5"
   },
   "resolutions": {
-    "polymer": "^2.0.0-rc.2"
+    "polymer": "^2.0.0-rc.2",
+    "webcomponentsjs": "^v1.0.0-rc.5"
   }
 }

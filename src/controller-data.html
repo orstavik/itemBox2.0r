@@ -1,0 +1,74 @@
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="firebase-on.html">
+<link rel="import" href="firebase-loginout.html">
+
+<dom-module id="controller-data">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+    <app-indexeddb-mirror key="systemSketches"
+                          data="{{serverSystemSketches}}"
+                          persisted-data="{{systemSketches}}"></app-indexeddb-mirror>
+    <firebase-on id="serverUserState"
+                 active="[[serverUser]]"
+                 path="/users/[[serverUser.uid]]"
+                 result="{{userState}}"
+                 on-found-no-data="_newUser"></firebase-on>
+    <firebase-on once
+                 active
+                 path="/sketches"
+                 result="{{serverSystemSketches}}"></firebase-on>
+    <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
+  </template>
+  <script>
+
+    class ControllerData extends Polymer.Element {
+      static get is() {
+        return "controller-data";
+      }
+
+      static get properties() {
+        return {
+          serverUser: {
+            type: Object,
+            notify: true
+          },
+          serverSystemSketches: Object,
+          systemSketches: {
+            type: Object,
+            notify: true
+          },
+          userState: {
+            type: Object,
+            notify: true
+          }
+        };
+      }
+
+      signIn() {
+        this.$.auth.signIn();
+      }
+
+      signOut() {
+        this.$.auth.signOut();
+      }
+
+      _newUser(e) {
+        this.$.serverUserState.updateOverwrite({registered: firebase.database.ServerValue.TIMESTAMP});
+        this._fire("system-message", "Welcome new user!");
+      }
+
+      updateChanges(changes) {
+        this.$.serverUserState.updateMerge(changes);
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+    customElements.define(ControllerData.is, ControllerData);
+  </script>
+</dom-module>

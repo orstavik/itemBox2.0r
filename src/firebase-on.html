@@ -1,0 +1,92 @@
+<dom-module id="firebase-on">
+  <script>
+    class FirebaseOn extends Polymer.Element {
+
+      static get is() {
+        return "firebase-on";
+      }
+
+      static get properties() {
+        return {
+          active: {
+            type: Boolean,
+            value: false,
+            notify: false,
+          },
+          path: {
+            type: String,
+            notify: false,
+          },
+          result: {
+            type: Object,
+            notify: true,
+          },
+          once: {
+            type: Boolean,
+            value: false,
+            notify: false,
+          }
+        };
+      }
+
+      static get observers() {
+        return ["_activePathChanged(active, path)"];
+      }
+
+      ready() {
+        super.ready();
+        this._activePathChanged(this.active, this.path);
+      }
+
+      _activePathChanged(active, path) {
+        (active && path) ? this._connect(path) : this._disconnect();
+      }
+
+      _disconnect() {
+        this._path = undefined;
+        if (this._ref) {
+          this._ref.off();
+          this._ref = undefined;
+        }
+        if (this.result)
+          this.set("result", undefined);
+      }
+
+      _connect(path) {
+        this._path = path;
+        if (this._ref)
+          this._disconnect();
+        this._ref = firebase.database().ref(path);
+        if (this.once)
+          this._ref.once("value").then(this._updateResult.bind(this));
+        else
+          this._ref.on("value", this._updateResult.bind(this));
+      }
+
+      _updateResult(snap) {
+        if (!snap.exists())
+          this._fire("found-no-data", this._path);
+        else
+          this.set("result", snap.val());
+      }
+
+      updateOverwrite(value) {
+        this._ref.set(value);
+      }
+
+      updateMerge(updates) {
+        if (!this.active || !this._ref)
+          return;
+        let fullPathUpdates = Tools.extendKeys(this._path + "/", updates);
+        this._ref.root.update(fullPathUpdates, function () {
+          this._fire("system-message", "updated changes: " + Object.keys(updates));
+        }.bind(this));
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+    customElements.define(FirebaseOn.is, FirebaseOn);
+  </script>
+</dom-module>
