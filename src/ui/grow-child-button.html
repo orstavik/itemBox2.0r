@@ -1,0 +1,239 @@
+<dom-module id="grow-child-button">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        pointer-events: none !important;
+      }
+      #mainCircle {
+        display: flex;
+        width: var(--grow-child-button-size);
+        height: var(--grow-child-button-size);
+        margin: calc(var(--grow-child-button-size) * 0.2);
+        align-items: center;
+        justify-content: center;
+        background-color: var(--grow-child-button-color);
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 1;
+        transition: box-shadow 0.2s, opacity 0.2s;
+        pointer-events: auto;
+        z-index: 11;
+      }
+/*
+      #mainCircle[hidden] {
+        opacity: 0;
+        pointer-events: none;
+        transition: none;
+      }
+*/
+      #mainCircle > iron-icon {
+        --iron-icon-width: calc(var(--grow-child-button-size) * 0.5);
+        --iron-icon-height: calc(var(--grow-child-button-size) * 0.5);
+        --iron-icon-fill-color: var(--grow-child-button-icon-color);
+      }
+      #outerBox {
+        display: flex;
+        justify-content: center;
+        box-sizing: border-box;
+        max-height: 600px;
+        position: absolute;
+        top: 0;
+        left: calc(-150px + var(--mother-button-size) / 2);
+        border-radius: 3px;
+        pointer-events: none;
+        opacity: 0;
+        overflow: hidden;
+        z-index: 10;
+      }
+      #outerBox[expanded] {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1000;
+      }
+      #outerBox[expanded] #boxContent {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+        transition-duration: 100ms;
+        transition-delay: 200ms;
+      }
+      #shadyCircle {
+        width: var(--grow-child-button-size);
+        height: var(--grow-child-button-size);
+        position: absolute;
+        border-radius: 50%;
+        background-color: white;
+        will-change: transform;
+        pointer-events: none;
+        z-index: -1;
+      }
+      #boxContent {
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateX(-2px);
+      }
+      #boxContent .header {
+        background-color: white;
+      }
+      #boxContent .header > iron-icon {
+        position: absolute;
+        --iron-icon-width: 27px;
+        --iron-icon-height: 27px;
+        margin: 10px 20px;
+      }
+      .header > h3 {
+        margin: 10px 60px;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      #closeButton {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        z-index: 10;
+      }
+    </style>
+
+    <paper-material id="mainCircle" on-click="_toggle" hidden="[[active]]">
+      <iron-icon icon="[[icon]]"></iron-icon>
+    </paper-material>
+
+    <paper-material id="outerBox" elevation=0 expanded$="[[active]]" style$="margin-top: [[marginTopOuterBox]]px;">
+      <paper-material id="shadyCircle" expanded$="[[active]]" style$="top: [[circleTop]]px;"></paper-material>
+      <div id="boxContent">
+        <div class="header">
+          <iron-icon icon="[[icon]]"></iron-icon>
+          <h3>[[menu]]</h3>
+          <paper-icon-button id="closeButton" icon="clear" on-tap="_close"></paper-icon-button>
+        </div>
+        <slot></slot>
+      </div>
+    </paper-material>
+
+  </template>
+  <script>
+    class GrowChildButton extends Polymer.Element {
+      static get is() {
+        return "grow-child-button";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            active: {
+              type: Boolean,
+              reflectToAttribute: true,
+              value: false,
+              notify:true
+            },
+            menu: String,
+            icon: String,
+            position: Number,
+          }
+        }
+      }
+
+      _toggle(e) {
+        e.stopPropagation();
+        this.active ? this.deactivate() : this.activate();
+      }
+
+      _close(e){
+        e.stopPropagation();
+        this.deactivate();
+      }
+
+      deactivate() {
+        if (!this.active)
+          return;
+        this.active = false;
+        this._collapseCard(300);
+      }
+
+      activate() {
+        if (this.active)
+          return;
+        this.active = true;
+        if (!this.visualData)
+          this._calcVisualData();
+        this._expandCard(300);
+        this.dispatchEvent(new CustomEvent("selected-button", {composed: true, bubbles: true}));
+      }
+
+      _calcVisualData() {
+        this.visualData = GrowChildButton._calcScaleShift(this.$.outerBox, this.$.shadyCircle);
+        this.set("marginTopOuterBox",16 - this.visualData.bTop);
+        this.set("circleTop", this.visualData.cTop - 16);
+      }
+
+      _expandCard(dur) {
+        this.$.mainCircle.elevation = 2;
+        this.$.outerBox.animate({transform: ["translateX(0)", "translateX(194px)"]}, {
+          duration: dur,
+          fill: "forwards",
+          easing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)"  /*"cubic-bezier(0.4, 0, 0.2, 1)"*/
+        });
+        this.$.shadyCircle.animate({transform: ["translateY(0) scale(1)", "translateY(" + this.visualData.topShift + "px) scale(" + this.visualData.scale + ")"]}, {
+          duration: dur,
+          fill: "forwards",
+          easing: "linear"
+        });
+        setTimeout(function () {
+          this.$.outerBox.elevation = 2;
+        }.bind(this), dur*2/3);
+      }
+
+      static _calcScaleShift(box, circle) {
+        const bRect = box.getBoundingClientRect();
+        const cRect = circle.getBoundingClientRect();
+        const diagonal = Math.sqrt(bRect.height * bRect.height + bRect.width * bRect.width)
+        const topShift = (bRect.height - cRect.height) / 2 - (cRect.top - 16);
+        const scale = diagonal / cRect.width;
+        return {bTop: bRect.top, cTop: cRect.top, topShift: topShift, scale: scale};
+      }
+
+      _collapseCard(dur) {
+        this.$.outerBox.elevation = 0;
+        this.$.mainCircle.elevation = 1;
+      }
+
+//      connectedCallback() {
+//        const parentIsActive = new MutationObserver(this._parentIsActive.bind(this));
+//        parentIsActive.observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
+//      }
+//
+//      _parentIsActive(mutations) {
+//        for (let mutation of mutations) {
+//          if (mutation.attributeName == "active") {
+//            const value = mutation.target.hasAttribute(mutation.attributeName);
+//            if (!value)
+//              this.deactivate();
+//          }
+//        }
+//      }
+//
+      /*
+       show(){
+       this.animate({opacity: [0, 1], transform: ["scale(0.95)", "scale(1)"]}, {
+       duration: 150,
+       delay: this.position * (2 - this.position) * 100,
+       fill: "forwards"
+       });
+       }
+
+       hide(){
+       //        if (!this.active)
+       //          return;
+       this.deactivate();
+       this.animate({opacity: [1, 0], transform: ["scale(1)", "scale(0.95)"]}, {
+       duration: 150,
+       fill: "forwards"
+       });
+       }
+       */
+    }
+    customElements.define(GrowChildButton.is, GrowChildButton);
+  </script>
+</dom-module>

@@ -1,0 +1,130 @@
+<dom-module id="app-ui-sketchlist">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      .sketchCard {
+        display: flex;
+        height: 110px;
+        margin: 0 0 12px;
+        background-color: white;
+        border-radius: 3px;
+      }
+      .contentBox {
+        display: flex;
+        box-sizing: border-box;
+        flex-direction: column;
+        flex-grow: 1;
+        align-content: flex-start;
+        justify-content: space-between;
+        padding: 12px;
+      }
+      .contentBox h4 {
+        display: inline-block;
+        margin: 0;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1;
+      }
+      .contentBox iron-icon {
+        display: inline-block;
+        --iron-icon-width: 20px;
+        --iron-icon-height: 20px;
+        margin-top: -4px;
+      }
+      .contentBox span {
+        display: block;
+        font-size: 10px;
+        color: gray;
+      }
+      .contentBox paper-button {
+        height: 32px;
+        margin: 0 0 0 12px;
+        font-size: 12px;
+        text-align: center;
+      }
+      .buttonRow {
+        display: flex;
+        justify-content: flex-end;
+      }
+      paper-button#load {
+        background-color: var(--paper-indigo-a200);
+        color: white;
+      }
+    </style>
+    <template is="dom-repeat" items="[[sketchData.array]]">
+      <paper-material elevation="1" class="sketchCard">
+        <div class="contentBox">
+          <div>
+            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" contenteditable="true" on-pointerdown="_stopProp">
+              [[item.value.name]]</h4>
+            <iron-icon icon="create"></iron-icon>
+            <span>[[_toDate(item.value.created)]]</span>
+          </div>
+          <div class="buttonRow">
+            <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview</paper-button>
+            <paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>
+            <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Remove</paper-button>
+          </div>
+        </div>
+      </paper-material>
+    </template>
+  </template>
+  <script>
+
+    class AppUiSketchlist extends Polymer.Element {
+      static get is() {
+        return "app-ui-sketchlist";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            uid: String,
+            sketchData: Object,
+          }
+        }
+      }
+
+      _toDate(num) {
+        return new Date(num).toLocaleString();
+      }
+
+      _loadSketch(e) {
+        this._fire("load-sketch", e.target.dataset.key);
+      }
+
+      _previewSketch(e) {
+        this._fire("show-preview-sketch", e.target.dataset.key);
+      }
+
+      _deleteSketch(e) {
+        let sketchid = e.target.dataset.key;
+        if (!confirm("do you want to delete sketch #" + sketchid))
+          return;
+        this._fire("delete-sketch", sketchid);
+      }
+
+      _changeSketchName(e) {
+        if (this.nameChanger)
+          clearTimeout(this.nameChanger);
+        const newName = e.target.innerHTML;
+        let id = e.target.dataset.key;
+        this.nameChanger = setTimeout(function () {
+          this._fire("rename-sketch", {sketch: id, name: newName});
+          this.nameChanger = null;
+        }.bind(this), 2000);
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      _stopProp(e) {
+        e.stopPropagation();
+      }
+    }
+    customElements.define(AppUiSketchlist.is, AppUiSketchlist);
+  </script>
+</dom-module>

@@ -1,0 +1,135 @@
+<link rel="import" href="music-scale.html">
+
+<dom-module id="music-clef">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+
+    <music-scale id="scale"></music-scale>
+
+  </template>
+  <script>
+
+    class MusicScaleObject {
+      constructor(key, mode, octave) {
+        this.key = key;
+        this.mode = mode;
+        this.keyNumber = MusicScale.twelveNotes.indexOf(key);
+        this.scale = MusicScale.getModeScale(mode);
+        this.octave = octave;
+      }
+
+      getChord(zeroToSix) {
+        return [
+          this.scale[zeroToSix],
+          this.scale[(zeroToSix + 2) % 7],
+          this.scale[(zeroToSix + 4) % 7]
+        ];
+      }
+
+      getToneNumber(zeroToSix, oct) {
+        oct = oct + this.octave + Math.floor(zeroToSix / 7);
+        return oct * 12 + this.keyNumber + this.scale[zeroToSix % 7];
+      }
+
+      getChordType(zeroToSix) {
+        return MusicScaleObject.calculateChordType(this.getChord(zeroToSix));
+      }
+
+      getOctave(base) {
+        return Number(base) + this.octave;
+      }
+
+      getTonePosition(zeroToSix) {
+        return (this.keyNumber + this.scale[zeroToSix]) % 12;
+      }
+
+      getToneName(zeroToSix) {
+        return MusicScale.twelveNotes[this.getTonePosition(zeroToSix)];
+      }
+
+      getTonePositionRelativeToKey(zeroToSix) {
+        return this.scale[zeroToSix];
+      }
+
+      getToneColor(zeroToSix) {
+        return MusicScale.getWheelOf5Number(this.getTonePosition(zeroToSix));
+      }
+
+      getToneHarmonicSeventh(zeroToSix) {
+        let plusMinus86 = this.zeroToSix * 12 / 7 - this.getTonePositionRelativeToKey(zeroToSix);
+        return (plusMinus86 + 1) / 2;
+      }
+
+      static calculateChordType(chordAsArrayOfThreeNumbers) {
+        let distanceA = chordAsArrayOfThreeNumbers[1] - chordAsArrayOfThreeNumbers[0];
+        let distanceB = chordAsArrayOfThreeNumbers[2] - chordAsArrayOfThreeNumbers[1];
+        if (distanceB < 0)
+          distanceB += 12;
+        if (distanceA < 0)
+          distanceA += 12;
+        if (distanceA == 4 && distanceB == 3)
+          return "maj";
+        if (distanceA == 3 && distanceB == 4)
+          return "min";
+        if (distanceA == 3 && distanceB == 3)
+          return "dim";
+        return "unknown";
+      }
+    }
+
+    class MusicClef extends Polymer.Element {
+      static get is() {
+        return "music-clef";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            mode: String,
+            key: String,
+            octave: Number,
+            scale: {
+              type: MusicScaleObject,
+              notify: true,
+              computed: "makeMusicScaleObject(key, mode, octave)"
+            }
+          }
+        }
+      }
+
+      makeMusicScaleObject(key, mode, octave) {
+        return new MusicScaleObject(key, mode, Number(octave));
+      }
+
+      turnModusRight() {
+        this.mode = this.$.scale.turnModusRight();
+        this.normalize();
+      }
+
+      turnModusLeft() {
+        this.mode = this.$.scale.turnModusLeft();
+        this.normalize();
+      }
+
+      turnKeyRight() {
+        this.$.scale.turnKeyRight();
+        this.normalize();
+      }
+
+      turnKeyLeft() {
+        this.$.scale.turnKeyLeft();
+        this.normalize();
+      }
+
+      normalize() {
+        let basis = this.scale.keyNumber + this.$.scale.normalize() + 2400;
+        this.key = MusicScale.twelveNotes[basis % 12];
+      }
+    }
+    customElements.define(MusicClef.is, MusicClef);
+  </script>
+</dom-module>

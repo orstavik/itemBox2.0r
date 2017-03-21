@@ -1,0 +1,142 @@
+<dom-module id="json-object">
+  <template>
+    <style>
+      div {
+        font-weight: lighter;
+      }
+
+      div.data-selected {
+        border-left: 10px solid red;
+        font-weight: bold;
+      }
+
+      .string {
+        color: green;
+      }
+
+      .number {
+        color: blue;
+      }
+
+      .boolean {
+        color: red;
+      }
+
+      .null {
+        color: magenta;
+      }
+
+      .key {
+        color: darkorange;
+      }
+    </style>
+    <template is="dom-if" if="[[isObject(obj)]]">
+      {<br/>
+      <div class="jsonObject" style$="padding-left: [[level]]em" class$="[[isSelected(obj)]]">
+        <template is="dom-repeat" items="[[_toArray(obj)]]">
+          <template is="dom-if" if="[[!isZero(index)]]">
+            <span>,</span><br/>
+          </template>
+          <span>
+                        <span class="key">[[item.key]] :</span>
+                        <json-object key="[[item.key]]" obj="[[item.value]]" level="[[nextLevel(level)]]"
+                                     on-writeop="childrenEdited"></json-object>
+                    </span>
+        </template>
+      </div>
+      }
+    </template>
+
+    <template is="dom-if" if="[[isArray(obj)]]">
+      [
+      <template is="dom-repeat" items="[[obj]]">
+        <json-object key="[[index]]" obj="[[item]]" level="[[nextLevel(level)]]"
+                     on-writeop="childrenEdited"></json-object>
+        ,
+      </template>
+      ]
+    </template>
+
+    <template is="dom-if" if="[[isPrimitive(obj)]]">
+      <span id="editable" class$="[[getType()]]" contenteditable on-input="transferEditInDomToPolymerObj">[[obj]]</span>
+    </template>
+  </template>
+
+  <script>
+    class JSONObject extends Polymer.Element {
+      static get is() {
+        return "json-object";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            key: String,
+            obj: Object,
+            level: {
+              type: Number,
+              value: 0
+            }
+          }
+        };
+      }
+
+      _toArray(obj) {
+        return Object.keys(obj).map(function (key) {
+          return {
+            key: key,
+            value: obj[key]
+          };
+        });
+      }
+
+      getType() {
+        return typeof this.obj;
+      }
+
+      isZero(index) {
+        return index === 0;
+      }
+
+      nextLevel(level) {
+        return level + 1;
+      }
+
+      isArray(obj) {
+        return Array.isArray(obj);
+      }
+
+      isSelected(obj) {
+        return !!obj.selected ? "data-selected" : "";
+      }
+
+      isObject(obj) {
+        return !Array.isArray(obj) && typeof obj === "object";
+      }
+
+      isPrimitive(obj) {
+        return typeof obj !== "object";
+      }
+
+      transferEditInDomToPolymerObj(e) {
+        let txt = this.shadowRoot.querySelector("#editable").innerText;
+        let myType = this.getType();
+        if (myType === "number")
+          txt = Number(txt);
+        else if (myType === "boolean")
+          txt = Boolean(txt);
+        let res = {};
+        res[this.key] = txt;
+        this.dispatchEvent(new CustomEvent("writeop", {composed: true, bubbles: true, detail: res}));
+      }
+
+      childrenEdited(e) {
+        let res = {};
+        res[this.key] = e.detail;
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent("writeop", {composed: true, bubbles: true, detail: res}));
+      }
+    }
+    customElements.define(JSONObject.is, JSONObject);
+  </script>
+</dom-module>

@@ -1,0 +1,137 @@
+<dom-module id="tools-button">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        pointer-events: none;
+      }
+      #mainCircle {
+        display: flex;
+        width: var(--mother-button-size);
+        height: var(--mother-button-size);
+        margin: 10px;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--mother-button-color);
+        border-radius: 50%;
+        cursor: pointer;
+        pointer-events: auto;
+        transition: box-shadow 0.2s;
+      }
+      #mainCircle > iron-icon {
+        --iron-icon-width: calc(var(--mother-button-size) * 0.5);
+        --iron-icon-height: calc(var(--mother-button-size) * 0.5);
+        --iron-icon-fill-color: var(--mother-button-icon-color);
+      }
+      iron-icon:not([transparent]) {
+        position: absolute;
+        animation: RotateL 0.1s ease-out forwards;
+      }
+      iron-icon[transparent] {
+        animation: RotateR 0.1s ease-out forwards;
+      }
+      @keyframes RotateR {
+        from { opacity: 1; transform: rotate(0deg) scale(1); }
+        to { opacity: 0; transform: rotate(90deg) scale(0); }
+      }
+      @keyframes RotateL {
+        from { opacity: 0; transform: rotate(-90deg) scale(0); }
+        to { opacity: 1; transform: rotate(0deg) scale(1); }
+      }
+      .dropper {
+        position: absolute;
+        top: 16px;
+        left: 9px;
+        opacity: 0;
+        transform: scale(0.95);
+        transition-duration: 150ms;
+        pointer-events: none;
+      }
+      :host([active]) .dropper {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+      #a { transition-delay: 80ms; }
+      #b { transition-delay: 50ms; }
+      #c { transition-delay: 1ms; }
+      :host([active]) #a { transition-delay: 1ms; transform: translateY(50px); }
+      :host([active]) #b { transition-delay: 50ms; transform: translateY(100px); }
+      :host([active]) #c { transition-delay: 80ms; transform: translateY(150px); }
+    </style>
+
+    <div class="dropper" id="a">
+      <slot name="a"></slot>
+    </div>
+    <div class="dropper" id="b">
+      <slot name="b"></slot>
+    </div>
+    <div class="dropper" id="c">
+      <slot name="c"></slot>
+    </div>
+
+    <paper-material id="mainCircle" elevation=1 on-click="_toggle">
+      <paper-ripple></paper-ripple>
+      <iron-icon icon="[[icon]]" transparent$="[[active]]"></iron-icon>
+      <iron-icon icon="clear" transparent$="[[!active]]"></iron-icon>
+    </paper-material>
+
+    <!--<div class="children-wrapper">-->
+    <!--<div slot="child-button">-->
+    <!--<iron-selector id="selector" class="children-wrapper" selected-attribute="active" selected-class="">-->
+    <!--</iron-selector>-->
+    <!--</div>-->
+    <!--</div>-->
+
+  </template>
+  <script>
+    class ToolsButton extends Polymer.Element {
+      static get is() {
+        return "tools-button";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            active: {
+              type: Boolean,
+              reflectToAttribute: true,
+              value: false
+            },
+            icon: String
+          }
+        }
+      }
+
+      connectedCallback() {
+        this.addEventListener("selected-button", this._selectedButton.bind(this));
+      }
+
+      _selectedButton(e) {
+        for (let button of this.querySelectorAll("[child-button][active]:not(#" + e.target.id + ")"))
+          button.deactivate();
+      }
+
+      _toggle() {
+        this.active ? this.deactivate() : this.activate();
+      }
+
+      deactivate() {
+        if (!this.active)
+          return;
+        this.active = false;
+        this.$.mainCircle.elevation = 1;
+        for (let child of this.querySelectorAll("[child-button][active]"))
+          child.deactivate();
+      }
+
+      activate() {
+        if (this.active)
+          return;
+        this.active = true;
+        this.$.mainCircle.elevation = 2;
+      }
+    }
+    customElements.define(ToolsButton.is, ToolsButton);
+  </script>
+</dom-module>

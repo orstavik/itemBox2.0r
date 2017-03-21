@@ -1,6 +1,22 @@
-<link rel="import" href="shape/shape-plain.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="ui/app-login.html">
+<link rel="import" href="ui/tools-button.html">
+<link rel="import" href="ui/grow-button.html">
+<link rel="import" href="ui/grow-child-button.html">
+<link rel="import" href="ui/json-wrapper.html">
+<link rel="import" href="ui/color-palette.html">
+<link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
 <link rel="import" href="ui/messages-system.html">
+
+<link rel="import" href="shape/shape-plain.html">
 
 <dom-module id="controller-ui">
   <template>
@@ -8,9 +24,118 @@
       :host {
         height: 100%;
       }
+      tools-button {
+        --mother-button-size: 50px;
+        --mother-button-color: var(--paper-light-blue-200);
+        --mother-button-icon-color: black;
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        z-index: 100;
+      }
+      grow-child-button {
+        --grow-child-button-size: 36px;
+        --grow-child-button-color: white;
+        --grow-child-button-icon-color: black;
+      }
+      grow-button#account {
+        --grow-button-size: 50px;
+        --grow-button-color: white;
+        --grow-button-icon-color: black;
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        z-index: 100;
+      }
+      grow-button#account[signed] {
+        --grow-button-color: var(--paper-light-blue-200);
+      }
+      #paperName {
+        display: flex;
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.5s, transform 0.4s;
+        overflow: hidden;
+        z-index: 10;
+      }
+      #sketchName {
+        margin: 4px 12px;
+        font-weight: 400;
+      }
+      .iconBox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background-color: var(--paper-green-500);
+        cursor: pointer;
+      }
+      .iconBox > div {
+        width: 24px;
+        height: 24px;
+      }
+      iron-icon {
+        --iron-icon-fill-color: white;
+      }
+      .iconBox[hidden] {
+        display: none;
+      }
+      #systemBox {
+        display: flex;
+        flex-direction: column-reverse;
+        position: absolute;
+        top: 100vh;
+        left: 50vw;
+        transform: translateX(-50%);
+        z-index: 100;
+      }
+      #testButtons {
+        display: inline-block;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        z-index: 100;
+        font-size: 10px;
+      }
     </style>
 
     <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
+
+    <template is="dom-if" if="[[user]]">
+      <paper-material id="paperName" elevation=1>
+        <div hidden="[[!sketchData.id]]" id="sketchName">[[sketchData.name]]</div>
+        <div hidden="[[sketchData.id]]" id="sketchName">New Sketch</div>
+        <div hidden="[[sketchData.id]]" on-click="_newSketch" class="iconBox">
+          <div>
+            <iron-icon icon="save"></iron-icon>
+          </div>
+        </div>
+      </paper-material>
+    </template>
+
+    <tools-button id="tools" icon="icons:build">
+      <grow-child-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
+        <json-wrapper petals="[[petals]]"></json-wrapper>
+      </grow-child-button>
+      <grow-child-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
+        <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"
+                       on-color-selected="colorSelected"></color-palette>
+      </grow-child-button>
+      <grow-child-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
+                         active="{{historyActive}}">
+        <app-ui-history history="[[history]]" parent-active="[[historyActive]]"></app-ui-history>
+      </grow-child-button>
+    </tools-button>
+
+    <grow-button id="account" class="top right" icon="account-circle" signed$="[[toBool(user)]]">
+      <app-login sketch-data="[[sketchData]]" user="[[user]]"></app-login>
+    </grow-button>
 
     <messages-help messages="[[state.helpMessages]]" count=3></messages-help>
     <messages-system messages="[[state.systemMessages]]" count=5></messages-system>
@@ -27,6 +152,11 @@
         return {
           state: Object
         }
+      }
+
+      deselect() {
+        this.$.account.deactivate();
+        this.$.tools.deactivate();
       }
     }
     customElements.define(ControllerUI.is, ControllerUI);

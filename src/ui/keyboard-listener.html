@@ -1,0 +1,129 @@
+<dom-module id="keyboard-listener">
+  <script>
+    class ComplexKeyEvent {
+      constructor(prev, e) {
+        prev = prev || {heldKeys: {}};
+        this.heldKeys = Object.assign({}, prev.heldKeys);
+        this.prev = prev;
+        this.e = e || {code: null};
+      }
+
+      getTime() {
+        return this.e.timeStamp;
+      }
+
+      getPreviousDown() {
+        const p = this.getPreviousUnique();
+        return p instanceof KeyDownEvent ? p : p.getPreviousDown();
+      }
+
+      getPreviousUp() {
+        const p = this.getPreviousUnique();
+        return p instanceof KeyUpEvent ? p : p.getPreviousUp();
+      }
+
+      getDurationToLastDifferent() {
+        return this.getTime() - this.getPreviousUnique().getTime();
+      }
+
+      noHeldKeys() {
+        this.heldKeys.length == 0;
+      }
+
+      code(){
+        return this.e.code;
+      }
+
+      shift(){
+        return this.heldKeys["ShiftLeft"] || this.heldKeys["ShiftRight"];
+      }
+
+      ctrl(){
+        return this.heldKeys["ControlLeft"] || this.heldKeys["ControlRight"];
+      }
+    }
+
+    class KeyUpEvent extends ComplexKeyEvent {
+      constructor(prev, e) {
+        super(prev, e);
+        this.down = this.heldKeys[e.code];
+        if (this.down)
+          delete this.heldKeys[e.code];
+      }
+
+      getDurationOfKeyStroke() {
+        return this.e.timeStamp - this.down.timeStamp;
+      }
+
+      getPreviousUnique() {
+        return this.prev;
+      }
+    }
+
+    class KeyDownEvent extends ComplexKeyEvent {
+      constructor(prev, e) {
+        super(prev, e);
+        if (!this.heldKeys[e.code])
+          this.heldKeys[e.code] = e;
+        else
+          this.isRepeating = this.heldKeys[e.code];
+      }
+
+      isRepeat() {
+        return !!this.isRepeating;
+      }
+
+      getPreviousUnique() {
+        return this.isRepeat() ?
+          this.prev.getPreviousUnique() :
+          this.prev;
+      }
+    }
+
+    class KeyboardListener extends Polymer.Element {
+      static get is() {
+        return "keyboard-listener";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            cachedEvent: ComplexKeyEvent,
+            excludeRepeats: {
+              type: Boolean,
+              value: false
+            }
+          }
+        }
+      }
+
+      connectedCallback() {
+        window.addEventListener("keydown", this._keydown.bind(this));
+        window.addEventListener("keyup", this._keyup.bind(this));
+        this.cachedEvent = new ComplexKeyEvent(null, null);
+        this.dispatchEvent(new CustomEvent("key-up", {"composed": true, "bubbles": true, "detail": this.cachedEvent}));
+      }
+
+      _keydown(e) {
+        KeyboardListener.preventCertainDefaultAction(e);
+        this.cachedEvent = new KeyDownEvent(this.cachedEvent, e);
+        if (!this.excludeRepeats || !this.cachedEvent.isRepeat())
+          this.dispatchEvent(new CustomEvent("key-down", {"composed": true, "bubbles": true, "detail": this.cachedEvent}));
+      }
+
+      _keyup(e) {
+        KeyboardListener.preventCertainDefaultAction(e);
+        this.cachedEvent = new KeyUpEvent(this.cachedEvent, e);
+        this.dispatchEvent(new CustomEvent("key-up", {"composed": true, "bubbles": true, "detail": this.cachedEvent}));
+      }
+
+      static preventCertainDefaultAction(e) {
+        let c = e.code;
+        if (c == "Tab" || c == "Enter" || c == "ShiftLeft" || c == "Backquote" || c == "Backspace")
+          e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    customElements.define(KeyboardListener.is, KeyboardListener);
+  </script>
+</dom-module>
