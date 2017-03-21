@@ -1,0 +1,84 @@
+<dom-module id="shape-object">
+  <template>
+    <style>
+      :host {
+        position: absolute;
+        pointer-events: none;
+      }
+      :host([selected]) {
+        z-index: 1;
+      }
+      /*:host(:not([selected])) { FOR IVAR
+        z-index: 11;
+      }*/
+      #body {
+        pointer-events: auto;
+      }
+      #innerBody {
+        box-sizing: border-box;
+        width: 50px;
+        height: 50px;
+        border-radius: 0 50% 50% 50%;
+        transform: rotate(45deg);
+        background: forestgreen;
+        border: 1px solid darkgreen;
+        pointer-events: none;
+      }
+      :host([selected]) #innerBody {
+        border: 2px solid black;
+      }
+    </style>
+
+    <div id="body" style$="[[_style]]">
+      <div id="innerBody"></div>
+    </div>
+
+  </template>
+
+  <script>
+
+    class ShapeObject extends Polymer.GestureEventListeners(Polymer.Element) {
+
+      static get is() {
+        return "shape-object";
+      }
+
+      static get properties() {
+        return {
+          selected: Boolean,
+          matrixData: Object,
+          _style: {
+            type: String,
+            computed: "_makeStyle(matrixData)"
+          },
+          rect: Object
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener("resize", this.alertLocation.bind(this));
+
+        const styleChangedObserver = new MutationObserver(function (mutations) {
+          for (let mutation of mutations) {
+            if (mutation.attributeName == "style")
+              this.alertLocation();
+          }
+        }.bind(this));
+        styleChangedObserver.observe(this.$.body, {attributes: true});
+        setTimeout(this.alertLocation.bind(this), 0);
+      }
+
+      _makeStyle(matrixData) {
+        return "transform: " + matrixData.compute() + ";";
+      }
+
+      alertLocation() {
+        let detail = {};
+        detail[this.id] = {rect: new Rectangle(this.$.body.getBoundingClientRect())};
+        this.dispatchEvent(new CustomEvent("shape-location", {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+    customElements.define(ShapeObject.is, ShapeObject);
+  </script>
+</dom-module>
