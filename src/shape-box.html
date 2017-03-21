@@ -148,7 +148,7 @@
         if (this._isEmpty(shapes))
           return undefined;
         if (this._isMulti(shapes)) {
-          if (action == "rotating")
+          if (action === "rotating")
             return Object.assign({}, this.rect);
 
           let shape = ShapeBox._getFirstShape(shapes);
@@ -186,8 +186,8 @@
       }
 
       _transformShapes(target, e) {
-        const ddx = e.ddx != undefined ? e.ddx : e.dx;
-        const ddy = e.ddy != undefined ? e.ddy : e.dy;
+        const ddx = e.ddx !== undefined ? e.ddx : e.dx;
+        const ddy = e.ddy !== undefined ? e.ddy : e.dy;
         switch (target.getAttribute("type")) {
           case "grabber":
             this.set("action", "moving");
@@ -234,24 +234,24 @@
         let ay = dx * Math.sin(-this.rect.angle) + dy * Math.cos(-this.rect.angle);
         let max = ax;
         let may = ay;
-        if (id.indexOf("top") != -1) {
+        if (id.indexOf("top") !== -1) {
           may = -ay;
           dir.y *= -1;
         }
-        if (id.indexOf("left") != -1) {
+        if (id.indexOf("left") !== -1) {
           max = -ax;
           dir.x *= -1;
         }
-        if (id == "top-left" || id == "top-right" || id == "bottom-right" || id == "bottom-left") {
+        if (id === "top-left" || id === "top-right" || id === "bottom-right" || id === "bottom-left") {
           let prop = this.rect.height / this.rect.width;
           may = max * prop * this.rect.scale.x * this.rect.scale.y;
           ay = ax * prop * dir.x * dir.y;
         }
-        else if (id == "left" || id == "right") {
+        else if (id === "left" || id === "right") {
           may = 0;
           ay = 0;
         }
-        else if (id == "top" || id == "bottom") {
+        else if (id === "top" || id === "bottom") {
           max = 0;
           ax = 0
         }
@@ -262,8 +262,8 @@
         let matrices = {};
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          let bx = shape.rect.center.x - (dir.x == -1 ? this.rect.right : this.rect.left);
-          let by = shape.rect.center.y - (dir.y == -1 ? this.rect.bottom : this.rect.top);
+          let bx = shape.rect.center.x - (dir.x === -1 ? this.rect.right : this.rect.left);
+          let by = shape.rect.center.y - (dir.y === -1 ? this.rect.bottom : this.rect.top);
           matrices[key] = {
             matrix: shape.matrix.scale(
               nx * Math.abs(bx / this.rect.width),
