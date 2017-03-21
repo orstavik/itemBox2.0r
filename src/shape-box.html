@@ -95,7 +95,7 @@
             type: Object,
             computed: "_makeSelectedShapes(allShapes)"
           },
-          scale: Number, // this one we need here to fix transform bugs
+          viewPort: Object,
           rect: {
             type: Object,
             computed: "_makeRectangle(shapes, action)"
@@ -122,8 +122,8 @@
         }
       }
 
-      _makeSelectedShapes(allShapes){
-        const selected ={};
+      _makeSelectedShapes(allShapes) {
+        const selected = {};
         for (let key in allShapes) {
           if (allShapes[key].selected)
             selected[key] = allShapes[key];
@@ -191,20 +191,20 @@
         switch (target.getAttribute("type")) {
           case "grabber":
             this.set("action", "moving");
-            return this._moveShapes(ddx, ddy);
+            return this._moveShapes(ddx, ddy, this.viewPort.s);
           case "point":
             this.set("action", "scaling");
-            return this._scaleShapes(target.id, ddx, ddy, e.x, e.y);
+            return this._scaleShapes(target.id, ddx, ddy, this.viewPort.s);
           case "rotator":
             this.set("action", "rotating");
             return this._rotateShapes(e.x, e.y, ddx, ddy);
         }
       }
 
-      _moveShapes(x, y) {
+      _moveShapes(x, y, s) {
         let matrices = {};
         for (let key in this.shapes)
-          matrices[key] = {matrix: this.shapes[key].matrix.move(x, y)};
+          matrices[key] = {matrix: this.shapes[key].matrix.move(x / s, y / s)};
         this._changeShapes(matrices);
       }
 
@@ -228,7 +228,7 @@
         this._changeShapes(matrices);
       }
 
-      _scaleShapes(id, dx, dy) {
+      _scaleShapes(id, dx, dy, s) {
         let dir = {x: this.rect.scale.x, y: this.rect.scale.y};
         let ax = dx * Math.cos(-this.rect.angle) - dy * Math.sin(-this.rect.angle);
         let ay = dx * Math.sin(-this.rect.angle) + dy * Math.cos(-this.rect.angle);
@@ -257,6 +257,8 @@
         }
         let nx = ax * Math.cos(this.rect.angle) - ay * Math.sin(this.rect.angle);
         let ny = ax * Math.sin(this.rect.angle) + ay * Math.cos(this.rect.angle);
+        nx /= s;
+        ny /= s;
 
         //todo here is a separation of concerns
         let matrices = {};
