@@ -80,11 +80,11 @@
           this._notifyUI();
         }.bind(this));
 				this.$.moveBox.addEventListener('touchmove', function(e) {
-          this.$.camera.checkTaps(e);
+          this.$.camera.pinch(e);
           this._notifyUI();
         }.bind(this));
 				this.$.moveBox.addEventListener('touchend', function(e) {
-          this.$.camera.removeTaps(e);
+          this.$.camera.endPinch(e);
           this._notifyUI();
         }.bind(this));
 

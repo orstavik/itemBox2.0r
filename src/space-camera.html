@@ -25,7 +25,7 @@
         this._fire("view-changed", this.viewPort.move(e.detail.ddx, e.detail.ddy));
       }
 
-      checkTaps(e) {
+      pinch(e) {
         if (e.touches.length !== 2)
           return;
         this.tapZoom = true;
@@ -43,7 +43,7 @@
         this._diag = d;
       }
 
-      removeTaps() {
+      endPinch() {
         this.tapZoom = false;
         this._diag = null;
       }
