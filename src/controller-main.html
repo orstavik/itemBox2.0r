@@ -1,0 +1,86 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="controller-ui.html">
+
+<dom-module id="controller-main">
+  <template>
+    <style>
+      :host { height: 100%; }
+    </style>
+
+    <controller-ui state="[[state]]"
+              on-change-shapes="_changeShapes"
+              on-deselect-all="_deselect"
+              on-select="_selectSingle"
+              on-shape-location="_registerUIshape"
+              on-new-box-selection="_select"
+    on-view-changed="_viewChanged">
+    </controller-ui>
+
+  </template>
+
+  <script>
+
+    class ControllerMain extends Polymer.Element {
+      static get is() {
+        return "controller-main";
+      }
+
+      static get properties() {
+        return {
+          state: Object
+        }
+      }
+
+      constructor(){
+        super();
+        this.state = {};
+        this.state.viewPort = new ViewPort(0, 0, 1);
+        this.state.shapes = {};
+        for (let i = 0; i < 20; i++)
+          this.state.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
+      }
+
+      _changeShapes(e) {
+        let changed = e.detail;
+        const shapes = Object.assign({}, this.state.shapes);
+        for (let key in changed){
+          shapes[key] = Object.assign({}, shapes[key]);
+          shapes[key].matrix = changed[key].matrix;
+        }
+        this.set("state.shapes", shapes);
+      }
+
+      _registerUIshape(e){
+        const shapes = Object.assign({}, this.state.shapes);
+        shapes[e.detail.key].rect = e.detail.rect;
+        this.set("state.shapes", shapes);
+      }
+
+      _deselect() {
+        const shapes = Object.assign({}, this.state.shapes);
+        for (let key in shapes)
+          shapes[key].selected = false;
+        this.set("state.shapes", shapes);
+      }
+
+      _selectSingle(e){
+        const shapes = Object.assign({}, this.state.shapes);
+        shapes[e.detail].selected = true;
+        this.set("state.shapes", shapes);
+      }
+
+      _select(e) {
+        const shapes = Object.assign({}, this.state.shapes);
+        for (let key in e.detail)
+          shapes[key].selected = e.detail[key].selected;
+        this.set("state.shapes", shapes);
+      }
+
+      _viewChanged(e){
+        this.set("state.viewPort", e.detail);
+      }
+    }
+    customElements.define(ControllerMain.is, ControllerMain);
+  </script>
+</dom-module>
