@@ -74,6 +74,8 @@
       connectedCallback() {
 				super.connectedCallback();
 				Polymer.Gestures.addListener(this.$.moveBox, 'track', function(e) {
+          if (e.detail.state !== "track")
+            return;
           this.$.camera.moveViewport(e);
           this._notifyUI();
         }.bind(this));

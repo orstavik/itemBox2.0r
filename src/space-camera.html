@@ -19,48 +19,51 @@
 
   <script>
     class ViewPort {
-      constructor(x,y,s){
+      constructor(x, y, s) {
         this.x = x;
         this.y = y;
         this.s = s;
+      }
+
+      move(x, y) {
+        return new ViewPort(this.x + x, this.y + y, this.s);
+      }
+
+      zoom(ds, ex, ey){
+        let xShift = (ex - this.x) * (1 - ds);
+        let yShift = (ey - this.y) * (1 - ds);
+        return new ViewPort(this.x + xShift, this.y + yShift, this.s * ds);
       }
     }
 
     class SpaceCamera extends Polymer.Element {
 
-      static get is() { return 'space-camera'; }
+      static get is() {
+        return 'space-camera';
+      }
 
       static get properties() {
         return {
           coordinates: {
             type: ViewPort,
-            value: function() {
-              return new ViewPort(0,0,1);
-            }
+            value: function () {
+              return new ViewPort(0, 0, 1);
+            },
+            observer: "_updateView"
           },
           buffer: {
             type: Object,
-            value: function() {
+            value: function () {
               return {}
             }
           }
         };
       }
 
-      static get observers() {
-        return [
-          // "_changeViewport(coordinates)"
-        ];
-      }
-
       moveViewport(e) {
-        let ed = e.detail;
-        if (ed.state !== "track" || this.tapZoom)
+        if (this.tapZoom)            //todo move this maybe??
           return;
-        let c = this.coordinates;
-        c.x += ed.ddx;
-        c.y += ed.ddy;
-        this._changeViewport(c);
+        this.set("coordinates", this.coordinates.move(e.detail.ddx, e.detail.ddy));
       }
 
       checkTaps(e) {
@@ -70,13 +73,13 @@
 
         let dx = e.touches[0].clientX - e.touches[1].clientX;
         let dy = e.touches[0].clientY - e.touches[1].clientY;
-        let d = Math.sqrt(dx*dx+dy*dy);
+        let d = Math.sqrt(dx * dx + dy * dy);
 
         if (this.buffer.d) {
-          let ds = d/this.buffer.d;
-          let cx = e.touches[1].clientX+dx/2;
-          let cy = e.touches[1].clientY+dy/2;
-          this._zoomViewport(ds,cx,cy);
+          let ds = d / this.buffer.d;
+          let cx = e.touches[1].clientX + dx / 2;
+          let cy = e.touches[1].clientY + dy / 2;
+          this._zoomViewport(ds, cx, cy);
         }
         this.buffer.d = d;
       }
@@ -87,22 +90,16 @@
       }
 
       checkScroll(e) {
-        let ds = 1-(e.deltaY/1000);
-        this._zoomViewport(ds,e.x,e.y);
+        let ds = 1 - (e.deltaY / 1000);
+        this._zoomViewport(ds, e.x, e.y);
       }
 
-      _zoomViewport(ds,sx,sy) {
-        let c = this.coordinates;
-        let ex = sx-window.innerWidth/2;
-        let ey = sy-window.innerHeight/2;
-        c.s *= ds;
-        c.x += (ex-c.x)*(1-ds);
-        c.y += (ey-c.y)*(1-ds);
-        this._changeViewport(c);
+      _zoomViewport(ds, sx, sy) {
+        this.set("coordinates", this.coordinates.zoom(ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
       }
 
-      _changeViewport(c) {
-        let matrix = [c.s,0,0,c.s,c.x,c.y];
+      _updateView(c) {
+        let matrix = [c.s, 0, 0, c.s, c.x, c.y];
         this.style.transform = "matrix(" + matrix.join(",") + ")";
       }
     }
