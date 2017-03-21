@@ -20,9 +20,11 @@
       }
 
       moveViewport(e) {
+        const ddx = e.detail.ddx !== undefined ? e.detail.ddx : e.detail.dx;
+        const ddy = e.detail.ddy !== undefined ? e.detail.ddy : e.detail.dy;
         if (this.tapZoom)            //todo move this maybe??
           return;
-        this._fire("view-changed", this.viewPort.move(e.detail.ddx, e.detail.ddy));
+        this._fire("view-changed", this.viewPort.move(ddx, ddy));
       }
 
       pinch(e) {
