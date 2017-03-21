@@ -18,6 +18,14 @@
   </template>
 
   <script>
+    class ViewPort {
+      constructor(x,y,s){
+        this.x = x;
+        this.y = y;
+        this.s = s;
+      }
+    }
+
     class SpaceCamera extends Polymer.Element {
 
       static get is() { return 'space-camera'; }
@@ -25,18 +33,10 @@
       static get properties() {
         return {
           coordinates: {
-            type: Object,
+            type: ViewPort,
             value: function() {
-              return {
-                x: 0,
-                y: 0
-              }
+              return new ViewPort(0,0,1);
             }
-          },
-          scale: {
-            type: Number,
-            value: 1,
-            notify: true
           },
           buffer: {
             type: Object,
@@ -60,7 +60,7 @@
         let c = this.coordinates;
         c.x += ed.ddx;
         c.y += ed.ddy;
-        this._changeViewport(c, this.scale);
+        this._changeViewport(c);
       }
 
       checkTaps(e) {
@@ -93,16 +93,16 @@
 
       _zoomViewport(ds,sx,sy) {
         let c = this.coordinates;
-        this.scale *= ds;
         let ex = sx-window.innerWidth/2;
         let ey = sy-window.innerHeight/2;
+        c.s *= ds;
         c.x += (ex-c.x)*(1-ds);
         c.y += (ey-c.y)*(1-ds);
-        this._changeViewport(c, this.scale);
+        this._changeViewport(c);
       }
 
-      _changeViewport(c, s) {
-        let matrix = [s,0,0,s,c.x,c.y];
+      _changeViewport(c) {
+        let matrix = [c.s,0,0,c.s,c.x,c.y];
         this.style.transform = "matrix(" + matrix.join(",") + ")";
       }
     }
