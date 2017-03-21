@@ -28,21 +28,9 @@
 
       static get properties() {
         return {
-          defaultState: {
-            type: State,
-            value: function () {
-              const shapes = {};
-              for (let i = 0; i < 20; i++)
-                shapes["shape" + i] = {matrix: MatrixData.random(), selected: false};
-              return new State(new ViewPort(0, 0, 1), shapes);
-            }
-          },
-          fluidState: {
-            type: State,
-            value: function(){
-              return new State();
-            }
-          },
+          timeMachine: Array,
+          defaultState:State,
+          fluidState: State,
           state:{
             type: Object,
             computed: "_mergeFinal(defaultState, fluidState)"
@@ -50,8 +38,23 @@
         }
       }
 
-      _mergeFinal(defaultState, fluidState){
-        return defaultState.merge(fluidState);
+      constructor(){
+        super();
+        const randoms = {};
+        for (let i = 0; i < 20; i++)
+          randoms["shape" + i] = {matrix: MatrixData.random(), selected: false};
+        this.setProperties({
+          timeMachine: [],
+          fluidState: new State(),
+          defaultState: new State(new ViewPort(0, 0, 1), randoms)
+        });
+      }
+
+      _mergeFinal(A, B){
+        const C = A.merge(B);
+//        C.prepare();
+        this.push("timeMachine", C);
+        return C;
       }
 
       _changeShapes(e) {
