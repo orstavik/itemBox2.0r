@@ -1,3 +1,5 @@
+<link rel="import" href="shape/selection-box.html">
+<link rel="import" href="shape/shape-box.html">
 <link rel="import" href="shape-object.html">
 
 <dom-module id="shape-plain">
@@ -26,6 +28,8 @@
       }
     </style>
 
+    <shape-box id="shapeBox" all-shapes="[[state.shapes]]" view-port="[[state.viewPort]]"></shape-box>
+    <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
     <space-camera id="camera" view-port="[[state.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
         <shape-object id$="[[item.key]]"
