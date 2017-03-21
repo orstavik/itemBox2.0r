@@ -11,9 +11,9 @@
       }
     </style>
 
-    <shape-box id="shapeBox" all-shapes="[[shapes]]" scale="[[scale]]"></shape-box>
-    <selection-box id="selection" shapes="[[shapes]]"></selection-box>
-    <shape-plain id="shapePlain" shapes="[[shapes]]" scale="{{scale}}"></shape-plain>
+    <shape-box id="shapeBox" all-shapes="[[state.shapes]]" scale="[[state.viewPort]]"></shape-box>
+    <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
+    <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
 
   </template>
 
@@ -26,7 +26,7 @@
 
       static get properties() {
         return {
-          shapes: Object
+          state: Object
         }
       }
     }

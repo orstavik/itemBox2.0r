@@ -26,7 +26,7 @@
       }
     </style>
 
-    <space-camera id="camera" coordinates="{{scale}}">
+    <space-camera id="camera" view-port="[[state.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
         <shape-object id$="[[item.key]]"
                       selected$="[[item.value.selected]]"
@@ -50,11 +50,7 @@
 
       static get properties() {
         return {
-          shapes: Object,
-          scale: {
-            type: Number,
-            notify: true
-          },
+          state: Object,
           shift: {
             type: Boolean,
             value: false
@@ -66,7 +62,7 @@
           },
           shapesArray: {
             type: Array,
-            computed: "_toArray(shapes)"
+            computed: "_toArray(state.shapes)"
           }
         }
       }

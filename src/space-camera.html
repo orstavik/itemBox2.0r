@@ -1,41 +1,9 @@
 <dom-module id="space-camera">
   <template>
-    <style>
-      :host {
-        /*display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;*/
-      }
-    </style>
-
     <slot></slot>
-
   </template>
 
   <script>
-    class ViewPort {
-      constructor(x, y, s) {
-        this.x = x;
-        this.y = y;
-        this.s = s;
-      }
-
-      move(x, y) {
-        return new ViewPort(this.x + x, this.y + y, this.s);
-      }
-
-      zoom(ds, ex, ey){
-        let xShift = (ex - this.x) * (1 - ds);
-        let yShift = (ey - this.y) * (1 - ds);
-        return new ViewPort(this.x + xShift, this.y + yShift, this.s * ds);
-      }
-    }
-
     class SpaceCamera extends Polymer.Element {
 
       static get is() {
@@ -44,18 +12,9 @@
 
       static get properties() {
         return {
-          coordinates: {
+          viewPort: {
             type: ViewPort,
-            value: function () {
-              return new ViewPort(0, 0, 1);
-            },
             observer: "_updateView"
-          },
-          buffer: {
-            type: Object,
-            value: function () {
-              return {}
-            }
           }
         };
       }
@@ -63,7 +22,7 @@
       moveViewport(e) {
         if (this.tapZoom)            //todo move this maybe??
           return;
-        this.set("coordinates", this.coordinates.move(e.detail.ddx, e.detail.ddy));
+        this._fire("view-changed", this.viewPort.move(e.detail.ddx, e.detail.ddy));
       }
 
       checkTaps(e) {
@@ -75,18 +34,18 @@
         let dy = e.touches[0].clientY - e.touches[1].clientY;
         let d = Math.sqrt(dx * dx + dy * dy);
 
-        if (this.buffer.d) {
-          let ds = d / this.buffer.d;
+        if (this._diag) {
+          let ds = d / this._diag;
           let cx = e.touches[1].clientX + dx / 2;
           let cy = e.touches[1].clientY + dy / 2;
           this._zoomViewport(ds, cx, cy);
         }
-        this.buffer.d = d;
+        this._diag = d;
       }
 
       removeTaps() {
         this.tapZoom = false;
-        this.buffer.d = null;
+        this._diag = null;
       }
 
       checkScroll(e) {
@@ -95,12 +54,16 @@
       }
 
       _zoomViewport(ds, sx, sy) {
-        this.set("coordinates", this.coordinates.zoom(ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
+        this._fire("view-changed", this.viewPort.zoom(ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
       }
 
-      _updateView(c) {
-        let matrix = [c.s, 0, 0, c.s, c.x, c.y];
+      _updateView(view) {
+        let matrix = [view.s, 0, 0, view.s, view.x, view.y];
         this.style.transform = "matrix(" + matrix.join(",") + ")";
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
 

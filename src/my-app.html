@@ -8,12 +8,13 @@
       :host { height: 100%; }
     </style>
 
-    <ui-plain shapes="[[shapes]]"
+    <ui-plain state="[[state]]"
               on-change-shapes="_changeShapes"
               on-deselect-all="_deselect"
               on-select="_selectSingle"
               on-shape-location="_registerUIshape"
-              on-new-box-selection="_select">
+              on-new-box-selection="_select"
+    on-view-changed="_viewChanged">
     </ui-plain>
 
   </template>
@@ -27,51 +28,57 @@
 
       static get properties() {
         return {
-          shapes: Object
+          state: Object
         }
       }
 
       constructor(){
         super();
-        this.shapes = {};
+        this.state = {};
+        this.state.viewPort = new ViewPort(0, 0, 1);
+        this.state.shapes = {};
         for (let i = 0; i < 20; i++)
-          this.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
+          this.state.shapes["shape" + i] = {selected: false, matrix: MatrixData.random()};
       }
 
       _changeShapes(e) {
         let changed = e.detail;
-        const shapes = Object.assign({}, this.shapes);
+        const shapes = Object.assign({}, this.state.shapes);
         for (let key in changed){
           shapes[key] = Object.assign({}, shapes[key]);
           shapes[key].matrix = changed[key].matrix;
         }
-        this.set("shapes", shapes);
+        this.set("state.shapes", shapes);
       }
 
       _registerUIshape(e){
-        const shapes = Object.assign({}, this.shapes);
+        const shapes = Object.assign({}, this.state.shapes);
         shapes[e.detail.key].rect = e.detail.rect;
-        this.set("shapes", shapes);
+        this.set("state.shapes", shapes);
       }
 
       _deselect() {
-        const shapes = Object.assign({}, this.shapes);
+        const shapes = Object.assign({}, this.state.shapes);
         for (let key in shapes)
           shapes[key].selected = false;
-        this.set("shapes", shapes);
+        this.set("state.shapes", shapes);
       }
 
       _selectSingle(e){
-        const shapes = Object.assign({}, this.shapes);
+        const shapes = Object.assign({}, this.state.shapes);
         shapes[e.detail].selected = true;
-        this.set("shapes", shapes);
+        this.set("state.shapes", shapes);
       }
 
       _select(e) {
-        const shapes = Object.assign({}, this.shapes);
+        const shapes = Object.assign({}, this.state.shapes);
         for (let key in e.detail)
           shapes[key].selected = e.detail[key].selected;
-        this.set("shapes", shapes);
+        this.set("state.shapes", shapes);
+      }
+
+      _viewChanged(e){
+        this.set("state.viewPort", e.detail);
       }
     }
     customElements.define(MyApp.is, MyApp);
