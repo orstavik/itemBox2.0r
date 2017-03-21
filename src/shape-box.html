@@ -197,7 +197,7 @@
             return this._scaleShapes(target.id, ddx, ddy, this.viewPort.s);
           case "rotator":
             this.set("action", "rotating");
-            return this._rotateShapes(e.x, e.y, ddx, ddy);
+            return this._rotateShapes(e.x, e.y, ddx, ddy, this.viewPort.s);
         }
       }
 
@@ -208,7 +208,7 @@
         this._changeShapes(matrices);
       }
 
-      _rotateShapes(x, y, ddx, ddy) {
+      _rotateShapes(x, y, ddx, ddy, s) {
         let dx = (x - ddx) - this.rect.center.x;
         let dy = (y - ddy) - this.rect.center.y;
         let a0 = Math.atan2(dx, dy);
@@ -223,7 +223,7 @@
         let matrices = {};
         for (let key in this.shapes) {
           var move = this.shapes[key].rect.calculateRotationMovement(this.rect.center, a);
-          matrices[key] = {matrix: this.shapes[key].matrix.rotate(a, move.x, move.y)};
+          matrices[key] = {matrix: this.shapes[key].matrix.rotate(a, move.x / s, move.y / s)};
         }
         this._changeShapes(matrices);
       }
