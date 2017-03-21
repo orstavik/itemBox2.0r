@@ -57,23 +57,23 @@
 
       connectedCallback() {
         super.connectedCallback();
-        window.addEventListener("resize", this._notifyUI.bind(this));
+        window.addEventListener("resize", this.alertLocation.bind(this));
 
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
             if (mutation.attributeName == "style")
-              this._notifyUI();
+              this.alertLocation();
           }
         }.bind(this));
         styleChangedObserver.observe(this.$.body, {attributes: true});
-        setTimeout(this._notifyUI.bind(this), 0);
+        setTimeout(this.alertLocation.bind(this), 0);
       }
 
       _makeStyle(matrixData) {
         return "transform: " + matrixData.compute() + ";";
       }
 
-      _notifyUI() {
+      alertLocation() {
         this._fire("shape-location", {
           key: this.id,
           rect: new Rectangle(this.$.body.getBoundingClientRect()),

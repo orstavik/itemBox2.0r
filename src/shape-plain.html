@@ -68,24 +68,20 @@
       }
 
       connectedCallback() {
-				super.connectedCallback();
-				Polymer.Gestures.addListener(this.$.moveBox, 'track', function(e) {
+        super.connectedCallback();
+        Polymer.Gestures.addListener(this.$.moveBox, 'track', function (e) {
           if (e.detail.state !== "track")
             return;
           this.$.camera.moveViewport(e);
-          this._notifyUI();
         }.bind(this));
-				window.addEventListener('wheel', function(e) {
+        window.addEventListener('wheel', function (e) {
           this.$.camera.checkScroll(e);
-          this._notifyUI();
         }.bind(this));
-				this.$.moveBox.addEventListener('touchmove', function(e) {
+        this.$.moveBox.addEventListener('touchmove', function (e) {
           this.$.camera.pinch(e);
-          this._notifyUI();
         }.bind(this));
-				this.$.moveBox.addEventListener('touchend', function(e) {
+        this.$.moveBox.addEventListener('touchend', function (e) {
           this.$.camera.endPinch(e);
-          this._notifyUI();
         }.bind(this));
 
         window.addEventListener("keydown", function (e) {
@@ -100,7 +96,16 @@
           if (e.key === " ")
             this.moveable = false;
         }.bind(this));
-			}
+
+        const styleChangedObserver = new MutationObserver(function (mutations) {
+          for (let mutation of mutations) {
+            if (mutation.attributeName == "style")
+              for (let node of this.shadowRoot.querySelectorAll("shape-object"))
+                node.alertLocation();
+          }
+        }.bind(this));
+        styleChangedObserver.observe(this.$.camera, {attributes: true});
+      }
 
       _toArray(shapes) {
         return Object.keys(shapes).map(function (key) {
@@ -127,13 +132,6 @@
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
           this._fire("select", e.target.id);
-        }
-      }
-
-      _notifyUI() {
-        let nodes = this.shadowRoot.querySelectorAll("shape-object");
-        for (let i = 0; i < nodes.length; i++) {
-          nodes[i]._notifyUI();
         }
       }
 
