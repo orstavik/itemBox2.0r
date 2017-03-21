@@ -10,7 +10,7 @@ class Tools {
   static merge1(A, B) {
     if (A === B) return A;
     if (!B || Object.keys(B).length === 0) return A;
-    if (!A || Object.keys(B).length === 0) return B;
+    if (!A || Object.keys(A).length === 0) return B;
     return Object.assign({}, A, B);
   }
 
@@ -22,6 +22,14 @@ class Tools {
     for (let key of Object.keys(B))
       C[key] = Tools.merge1(A[key], B[key]);
     return C;
+  }
+
+  static mergeByFindingTheLongestArray(A, B) {
+    if (A === B) return A;
+    if (!B || B.length === 0) return A;
+    if (!A || A.length === 0) return B;
+    //todo only checking the length here!!
+    return A.length > B.length ? A : B;
   }
 
   //it should remove all branches from A that is already in B

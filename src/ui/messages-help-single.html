@@ -1,0 +1,66 @@
+<dom-module id="help-message">
+  <template>
+    <style>
+			:host {
+				display: inline-block;
+				width: 300px;
+				height: 100px;
+				margin-top: 10px;
+				transform: translateY(0) scale(1);
+			}
+			paper-material {
+				display: flex;
+				box-sizing: border-box;
+				width: 100%;
+				height: 100%;
+				background: white;
+				border-radius: 3px;
+				padding: 6px 12px;
+				cursor: pointer;
+			}
+			.firstColumn {
+				width: 40px;
+				flex-shrink: 0;
+				margin-right: 8px;
+			}
+			.secondColumn {
+				display: flex;
+    		align-items: center;
+			}
+			span {
+				display: inline-block;
+				font-size: 13px;
+				font-weight: 400;
+			}
+    </style>
+
+		<paper-material elevation="2">
+			<div class="firstColumn">
+				<iron-icon icon="help-outline"></iron-icon>
+			</div>
+			<div class="secondColumn">
+				<span>[[value]]</span>
+			</div>
+		</paper-material>
+
+  </template>
+  <script>
+    class HelpMessage extends Polymer.Element {
+      static get is() {
+        return "help-message";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            value: String
+          }
+        }
+      }
+
+			_animate() {
+			}
+    }
+    customElements.define(HelpMessage.is, HelpMessage);
+  </script>
+</dom-module>

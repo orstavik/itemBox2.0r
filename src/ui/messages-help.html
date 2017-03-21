@@ -1,0 +1,134 @@
+<link rel="import" href="messages-help-single.html">
+
+<dom-module id="help-messenger">
+  <template>
+    <style>
+			:host {
+				display: inline-block;
+				position: absolute;
+				bottom: 20px;
+				left: 20px;
+				z-index: 9;
+			}
+			help-message:not(:last-of-type) {
+				margin-bottom: -100px;
+			}
+			#listWrapper[list-view] help-message {
+				transition-duration: 0.5s;
+			}
+			#listWrapper[list-view="true"] help-message {
+				transform: scale(1) !important;
+				margin-bottom: 0px;
+			}
+			div {
+				display: flex;
+    		flex-direction: column;
+			}
+    </style>
+
+		<div id="listWrapper" on-click="_toggle">
+			<template is="dom-repeat" items="[[_showLess(messages,count)]]" on-dom-change="_animateLastOne">
+				<messages-help-single value="[[item.value]]" style$="[[_calcStyle(item,index,count)]]"></messages-help-single>
+			</template>
+		</div>
+
+  </template>
+  <script>
+    class HelpMessenger extends Polymer.Element {
+      static get is() {
+        return "help-messenger";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            messages: Array,
+						count: Number
+          },
+					observers: [
+						"_newMessage(messages)"
+					]
+        }
+      }
+
+			connectedCallback() {
+				this.addEventListener("pointerenter", this._pointerEnter.bind(this));
+				this.addEventListener("pointerleave", this._pointerLeave.bind(this));
+			}
+
+			_pointerEnter() {
+				this.fading.cancel();
+			}
+			
+			_pointerLeave() {
+				if (this.$.listWrapper.getAttribute("list-view") !== "true") {
+					this.fading.play();
+				}
+			}
+
+			_beginFading() {
+				this.style.pointerEvents = "auto";
+				if (this.fading)
+					this.fading.cancel();
+				this.fading = this.animate({opacity: [1,0]}, {
+					delay: 2000,
+					duration: 4000,
+					fill: "forwards"
+				});
+				this.fading.onfinish = function() {
+					this.style.pointerEvents = "none";
+				}.bind(this);
+			}
+
+			_newMessage(arr) {
+				this.$.listWrapper.removeAttribute("list-view");
+				this._beginFading();
+				// dom-repeat hack start
+				// this.$.templatizer.set("items", []);
+				// this.$.templatizer.render();
+				// dom-repeat hack end
+			}
+
+			_showLess(arr,num) {
+				return arr ? arr.slice(-num) : [];
+			}
+
+			_animateLastOne() {
+				let message = this.shadowRoot.querySelectorAll("help-message:last-of-type")[0];
+				if (message) {
+					let animation = message.animate({
+						transform: ["translateY(50%) scale(0.2)", "translateY(0) scale(1)"],
+						opacity: [0, 1]
+					}, {
+						duration: 250,
+						easing: "cubic-bezier(0.6, 0.03, 0.75, 1.5)"
+					});
+				}
+			}
+
+			_calcStyle(item,ind,num) {
+				let length = this.$.listWrapper.children.length < 4 ? this.$.listWrapper.children.length : num;
+				return "transform: scale("+Math.pow(0.95,length-ind-1)+")";
+			}
+
+			_showListView() {
+				// clearTimeout(this.timeOutHideWrapper);
+				this.$.listWrapper.setAttribute("list-view", true);
+				// this.timeOutHideWrapper = setTimeout(this._hideWrapper.bind(this), 4000);
+			}
+
+			_hideWrapper() {
+				this.$.listWrapper.setAttribute("list-view", false);
+			}
+
+			_toggle() {
+				if (this.$.listWrapper.getAttribute("list-view") == "true") {
+					this._hideWrapper();
+				} else {
+					this._showListView();
+				}
+			}
+    }
+    customElements.define(HelpMessenger.is, HelpMessenger);
+  </script>
+</dom-module>

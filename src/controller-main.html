@@ -37,17 +37,17 @@
       static get properties() {
         return {
           timeMachine: Array,
-          defaultState:State,
+          defaultState: State,
           fluidState: State,
-          state:{
+          state: {
             type: Object,
             computed: "_mergeFinal(defaultState, fluidState)"
           }
         }
       }
 
-      constructor(){
-        super();
+      connectedCallback() {
+        super.connectedCallback();
         const randoms = {};
         for (let i = 0; i < 20; i++)
           randoms["shape" + i] = {matrix: MatrixData.random(), selected: false};
@@ -56,9 +56,11 @@
           fluidState: new State(),
           defaultState: new State(new ViewPort(0, 0, 1), randoms)
         });
+        this.addEventListener("system-message", this._systemMessage.bind(this));
+        this.addEventListener("help-message", this._helpMessage.bind(this));
       }
 
-      _mergeFinal(A, B){
+      _mergeFinal(A, B) {
         const C = A.merge(B);
 //        C.prepare();
         this.push("timeMachine", C);
@@ -92,6 +94,14 @@
 
       _viewChanged(e) {
         this.set("fluidState", new State(e.detail, this.fluidState.shapes));
+      }
+
+      _systemMessage(e) {
+        this.set("fluidState", this.fluidState.pushSystemMessage(e.detail));
+      }
+
+      _helpMessage(e) {
+        this.set("fluidState", this.fluidState.pushHelpMessage(e.detail));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);

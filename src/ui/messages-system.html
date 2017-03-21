@@ -1,0 +1,179 @@
+<dom-module id="system-messenger">
+  <template>
+    <style>
+      :host {
+        display: flex;
+				align-items: center;
+				justify-content: flex-end;
+        flex-direction: column-reverse;
+				width: 300px;
+				height: 100px;
+        position: absolute;
+        top: 100vh;
+        left: 50vw;
+        transform: translateX(-50%);
+        z-index: 100;
+      }
+			#logBox {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				width: 240px;
+				position: absolute;
+				border-top-left-radius: 2px;
+				border-top-right-radius: 2px;
+				background: rgba(0,0,0,0.7);
+				transform: translateY(0);
+				transition: transform 0.3s;
+				cursor: pointer;
+			}
+			#logBox[log-view=true] {
+				transform: translateY(-100%);
+			}
+			#logBox[log-view=true] + #message {
+				opacity: 0;
+			}
+			#logBox h4 {
+				margin: 10px 20px;
+				font-size: 15px;
+				font-weight: 400;
+				text-align: center;
+				color: white;
+			}
+			#scrollBox {
+				display: block;
+				position: relative;
+				width: 85%;
+				height: 200px;
+				overflow: hidden;
+				border-top: 1px solid gray;
+			}
+			#scroller {
+    		width: calc(100% + 17px);
+    		height: 100%;
+				position: absolute;
+				overflow-y: scroll;
+				overflow-x: hidden;
+			}
+			.logMessage {
+				margin: 10px 4px;
+			}
+			.time {
+				display: block;
+				color: grey;
+				font-size: 10px;
+				font-weight: 600;
+				line-height: 1.4;
+			}
+			.text {
+				display: block;
+				color: var(--paper-yellow-200);
+				font-size: 13px;
+				font-weight: 100;
+				line-height: 1.3;
+			}
+			#message {
+    		background: rgba(0,0,0,0.6);
+				border-top-left-radius: 2px;
+				border-top-right-radius: 2px;
+				transition: background 0.3s, transform 0.2s cubic-bezier(0.4, 0.0, 1, 1);
+				transform: translateY(0);
+				opacity: 1;
+				cursor: pointer;
+			}
+			#message[new] {
+				transition: background 0.3s, transform 0.2s cubic-bezier(0.0, 0.0, 0.2, 1);
+				transform: translateY(-100%);
+			}
+			#message:hover {
+				background: rgba(0,0,0,0.7);
+			}
+			#message > span {
+				display: inline-block;
+		    max-width: 200px;
+				padding: 8px 16px;
+				font-size: 13px;
+				font-weight: 400;
+				color: white;
+			}
+    </style>
+
+		<div id="logBox" on-click="_hideLog">
+			<h4>SYSTEM LOG</h4>
+			<div id="scrollBox">
+				<div id="scroller">
+					<template is="dom-repeat" items="[[messages]]">
+						<div class="logMessage">
+							<span class="time">[[_getTime(item.timestamp)]]</span>
+							<span class="text">[[item.value]]</span>
+						</div>
+					</template>
+				</div>
+			</div>
+		</div>
+		
+		<div id="message"
+				 on-pointerenter="_holdMessage"
+				 on-pointerleave="_leaveMessage"
+				 on-click="_showLog">
+			<span>[[lastMessage.value]]</span>
+		</div>
+
+  </template>
+  <script>
+    class SystemMessenger extends Polymer.Element {
+      static get is() {
+        return "system-messenger";
+      }
+
+      static get config() {
+        return {
+          properties: {
+            messages: Array,
+						lastMessage: Object,
+						count: Number
+          },
+					observers: [
+						"_showMessage(messages)"
+					]
+        }
+      }
+
+			_showMessage() {
+				if (this.messages && this.messages.length > 0) {
+					this.set("lastMessage", this.messages[this.messages.length-1]);
+					this.$.message.setAttribute("new", "");
+					this._holdMessage();
+					this._leaveMessage();
+				}
+			}
+
+			_holdMessage() {
+				clearTimeout(this.newTimer);
+				this.newTimer = undefined;
+			}
+			
+			_leaveMessage() {
+				if (!this.newTimer)
+					this.newTimer = setTimeout(function(){
+						this.$.message.removeAttribute("new");
+					}.bind(this), 2000);
+			}
+
+			_showLog() {
+				this.$.logBox.setAttribute("log-view", true);
+				this._holdMessage();
+			}
+
+			_hideLog() {
+				this.$.logBox.setAttribute("log-view", false);
+				this._leaveMessage();
+			}
+
+			_getTime(time) {
+				return time.toLocaleTimeString();
+			}
+    }
+    customElements.define(SystemMessenger.is, SystemMessenger);
+  </script>
+</dom-module>

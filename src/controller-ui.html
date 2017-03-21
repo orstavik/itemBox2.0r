@@ -1,7 +1,8 @@
 <link rel="import" href="shape/selection-box.html">
 <link rel="import" href="shape/shape-box.html">
 <link rel="import" href="shape/shape-plain.html">
-<link rel="import" href="shape/space-camera.html">
+<link rel="import" href="ui/messages-help.html">
+<link rel="import" href="ui/messages-system.html">
 
 <dom-module id="controller-ui">
   <template>
@@ -14,6 +15,10 @@
     <shape-box id="shapeBox" all-shapes="[[state.shapes]]" view-port="[[state.viewPort]]"></shape-box>
     <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
     <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
+
+
+    <messages-help messages="[[state.helpMessages]]" count=3></messages-help>
+    <messages-system messages="[[state.systemMessages]]" count=5></messages-system>
 
   </template>
 
