@@ -1,0 +1,35 @@
+<link rel="import" href="selection-box.html">
+<link rel="import" href="shape-box.html">
+<link rel="import" href="shape-plain.html">
+<link rel="import" href="space-camera.html">
+
+<dom-module id="controller-ui">
+  <template>
+    <style>
+      :host {
+        height: 100%;
+      }
+    </style>
+
+    <shape-box id="shapeBox" all-shapes="[[state.shapes]]" view-port="[[state.viewPort]]"></shape-box>
+    <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
+    <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
+
+  </template>
+
+  <script>
+
+    class ControllerUI extends Polymer.Element {
+      static get is() {
+        return "controller-ui";
+      }
+
+      static get properties() {
+        return {
+          state: Object
+        }
+      }
+    }
+    customElements.define(ControllerUI.is, ControllerUI);
+  </script>
+</dom-module>

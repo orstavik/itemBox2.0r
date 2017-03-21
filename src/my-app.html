@@ -1,6 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="ui-plain.html">
+<link rel="import" href="controller-ui.html">
 
 <dom-module id="my-app">
   <template>
@@ -8,14 +8,14 @@
       :host { height: 100%; }
     </style>
 
-    <ui-plain state="[[state]]"
+    <controller-ui state="[[state]]"
               on-change-shapes="_changeShapes"
               on-deselect-all="_deselect"
               on-select="_selectSingle"
               on-shape-location="_registerUIshape"
               on-new-box-selection="_select"
     on-view-changed="_viewChanged">
-    </ui-plain>
+    </controller-ui>
 
   </template>
 
