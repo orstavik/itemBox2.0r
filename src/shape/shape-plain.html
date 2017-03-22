@@ -1,4 +1,5 @@
 <link rel="import" href="selection-box.html">
+<link rel="import" href="coordinate-lines.html">
 <link rel="import" href="shape-box.html">
 <link rel="import" href="shape-object.html">
 <link rel="import" href="space-camera.html">
@@ -7,9 +8,7 @@
   <template>
     <style>
       :host {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
         width: 100%;
         height: 100%;
         position: absolute;
@@ -30,6 +29,7 @@
 
     <shape-box id="shapeBox" all-shapes="[[state.shapes]]" view-port="[[state.viewPort]]"></shape-box>
     <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
+    <coordinate-lines view-port="[[state.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
         <shape-object id$="[[item.key]]"

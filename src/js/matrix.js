@@ -9,8 +9,8 @@ class MatrixData {
 
   static random() {
     return new MatrixData(
-      Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
-      Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
+      /*Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 5*/0,
+      /*Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 5*/0,
       1,
       1,
       Math.random() * Math.PI * 2);
