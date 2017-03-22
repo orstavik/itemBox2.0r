@@ -1,3 +1,5 @@
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="app-ui-sketchlist.html">
 
 <dom-module id="app-login">
@@ -152,20 +154,18 @@
         return "app-login";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            user: Object,
-            _userImage: {
-              type: String,
-              computed: "_setUserImage(user)"
-            },
-            _userName: {
-              type: String,
-              computed: "_setUserName(user)"
-            },
-            sketchData: Object
-          }
+          user: Object,
+          _userImage: {
+            type: String,
+            computed: "_setUserImage(user)"
+          },
+          _userName: {
+            type: String,
+            computed: "_setUserName(user)"
+          },
+          sketchData: Object
         }
       }
 

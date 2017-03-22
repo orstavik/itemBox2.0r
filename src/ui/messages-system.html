@@ -126,18 +126,19 @@
         return "system-messenger";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            messages: Array,
-						lastMessage: Object,
-						count: Number
-          },
-					observers: [
-						"_showMessage(messages)"
-					]
+					messages: Array,
+					lastMessage: Object,
+					count: Number
         }
       }
+
+			static get observers() {
+        return [
+					"_showMessage(messages)"
+				]
+			}
 
 			_showMessage() {
 				if (this.messages && this.messages.length > 0) {

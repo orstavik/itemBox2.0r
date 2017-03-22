@@ -1,3 +1,5 @@
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
 <link rel="import" href="../lib/key-flower.html">
 
 <dom-module id="color-palette">
@@ -87,27 +89,26 @@
 
   </template>
 
-  <script src="js/StaticColorMaker.js"></script>
+  <!--<script src="js/StaticColorMaker.js"></script>-->
   <script>
     class ColorPalette extends Polymer.Element {
       static get is() {
         return "color-palette";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            colors: {
-              type: Array,
-              computed: "_computeColorName(s)",
-              observer: "_notifyColorChange"
-            },
-            s: Number
-          }
+          colors: {
+            type: Array,
+            computed: "_computeColorName(s)",
+            observer: "_notifyColorChange"
+          },
+          s: Number
         }
       }
 
       connectedCallback() {
+        super.connectedCallback();
         this.set("colors", this._computeColorName(0));
       }
 

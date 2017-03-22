@@ -39,19 +39,21 @@
         return "help-messenger";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            messages: Array,
-						count: Number
-          },
-					observers: [
-						"_newMessage(messages)"
-					]
-        }
+					messages: Array,
+					count: Number
+				}
       }
 
+			static get observers() {
+        return [
+					"_newMessage(messages)"
+				]
+			}
+
 			connectedCallback() {
+				super.connectedCallback();
 				this.addEventListener("pointerenter", this._pointerEnter.bind(this));
 				this.addEventListener("pointerleave", this._pointerLeave.bind(this));
 			}

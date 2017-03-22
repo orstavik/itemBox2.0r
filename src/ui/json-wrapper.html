@@ -1,3 +1,5 @@
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../lib/json-object.html">
 
 <dom-module id="json-wrapper">
@@ -75,11 +77,9 @@
         return "json-wrapper";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            petals: Array
-          }
+          petals: Array
         }
       }
 

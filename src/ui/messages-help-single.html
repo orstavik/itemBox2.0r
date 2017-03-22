@@ -1,3 +1,6 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
 <dom-module id="help-message">
   <template>
     <style>
@@ -50,16 +53,11 @@
         return "help-message";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            value: String
-          }
+					value: String
         }
       }
-
-			_animate() {
-			}
     }
     customElements.define(HelpMessage.is, HelpMessage);
   </script>

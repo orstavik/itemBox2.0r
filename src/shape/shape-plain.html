@@ -1,6 +1,7 @@
 <link rel="import" href="selection-box.html">
 <link rel="import" href="shape-box.html">
 <link rel="import" href="shape-object.html">
+<link rel="import" href="space-camera.html">
 
 <dom-module id="shape-plain">
   <template>
@@ -12,7 +13,6 @@
         width: 100%;
         height: 100%;
         position: absolute;
-        pointer-events: none;
       }
       :host([moveable]) #moveBox {
         display: block;

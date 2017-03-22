@@ -1,3 +1,7 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
 <dom-module id="grow-child-button">
   <template>
     <style>
@@ -119,19 +123,17 @@
         return "grow-child-button";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            active: {
-              type: Boolean,
-              reflectToAttribute: true,
-              value: false,
-              notify:true
-            },
-            menu: String,
-            icon: String,
-            position: Number,
-          }
+          active: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            notify:true
+          },
+          menu: String,
+          icon: String,
+          position: Number,
         }
       }
 
