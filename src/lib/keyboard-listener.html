@@ -30,6 +30,10 @@
         return this.heldKeys.length === 0;
       }
 
+      isDown(code){
+        return !!this.heldKeys[code];
+      }
+
       code(){
         return this.e.code;
       }

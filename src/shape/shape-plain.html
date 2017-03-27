@@ -55,13 +55,12 @@
       static get properties() {
         return {
           state: Object,
-          shift: {
-            type: Boolean,
-            value: false
+          heldKeys: {
+            type: Object,
+            observer: "_checkIfMoveable"
           },
           moveable: {
             type: Boolean,
-            value: false,
             reflectToAttribute: true
           },
           shapesArray: {
@@ -88,19 +87,6 @@
           this.$.camera.endPinch(e);
         }.bind(this));
 
-        window.addEventListener("keydown", function (e) {
-          if (e.key === "Shift")
-            this.shift = true;
-          if (e.key === " ")
-            this.moveable = true;
-        }.bind(this));
-        window.addEventListener("keyup", function (e) {
-          if (e.key === "Shift")
-            this.shift = false;
-          if (e.key === " ")
-            this.moveable = false;
-        }.bind(this));
-
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
             if (mutation.attributeName == "style")
@@ -109,6 +95,10 @@
           }
         }.bind(this));
         styleChangedObserver.observe(this.$.camera, {attributes: true});
+      }
+
+      _checkIfMoveable(heldKeys) {
+        this.moveable = heldKeys.isDown("Space");
       }
 
       _toArray(shapes) {
@@ -125,12 +115,13 @@
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else {
-          if (!this.shift)
+          if (!this.heldKeys.shift())
             this._fire("deselect-all");
           this._fire("select", e.target.id);
         }
       }
 
+      //todo is this in use??
       _up(e) {
         e.stopPropagation();
         if (this.selectionTimer) {
