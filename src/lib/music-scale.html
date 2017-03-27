@@ -13,13 +13,11 @@
         return "music-scale";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            modePosition: {
-              type: Number,
-              value: 6//this.getModePosition("major");        //=> 6. start with major, first to be flattened is B, first to sharpen is F
-            }
+          modePosition: {
+            type: Number,
+            value: 6//this.getModePosition("major");        //=> 6. start with major, first to be flattened is B, first to sharpen is F
           }
         }
       }
@@ -59,7 +57,7 @@
       //make the modularScale[0] start with 0 Zero
       normalize() {
         let dist = this._modularScale[0];
-        if (dist == 0)
+        if (dist === 0)
           return dist;
 
         for (let i = 0; i < this._modularScale.length; i++)
@@ -78,7 +76,7 @@
       }
 
       static getWheelOf5Number(noteNumber) {
-        if (noteNumber % 2 == 0)
+        if (noteNumber % 2 === 0)
           return noteNumber;
         return (noteNumber + 6) % 12;
       }
@@ -89,7 +87,7 @@
 
       static getModePosition(modeName) {
         for (let i = 0; i < MusicScale.staticScales.length; i++) {
-          if (MusicScale.staticScales[i][1] == modeName)
+          if (MusicScale.staticScales[i][1] === modeName)
             return i;
         }
         throw new Error("Illegal mode name: " + modeName);

@@ -19,7 +19,8 @@
 
 <link rel="import" href="shape/shape-plain.html">
 
-<link rel="import" href="keyboard-listener.html">
+<link rel="import" href="lib/keyboard-listener.html">
+<link rel="import" href="lib/music-clef.html">
 
 <dom-module id="controller-ui">
   <template>
@@ -144,6 +145,7 @@
     </style>
 
     <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener>
+    <music-clef id="clef" octave="4" mode="major" key="C" scale="{{scale}}"></music-clef>
 
     <shape-plain id="shapePlain" state="[[state]]" on-deselect-all="deselect"></shape-plain>
 
@@ -190,8 +192,16 @@
 
       static get properties() {
         return {
-          state: Object
+          state: Object,
+          scale: {
+            type: Object,
+            observer: "_notifyScale"
+          },
         }
+      }
+
+      _notifyScale(scale){
+        this._fire("new-scale", scale);
       }
 
       deselect() {
@@ -202,18 +212,18 @@
       _checkKey(e) {
         this.set("heldKeys", e.detail);
         switch (e.detail.code()) {
-//          case "Enter":
-//            this.$.clef.turnKeyRight();
-//            return;
-//          case "Tab":
-//            this.$.clef.turnKeyLeft();
-//            return;
-//          case "Backspace":
-//            this.$.clef.turnModusRight();
-//            return;
-//          case "Backquote":
-//            this.$.clef.turnModusLeft();
-//            return;
+          case "Enter":
+            this.$.clef.turnKeyRight();
+            return;
+          case "Tab":
+            this.$.clef.turnKeyLeft();
+            return;
+          case "Backspace":
+            this.$.clef.turnModusRight();
+            return;
+          case "Backquote":
+            this.$.clef.turnModusLeft();
+            return;
           case "Escape":
             this._fire("deselect-all");
             return;

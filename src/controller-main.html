@@ -17,6 +17,7 @@
                      on-system-error="_systemError"></controller-data>-->
 
     <controller-ui state="[[state]]"
+                   on-new-scale="_newScale"
                    on-change-shapes="_changeShapes"
                    on-deselect-all="_deselect"
                    on-select="_selectSingle"
@@ -70,6 +71,10 @@
       _changeShapes(e) {
         //todo here I am making an alteration.. This should be added to the state.
         this.set("fluidState", Tools.mergeDeep(this.fluidState, {shapes: e.detail}));
+      }
+
+      _newScale(e){
+        console.log(e);
       }
 
       _registerUIshape(e) {

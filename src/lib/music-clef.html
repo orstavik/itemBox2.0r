@@ -71,11 +71,11 @@
           distanceB += 12;
         if (distanceA < 0)
           distanceA += 12;
-        if (distanceA == 4 && distanceB == 3)
+        if (distanceA === 4 && distanceB === 3)
           return "maj";
-        if (distanceA == 3 && distanceB == 4)
+        if (distanceA === 3 && distanceB === 4)
           return "min";
-        if (distanceA == 3 && distanceB == 3)
+        if (distanceA === 3 && distanceB === 3)
           return "dim";
         return "unknown";
       }
@@ -86,17 +86,15 @@
         return "music-clef";
       }
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-            mode: String,
-            key: String,
-            octave: Number,
-            scale: {
-              type: MusicScaleObject,
-              notify: true,
-              computed: "makeMusicScaleObject(key, mode, octave)"
-            }
+          mode: String,
+          key: String,
+          octave: Number,
+          scale: {
+            type: MusicScaleObject,
+            notify: true,
+            computed: "makeMusicScaleObject(key, mode, octave)"
           }
         }
       }
