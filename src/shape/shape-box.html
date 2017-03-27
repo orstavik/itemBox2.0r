@@ -204,7 +204,7 @@
       _moveShapes(x, y, s) {
         let matrices = {};
         for (let key in this.shapes)
-          matrices[key] = {matrix: this.shapes[key].matrix.move(x / s, y / s)};
+          matrices[key] = {matrix: MatrixData.move(this.shapes[key].matrix, x / s, y / s)};
         this._changeShapes(matrices);
       }
 
@@ -223,7 +223,7 @@
         let matrices = {};
         for (let key in this.shapes) {
           var move = this.shapes[key].rect.calculateRotationMovement(this.rect.center, a);
-          matrices[key] = {matrix: this.shapes[key].matrix.rotate(a, move.x / s, move.y / s)};
+          matrices[key] = {matrix: MatrixData.rotate(this.shapes[key].matrix, a, move.x / s, move.y / s)};
         }
         this._changeShapes(matrices);
       }
@@ -267,7 +267,8 @@
           let bx = shape.rect.center.x - (dir.x === -1 ? this.rect.right : this.rect.left);
           let by = shape.rect.center.y - (dir.y === -1 ? this.rect.bottom : this.rect.top);
           matrices[key] = {
-            matrix: shape.matrix.scale(
+            matrix: MatrixData.scale(
+              shape.matrix,
               nx * Math.abs(bx / this.rect.width),
               ny * Math.abs(by / this.rect.height),
               (this.rect.scale.x * this.rect.width + max) / (this.rect.scale.x * this.rect.width),

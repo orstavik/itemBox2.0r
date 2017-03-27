@@ -1,93 +1,155 @@
 /**
- * Created by orstavik on 15.03.17.
+ * Created by ivar.orstavik and tom.phales 2017.
  */
 class Tools {
 
-  static merge0(A, B) {
-    return A === B || !B || Object.keys(B).length === 0 ? A : B;
-  }
-
-  static merge1(A, B) {
+  static mergeDeep(A, B) {
+    const noA = Tools.isNothing(A);
+    const noB = Tools.isNothing(B);
+    if (noA && noB) return undefined;
+    if (noB) return A;
+    if (noA) return B;
     if (A === B) return A;
-    if (!B || Object.keys(B).length === 0) return A;
-    if (!A || Object.keys(A).length === 0) return B;
-    return Object.assign({}, A, B);
-  }
+    if (!(A instanceof Object && B instanceof Object)) return B;
 
-  static merge2(A, B) {
-    if (A === B) return A;
-    if (!B || Object.keys(B).length === 0) return A;
-    if (!A || Object.keys(A).length === 0) return B;
     const C = Object.assign({}, A);
-    for (let key of Object.keys(B))
-      C[key] = Tools.merge1(A[key], B[key]);
+    let hasMerged = false;
+    for (let key of Object.keys(B)) {
+      const a = A[key];
+      const b = B[key];
+      let c = Tools.mergeDeep(a, b);
+      if (c !== a)
+        hasMerged = true;
+      if (c !== undefined)
+        C[key] = c;
+    }
+    if (!hasMerged)
+      return A;
+    if (Object.keys(C).length === 0)
+      return undefined;
     return C;
   }
 
-  static mergeByFindingTheLongestArray(A, B) {
-    if (A === B) return A;
-    if (!B || B.length === 0) return A;
-    if (!A || A.length === 0) return B;
-    //todo only checking the length here!!
-    return A.length > B.length ? A : B;
-  }
-
-  //it should remove all branches from A that is already in B
-  //todo make it immutable
-  //todo make this general and multilevel
-  static filter1Level(A, B) {
-    for (let key of Object.keys(B)) {
-      let b = B[key];
-      let a = A[key];
-      if (!a)
-        continue;
-      for (let s of Object.keys(b)) {
-        if (JSON.stringify(b[s]) === JSON.stringify(a[s]))
-          delete a[s];
-      }
-    }
-  }
-
   /**
-   * Flattens a normal object tree. Does not work with arrays.
+   * Flattens a normal object tree to an array of {path, value} objects
+   * where path is an array of keys as strings. Only works with objects.
    *
    *     let tree = {a: {x: 1}, b: {y: {"12": "something"}}};
-   *     let flatTree = State.flatten(tree, ".");
-   *     flatTree == {"a.x" : 1, "b.y.12": "something"}; //true
+   *     let flatTree = Tools.flatten(tree);
+   *     //[{path: ["a","x"], value: 1}, {path: ["b","y","12"], value: "something"}]
    *
-   * @param normalObject object to be flattened
-   * @param separator "." for json, "/" for firebase
-   * @returns a new flattened object with paths as keys.
+   * @param object object to be flattened
+   * @returns an array of [{path: <array>, value: ?}] for that object
    */
-  static flatten(normalObject, separator) {
-    const result = {};
-    Tools._flattenImpl(normalObject, "", separator, result);
-    return result;
+  static flatten(object) {
+    const res = []; //mutable
+    Tools._flattenImpl(object, [], res);
+    return res;
   }
 
-  static _flattenImpl(obj, startPath, separator, flattenedObject) {
-    if (obj instanceof Object) {
-      for (let childPath of Object.keys(obj))
-        Tools._flattenImpl(obj[childPath], startPath + separator + childPath, separator, flattenedObject);
-    } else
-      flattenedObject[startPath] = obj;
+  static _flattenImpl(obj, path, res) {
+    if (!(obj instanceof Object)) {
+      res.push({path: path, value: obj});
+      return;
+    }
+    for (let key of Object.keys(obj))
+      Tools._flattenImpl(obj[key], path.concat([key]), res);
   }
 
   /**
    * adds a startPath to all keys
    *
    * let flat = {"a/b": 1, c: 2, "xyz/12": 3};
-   * let extendedFlat = State.extendKeys("new/root/", flat);
+   * let extendedFlat = State.pathsToObject("new/root/", flat);
    * extendedFlat == {"new/root/a/b": 1, "new/root/c": 2, "new/root/xyz/12": 3}; //true
    *
+   * @param flat an array of a flattened object
    * @param {string} startPath
-   * @param object a flattened object is probably best
+   * @param {string} separator used between the elements of the path, such as "." or "/"
    * @returns a new object with extended key names.
    */
-  static extendKeys(startPath, object) {
+  static pathsToObject(flat, startPath, separator) {
     let result = {};
-    for (let key of Object.keys(object))
-      result[startPath + key] = object[key];
+    for (let pathValue of flat)
+      result[startPath + pathValue.path.join(separator)] = pathValue.value;
     return result;
   }
+
+  static setIn(obj, path, value) {
+    return Tools.getIn(obj, path) === value ? obj : Tools.setInNoCheck(obj, path, value);
+  }
+
+  static setInNoCheck(obj, path, value) {
+    let rootRes = Object.assign({}, obj);
+    let res = rootRes;
+    for (let i = 0; i < path.length - 1; i++) {
+      let key = path[i];
+      res[key] = Object.assign({}, res[key]);
+      res = res[key];
+    }
+    res[path[path.length - 1]] = value;
+    return rootRes;
+  }
+
+  static getIn(obj, path) {
+    if (!(obj instanceof Object)) return undefined;
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = path[i];
+      obj = obj[key];
+      if (!(obj instanceof Object)) return undefined;
+    }
+    return obj[path[path.length - 1]];
+  }
+
+  static pushIn(obj, path, value){
+    return Tools.setInNoCheck(obj, path.concat([(Tools.__pushCounter++)]), value);
+  }
+
+  /**
+   * Immutable filter that strips out
+   * 1) entries of A that are matching exactly entries in B
+   * 2) all empty entries (with undefined or null as value).
+   *
+   * @param {object} A the object to be filtered
+   * @param {object} B the filter
+   * @returns A if nothing is filtered away,
+   *          undefined if A is empty or the whole content of A is filtered out by B,
+   *          a new object C which is an immuted version of the partially filtered A.
+   */
+  static filterDeep(A, B) {
+    const noA = Tools.isNothing(A);
+    const noB = Tools.isNothing(B);
+    if (noA && noB) return undefined;
+    if (noB) return A;
+    if (noA) return undefined;
+    if (A === B) return undefined;
+    if (!(A instanceof Object && B instanceof Object)) return A;
+    // if (A === B) return undefined;
+    // if (B === undefined) return A;
+    // if (!(A instanceof Object) || !(B instanceof Object)) return A;
+    // if (Object.keys(A).length === 0) return undefined;
+
+    const C = {};
+    let hasFiltered = false;
+    for (let key of Object.keys(A)) {
+      const a = A[key];
+      const b = B[key];
+      let c = Tools.filterDeep(a, b);
+      if (c !== a)
+        hasFiltered = true;
+      if (c !== undefined)
+        C[key] = c;
+    }
+    if (!hasFiltered)
+      return A;
+    if (Object.keys(C).length === 0)
+      return undefined;
+    return C;
+  }
+
+  static isNothing(A) {
+    return A === undefined || A === null || (A instanceof Object && Object.keys(A).length === 0);
+  }
 }
+
+Tools.__pushCounter = 0;

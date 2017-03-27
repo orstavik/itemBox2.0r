@@ -37,8 +37,8 @@
       static get properties() {
         return {
           timeMachine: Array,
-          defaultState: State,
-          fluidState: State,
+          defaultState: Object,
+          fluidState: Object,
           state: {
             type: Object,
             computed: "_mergeFinal(defaultState, fluidState)"
@@ -53,55 +53,55 @@
           randoms["shape" + i] = {matrix: MatrixData.random(), selected: false};
         this.setProperties({
           timeMachine: [],
-          fluidState: new State(),
-          defaultState: new State(new ViewPort(0, 0, 1), randoms)
+          fluidState: {},
+          defaultState: {viewPort: {x: 0, y: 0, s: 1}, shapes: randoms}
         });
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("help-message", this._helpMessage.bind(this));
       }
 
       _mergeFinal(A, B) {
-        const C = A.merge(B);
+        const C = Tools.mergeDeep(A, B);
 //        C.prepare();
         this.push("timeMachine", C);
         return C;
       }
 
       _changeShapes(e) {
-        this.set("fluidState", this.fluidState.merge({shapes: e.detail}));
+        this.set("fluidState", Tools.mergeDeep(this.fluidState, {shapes: e.detail}));
       }
 
       _registerUIshape(e) {
-        this.set("fluidState", this.fluidState.merge({shapes: e.detail}));
+        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes"].concat(e.detail.path), e.detail.value));
       }
 
       _deselect() {
-        const shapes = Object.assign({}, this.fluidState.shapes);
+        const shapes = Object.assign({}, this.fluidState.shapes);//todo maybe make a tools.js function for this setAllInPath with a wildcard thing??
         for (let key in shapes)
           shapes[key].selected = false;
-        this.set("fluidState", new State(this.fluidState.viewPort, shapes));
+        this.set("fluidState", {viewPort: this.fluidState.viewPort, shapes: shapes});
       }
 
       _selectSingle(e) {
-        let res = {};
+        let res = {};                      //todo this could be a simpler "setIn" function call
         res[e.detail] = {selected: true};
         this._select({detail: res});
       }
 
       _select(e) {
-        this.set("fluidState", this.fluidState.mergeShapes(e.detail));
+        this.set("fluidState", Tools.mergeDeep(this.fluidState, {shapes: e.detail}));
       }
 
       _viewChanged(e) {
-        this.set("fluidState", new State(e.detail, this.fluidState.shapes));
+        this.set("fluidState", Tools.mergeDeep(this.fluidState, {viewPort:e.detail}));
       }
 
       _systemMessage(e) {
-        this.set("fluidState", this.fluidState.pushSystemMessage(e.detail));
+        this.set("fluidState", Tools.pushIn(this.fluidState, "systemMessages", e.detail));
       }
 
       _helpMessage(e) {
-        this.set("fluidState", this.fluidState.pushHelpMessage(e.detail));
+        this.set("fluidState", Tools.pushIn(this.fluidState, "helpMessages", e.detail));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);

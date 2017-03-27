@@ -11,6 +11,19 @@
   </template>
 
   <script>
+    class ViewPort {
+
+      static move(start, x, y) {
+        return {x: start.x + x, y: start.y + y, s: start.s};
+      }
+
+      static zoom(start, ds, ex, ey) {
+        let xShift = (ex - start.x) * (1 - ds);
+        let yShift = (ey - start.y) * (1 - ds);
+        return {x: start.x + xShift, y: start.y + yShift, s: start.s * ds};
+      }
+    }
+
     class SpaceCamera extends Polymer.Element {
 
       static get is() {
@@ -20,7 +33,7 @@
       static get properties() {
         return {
           viewPort: {
-            type: ViewPort,
+            type: Object,
             observer: "_updateView"
           }
         };
@@ -31,7 +44,7 @@
         const ddy = e.detail.ddy !== undefined ? e.detail.ddy : e.detail.dy;
         if (this.tapZoom)            //todo move this maybe??
           return;
-        this._fire("view-changed", this.viewPort.move(ddx, ddy));
+        this._fire("view-changed", ViewPort.move(this.viewPort, ddx, ddy));
       }
 
       pinch(e) {
@@ -63,7 +76,7 @@
       }
 
       _zoomViewport(ds, sx, sy) {
-        this._fire("view-changed", this.viewPort.zoom(ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
+        this._fire("view-changed", ViewPort.zoom(this.viewPort, ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
       }
 
       _updateView(view) {
