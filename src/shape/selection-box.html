@@ -83,7 +83,7 @@
         let selected = {};
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          selected[key] = {selected: this.rect.pointIsWithinBorders(shape.rect.center)};
+          selected[key] = {selected: Rectangle.pointIsWithinBorders(this.rect, shape.rect.center)};
         }
         this._fire("new-box-selection", selected);
       }

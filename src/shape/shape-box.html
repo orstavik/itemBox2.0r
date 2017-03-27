@@ -222,8 +222,9 @@
 
         let matrices = {};
         for (let key in this.shapes) {
-          var move = this.shapes[key].rect.calculateRotationMovement(this.rect.center, a);
-          matrices[key] = {matrix: MatrixData.rotate(this.shapes[key].matrix, a, move.x / s, move.y / s)};
+          let shape = this.shapes[key];
+          let move = Rectangle.calculateRotationMovement(this.rect.center, shape.rect.center, a);
+          matrices[key] = {matrix: MatrixData.rotate(shape.matrix, a, move.x / s, move.y / s)};
         }
         this._changeShapes(matrices);
       }

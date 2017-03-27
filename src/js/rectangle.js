@@ -40,13 +40,13 @@ class Rectangle {
     });
   }
 
-  pointIsWithinBorders(p) {
-    return p.x >= this.left && p.x <= this.right && p.y >= this.top && p.y <= this.bottom;
+  static pointIsWithinBorders(box, p) {
+    return p.x >= box.left && p.x <= box.right && p.y >= box.top && p.y <= box.bottom;
   }
 
-  calculateRotationMovement(satelite, a) {
-    let distX = this.center.x - satelite.x;
-    let distY = this.center.y - satelite.y;
+  static calculateRotationMovement(center, sat, a) {
+    let distX = sat.x - center.x;
+    let distY = sat.y - center.y;
     return {
       x: distX * Math.cos(a) - distY * Math.sin(a) - distX,
       y: distX * Math.sin(a) + distY * Math.cos(a) - distY
