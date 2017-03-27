@@ -77,7 +77,7 @@
       alertLocation() {
         this._fire("shape-location", {
           path: [this.id, "rect"],
-          value: new Rectangle(this.$.body.getBoundingClientRect())
+          value: Rectangle.addCenter(this.$.body.getBoundingClientRect())
         });
       }
 

@@ -1,15 +1,10 @@
 class Rectangle {
-  constructor(rect) {
-    this.left = rect.left;
-    this.right = rect.right;
-    this.top = rect.top;
-    this.bottom = rect.bottom;
-    this.width = rect.width;
-    this.height = rect.height;
-    this.center = {
-      x: (this.left + this.right) / 2,
-      y: (this.top + this.bottom) / 2
+  static addCenter(rect) {
+    rect.center = {
+      x: (rect.left + rect.right) / 2,
+      y: (rect.top + rect.bottom) / 2
     };
+    return rect;
   }
 
   static union(rects) {
@@ -26,11 +21,11 @@ class Rectangle {
     }
     width = right - left;
     height = bottom - top;
-    return new Rectangle({left: left, top: top, right: right, bottom: bottom, width: width, height: height});
+    return Rectangle.addCenter({left: left, top: top, right: right, bottom: bottom, width: width, height: height});
   }
 
   static makeFromTwoPoints(a, b) {
-    return new Rectangle({
+    return Rectangle.addCenter({
       left: a.x < b.x ? a.x : b.x,
       top: a.y < b.y ? a.y : b.y,
       right: a.x > b.x ? a.x : b.x,
@@ -54,23 +49,24 @@ class Rectangle {
   }
 }
 
-class TransformableRectangle extends Rectangle {
-  constructor(rect, angle, sx, sy) {
-    super(rect);
-    this.scale = {
+class TransformableRectangle {
+  static setup(rect, angle, sx, sy) {
+    let res = Rectangle.addCenter(rect);
+    res.scale = {
       x: sx / Math.abs(sx),
       y: sy / Math.abs(sy)
     };
-    this.angle = angle;
+    res.angle = angle;
+    return res;
   }
 
   static makeFromManyRects(rects, matrix) {
-    return new TransformableRectangle(Rectangle.union(rects), 0, matrix.sx, matrix.sy);
+    return TransformableRectangle.setup(Rectangle.union(rects), 0, matrix.sx, matrix.sy);
   }
 
   static makeFromSingleShape(rect, matrix) {
     let r = TransformableRectangle.calcRotatedRectangle(matrix.a, rect);
-    return new TransformableRectangle(r, matrix.a, matrix.sx, matrix.sy);
+    return TransformableRectangle.setup(r, matrix.a, matrix.sx, matrix.sy);
   }
 
   static calcRotatedRectangle(angle, rect) {
