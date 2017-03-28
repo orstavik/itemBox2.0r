@@ -62,7 +62,7 @@
 
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
-            if (mutation.attributeName == "style")
+            if (mutation.attributeName === "style")
               this.alertLocation();
           }
         }.bind(this));

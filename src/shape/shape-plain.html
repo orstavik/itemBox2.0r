@@ -27,7 +27,7 @@
       }
     </style>
 
-    <shape-box id="shapeBox" all-shapes="[[state.shapes]]" view-port="[[state.viewPort]]"></shape-box>
+    <shape-box id="shapeBox" shapes="[[state.selecteds]]" view-port="[[state.viewPort]]"></shape-box>
     <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
     <coordinate-lines view-port="[[state.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.viewPort]]">
@@ -89,7 +89,7 @@
 
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
-            if (mutation.attributeName == "style")
+            if (mutation.attributeName === "style")
               for (let node of this.shadowRoot.querySelectorAll("shape-object"))
                 node.alertLocation();
           }
@@ -102,9 +102,12 @@
       }
 
       _toArray(shapes) {
-        return Object.keys(shapes).map(function (key) {
-          return {key: key, value: shapes[key]};
-        });
+        const res = [];
+        for (let key of Object.keys(shapes)) {
+          if (shapes[key])
+            res.push({key: key, value: shapes[key]});
+        }
+        return res;
       }
 
       _select(e) {
@@ -121,7 +124,6 @@
         }
       }
 
-      //todo is this in use??
       _up(e) {
         e.stopPropagation();
         if (this.selectionTimer) {

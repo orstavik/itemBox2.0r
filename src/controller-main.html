@@ -19,6 +19,7 @@
     <controller-ui state="[[state]]"
                    on-new-scale="_newScale"
                    on-change-shapes="_changeShapes"
+                   on-delete-selected="_deleteSelected"
                    on-deselect-all="_deselect"
                    on-select="_selectSingle"
                    on-shape-location="_registerUIshape"
@@ -62,18 +63,39 @@
       }
 
       _mergeFinal(A, B) {
-        const C = Tools.mergeDeep(A, B);
-//        C.prepare();
+        const C = Tools.mergeDeepWithNullToDelete(A, B);
+        console.log(C);
         this.push("timeMachine", C);
+        return this._postProcess(C);
+      }
+
+      _postProcess(C) {                                 //postProcess is not added to the timeMachine
+        C = Object.assign({}, C);
+        C.selecteds = {};
+        //selectedsArray = Tools.getInPathWithNullAsWildCard(obj, ["shapes", null, "selected"], true);
+        // => [{path: [], value: X}, ...]
+        for (let key in C.shapes) {
+          if (C.shapes[key] && C.shapes[key].selected)
+            C.selecteds[key] = C.shapes[key];
+        }
         return C;
       }
 
       _changeShapes(e) {
-        //todo here I am making an alteration.. This should be added to the state.
-        this.set("fluidState", Tools.mergeDeep(this.fluidState, {shapes: e.detail}));
+        let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
+//        merged.action  = "change";             //todo adding type of action to the state.
+        this.set("fluidState", merged);
       }
 
-      _newScale(e){
+      _deleteSelected(e) {
+        let dels = {shapes: {}};
+        Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
+        let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
+//        filtered.action  = "del";             //todo adding type of action to the state.
+        this.set("fluidState", filtered);
+      }
+
+      _newScale(e) {
         console.log(e);
       }
 
@@ -82,32 +104,35 @@
       }
 
       _deselect() {
-        const shapes = Object.assign({}, this.fluidState.shapes);//todo maybe make a tools.js function for this setAllInPath with a wildcard thing??
-        for (let key in shapes)
-          shapes[key].selected = false;
-        this.set("fluidState", {viewPort: this.fluidState.viewPort, shapes: shapes});
+        //todo maybe make a tools.js function for this setAllInPath with a wildcard thing??
+        debugger;
+        console.log(this.state.selecteds);
+        let newState = Tools.setInPathWithNullAsWildCard(this.fluidState, ["shapes", null, "selected"], false);
+        this.set("fluidState", newState);
+//        const shapes = Object.assign({}, this.fluidState.shapes);
+//        for (let key in Object.keys(this.state.selecteds))
+//          this.state.selecteds[key].selected = false; //mutating the mother
+//        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: this.state.selecteds}));
       }
 
       _selectSingle(e) {
-        let res = {};                      //todo this could be a simpler "setIn" function call
-        res[e.detail] = {selected: true};
-        this._select({detail: res});
+        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
-        this.set("fluidState", Tools.mergeDeep(this.fluidState, {shapes: e.detail}));
+        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail}));
       }
 
       _viewChanged(e) {
-        this.set("fluidState", Tools.mergeDeep(this.fluidState, {viewPort:e.detail}));
+        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {viewPort: e.detail}));
       }
 
       _systemMessage(e) {
-        this.set("fluidState", Tools.pushIn(this.fluidState, "systemMessages", e.detail));
+        this.set("fluidState", Tools.pushIn(this.fluidState, ["systemMessages"], e.detail));
       }
 
       _helpMessage(e) {
-        this.set("fluidState", Tools.pushIn(this.fluidState, "helpMessages", e.detail));
+        this.set("fluidState", Tools.pushIn(this.fluidState, ["helpMessages"], e.detail));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);

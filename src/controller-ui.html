@@ -227,9 +227,9 @@
           case "Escape":
             this._fire("deselect-all");
             return;
-//          case "Delete":
-//            this._fire("remove-shapes", this.getSelectedInfos());
-//            return;
+          case "Delete":
+            this._fire("delete-selected");
+            return;
 //          case "KeyM":
 //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.mirror()));
 //            return;

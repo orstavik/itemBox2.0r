@@ -30,6 +30,40 @@ class Tools {
     return C;
   }
 
+  //returns an immutable copy of A with the branches of B either
+  // - merged (if they differ) or
+  // - nulled out in result (if B point null value).
+  //
+  //if either only B === null, then the branch will be deleted. (if the same criteria was set for A, it would be impossible to write in a new value for the same key later)
+  //if either A or B === undefined or {} (empty object), then the other branch is used.
+  static mergeDeepWithNullToDelete(A, B) {
+    if (B === null) return null;
+    if (B === undefined || Tools.emptyObject(B)) return A;
+    if (A === undefined || Tools.emptyObject(A)) return B;
+    if (A === B) return A;
+    if (!(A instanceof Object && B instanceof Object)) return B;
+
+    const C = Object.assign({}, A);
+    let hasMutated = false;
+    for (let key of Object.keys(B)) {
+      const a = A[key];
+      const b = B[key];
+      let c = Tools.mergeDeepWithNullToDelete(a, b);
+      if (c === a)
+        continue;
+      hasMutated = true;
+      if (c === undefined)
+        delete C[key];
+      else
+        C[key] = c;     //null is also set as a value in C
+    }
+    if (!hasMutated)
+      return A;
+    if (Object.keys(C).length === 0)
+      return undefined;
+    return C;
+  }
+
   /**
    * Flattens a normal object tree to an array of {path, value} objects
    * where path is an array of keys as strings. Only works with objects.
@@ -91,6 +125,41 @@ class Tools {
     return rootRes;
   }
 
+  /**
+   * Immutable set function that acccepts null as wildcard in a path.
+   * Because we have the wildcard function, no values will be set in the object if the path does not match.
+   *
+   * @param {object} obj the object in which the values are to be set
+   * @param {object} path ["prop1", null, "prop2"] that path to the value to be set.
+   *                 If one of the values are null, then all the properties at that level will be traversed
+   * @param {object} value the value to be set. Try to use null and not undefined if you want to set something to nothing.
+   * @returns a new object C with the new value(s) set. As few objects are cloned as possible.
+   */
+  static setInPathWithNullAsWildCard(obj, path, value) {
+    if (path.length === 0)
+      return value;
+    if (obj === undefined)
+      return undefined;
+    let res = Object.assign({}, obj);
+    let key = path[0];
+    if (key === null) {
+      let mutated = false;
+      for (let key of Object.keys(res)) {
+        let newValue = Tools.setInPathWithNullAsWildCard(res[key], path.slice(1), value);
+        if (newValue !== res[key]) {
+          mutated = true;
+          res[key] = newValue;
+        }
+      }
+      return mutated ? res : obj;
+    }
+    let newValue = Tools.setInPathWithNullAsWildCard(res[key], path.slice(1), value);
+    if (newValue === res[key])
+      return obj;
+    res[key] = newValue;
+    return res;
+  }
+
   static getIn(obj, path) {
     if (!(obj instanceof Object)) return undefined;
     for (let i = 0; i < path.length - 1; i++) {
@@ -101,7 +170,7 @@ class Tools {
     return obj[path[path.length - 1]];
   }
 
-  static pushIn(obj, path, value){
+  static pushIn(obj, path, value) {
     return Tools.setInNoCheck(obj, path.concat([(Tools.__pushCounter++)]), value);
   }
 
@@ -124,10 +193,6 @@ class Tools {
     if (noA) return undefined;
     if (A === B) return undefined;
     if (!(A instanceof Object && B instanceof Object)) return A;
-    // if (A === B) return undefined;
-    // if (B === undefined) return A;
-    // if (!(A instanceof Object) || !(B instanceof Object)) return A;
-    // if (Object.keys(A).length === 0) return undefined;
 
     const C = {};
     let hasFiltered = false;
@@ -148,7 +213,11 @@ class Tools {
   }
 
   static isNothing(A) {
-    return A === undefined || A === null || (A instanceof Object && Object.keys(A).length === 0);
+    return A === undefined || A === null || this.emptyObject(A);
+  }
+
+  static emptyObject(A) {
+    return A instanceof Object && Object.keys(A).length === 0;
   }
 }
 
