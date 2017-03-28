@@ -70,13 +70,8 @@
 
       _postProcess(C) {                                 //postProcess is not added to the timeMachine
         C = Object.assign({}, C);
-        C.selecteds = {};
-        //selectedsArray = Tools.getInPathWithNullAsWildCard(obj, ["shapes", null, "selected"], true);
-        // => [{path: [], value: X}, ...]
-        for (let key in C.shapes) {
-          if (C.shapes[key] && C.shapes[key].selected)
-            C.selecteds[key] = C.shapes[key];
-        }
+        C.shapes = Tools.filterPath(C.shapes, null, null);
+        C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
         return C;
       }
 

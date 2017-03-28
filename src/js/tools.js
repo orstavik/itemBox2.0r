@@ -3,33 +3,6 @@
  */
 class Tools {
 
-  static mergeDeep(A, B) {
-    const noA = Tools.isNothing(A);
-    const noB = Tools.isNothing(B);
-    if (noA && noB) return undefined;
-    if (noB) return A;
-    if (noA) return B;
-    if (A === B) return A;
-    if (!(A instanceof Object && B instanceof Object)) return B;
-
-    const C = Object.assign({}, A);
-    let hasMerged = false;
-    for (let key of Object.keys(B)) {
-      const a = A[key];
-      const b = B[key];
-      let c = Tools.mergeDeep(a, b);
-      if (c !== a)
-        hasMerged = true;
-      if (c !== undefined)
-        C[key] = c;
-    }
-    if (!hasMerged)
-      return A;
-    if (Object.keys(C).length === 0)
-      return undefined;
-    return C;
-  }
-
   //returns an immutable copy of A with the branches of B either
   // - merged (if they differ) or
   // - nulled out in result (if B point null value).
@@ -184,7 +157,7 @@ class Tools {
   /**
    * Immutable filter that strips out
    * 1) entries of A that are matching exactly entries in B
-   * 2) all empty entries (with undefined or null as value).
+   * 2) all empty entries (with undefined or empty objects as value).
    *
    * @param {object} A the object to be filtered
    * @param {object} B the filter
@@ -193,8 +166,9 @@ class Tools {
    *          a new object C which is an immuted version of the partially filtered A.
    */
   static filterDeep(A, B) {
-    const noA = Tools.isNothing(A);
-    const noB = Tools.isNothing(B);
+    console.log("WTF OMG!! Not tested Tools.filterDeep with null in the state");
+    const noA = A === undefined || Tools.emptyObject(A);    //todo not tested for handling null
+    const noB = B === undefined || Tools.emptyObject(B);    //todo not tested for handling null
     if (noA && noB) return undefined;
     if (noB) return A;
     if (noA) return undefined;
@@ -226,6 +200,60 @@ class Tools {
   static emptyObject(A) {
     return A instanceof Object && Object.keys(A).length === 0;
   }
-}
 
+  //removes the
+  static filterPath(obj, key, value) {
+    const res = Object.assign({}, obj);
+    if (key === null) {
+      let hasFiltered = false;
+      for (let key of Object.keys(res)) {
+        if (res[key] === value) {
+          hasFiltered = true;
+          delete res[key];
+        }
+      }
+      return hasFiltered ? res : obj;
+    }
+    if (res[key] === value) {
+      delete res[key];
+      return res;
+    }
+    return obj;
+  }
+
+  // static matchesPathValue(CC, ["shapes", null, "selected"], true);
+  static matchesPathValue(obj, path, value) {
+    const key = path[0];
+    if (path.length === 1) {
+      if (key !== null) {
+        if (obj[key] === value)
+          return obj;
+        return undefined;
+      }
+      const res = {};
+      for (let key of Object.keys(obj)) {
+        if (obj[key] === value)
+          return obj;
+      }
+      return undefined;
+    }
+    const nextPath = path.slice(1);
+    if (key !== null) {
+      let child = Tools.matchesPathValue(obj[key], nextPath, value);
+      if (child === undefined)
+        return undefined;
+      return obj;
+    }
+    let res = {};
+    for (let key of Object.keys(obj)) {
+      let child = Tools.matchesPathValue(obj[key], nextPath, value);
+      if (child !== undefined)
+        res[key] = child;
+    }
+    if (Object.keys(res).length)
+      return res;
+    return undefined;
+  }
+
+}
 Tools.__pushCounter = 0;
