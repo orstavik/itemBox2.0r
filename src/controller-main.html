@@ -64,7 +64,6 @@
 
       _mergeFinal(A, B) {
         const C = Tools.mergeDeepWithNullToDelete(A, B);
-        console.log(C);
         this.push("timeMachine", C);
         return this._postProcess(C);
       }
@@ -104,15 +103,8 @@
       }
 
       _deselect() {
-        //todo maybe make a tools.js function for this setAllInPath with a wildcard thing??
-        debugger;
-        console.log(this.state.selecteds);
         let newState = Tools.setInPathWithNullAsWildCard(this.fluidState, ["shapes", null, "selected"], false);
         this.set("fluidState", newState);
-//        const shapes = Object.assign({}, this.fluidState.shapes);
-//        for (let key in Object.keys(this.state.selecteds))
-//          this.state.selecteds[key].selected = false; //mutating the mother
-//        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: this.state.selecteds}));
       }
 
       _selectSingle(e) {

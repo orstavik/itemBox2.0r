@@ -113,13 +113,18 @@ class Tools {
     return Tools.getIn(obj, path) === value ? obj : Tools.setInNoCheck(obj, path, value);
   }
 
+  //returns sets a value to object tree path,
+  //if some part of that path is explicitly set to null,
+  //then nothing is set and undefined is returned
   static setInNoCheck(obj, path, value) {
     let rootRes = Object.assign({}, obj);
     let res = rootRes;
+    if (res === null) return undefined;
     for (let i = 0; i < path.length - 1; i++) {
       let key = path[i];
       res[key] = Object.assign({}, res[key]);
       res = res[key];
+      if (res === null) return undefined;
     }
     res[path[path.length - 1]] = value;
     return rootRes;
@@ -140,6 +145,8 @@ class Tools {
       return value;
     if (obj === undefined)
       return undefined;
+    if (obj === null)
+      return obj;
     let res = Object.assign({}, obj);
     let key = path[0];
     if (key === null) {
