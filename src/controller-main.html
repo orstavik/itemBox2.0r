@@ -18,6 +18,7 @@
 
     <controller-ui state="[[state]]"
                    on-new-scale="_newScale"
+                   on-add-shape="_addShape"
                    on-change-shapes="_changeShapes"
                    on-delete-selected="_deleteSelected"
                    on-deselect-all="_deselect"
@@ -50,13 +51,10 @@
 
       connectedCallback() {
         super.connectedCallback();
-        const randoms = {};
-        for (let i = 0; i < 20; i++)
-          randoms["shape" + i] = {matrix: MatrixData.random(), selected: false};
         this.setProperties({
           timeMachine: [],
           fluidState: {},
-          defaultState: {viewPort: {x: 0, y: 0, s: 1}, shapes: randoms}
+          defaultState: {viewPort: {x: 0, y: 0, s: 1}}
         });
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("help-message", this._helpMessage.bind(this));
@@ -77,15 +75,19 @@
 
       _changeShapes(e) {
         let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
-//        merged.action  = "change";             //todo adding type of action to the state.
+        merged.action  = "change";             //todo adding type of action to the state.
         this.set("fluidState", merged);
+      }
+
+      _addShape(e){
+        this.set("fluidState", Tools.pushIn(this.fluidState, ["shapes"], {matrix: e.detail}));
       }
 
       _deleteSelected(e) {
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
         let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
-//        filtered.action  = "del";             //todo adding type of action to the state.
+        filtered.action  = "del";             //todo adding type of action to the state.
         this.set("fluidState", filtered);
       }
 

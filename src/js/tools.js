@@ -223,6 +223,7 @@ class Tools {
 
   // static matchesPathValue(CC, ["shapes", null, "selected"], true);
   static matchesPathValue(obj, path, value) {
+    if (!obj) return undefined;
     const key = path[0];
     if (path.length === 1) {
       if (key !== null) {

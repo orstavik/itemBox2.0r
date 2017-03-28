@@ -52,8 +52,14 @@
 
       constructor() {
         super();
-        Polymer.Gestures.addListener(this, "down", e => this._down(e));
-        Polymer.Gestures.addListener(this, "track", e => this._track(e));
+        Polymer.Gestures.addListener(this, "down", this._down.bind(this));
+        Polymer.Gestures.addListener(this, "up", this._up.bind(this));
+        Polymer.Gestures.addListener(this, "track", this._track.bind(this));
+        this.addEventListener("dblclick", this._dblclick.bind(this));
+      }
+
+      _dblclick(e) {
+        this._fire("new-shape", {x: e.x, y: e.y});
       }
 
       _down(e) {
@@ -62,9 +68,14 @@
         this.start = e.detail;
       }
 
+      _up(e) {
+        if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.timeStamp) > 600)
+          this._fire("new-shape", {x: e.x, y: e.y});
+      }
+
       _track(e) {
         e.preventDefault();
-        if (e.detail.state == "end")
+        if (e.detail.state === "end")
           return this.set("active", false);
 
         this.set("rect", Rectangle.makeFromTwoPoints(this.start, e.detail));

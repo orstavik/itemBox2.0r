@@ -22,6 +22,13 @@
         let yShift = (ey - start.y) * (1 - ds);
         return {x: start.x + xShift, y: start.y + yShift, s: start.s * ds};
       }
+
+      static calculatePositionFromCenterOfViewPort(viewPort, x, y) {
+        return {
+          x: (x - window.innerWidth / 2 - viewPort.x) / viewPort.s,
+          y: (y - window.innerHeight / 2 - viewPort.y) / viewPort.s
+        };
+      }
     }
 
     class SpaceCamera extends Polymer.Element {

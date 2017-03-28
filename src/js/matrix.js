@@ -1,14 +1,4 @@
 class MatrixData {
-  static random() {
-    return {
-      x: Math.random() * (window.innerWidth - 100) - window.innerWidth / 2 + 50,
-      y: Math.random() * (window.innerHeight - 100) - window.innerHeight / 2 + 50,
-      sx: 1,
-      sy: 1,
-      a: Math.random() * Math.PI * 2
-    };
-  }
-
   static compute(m) {
     let matrix = [
       m.sx * Math.cos(m.a),

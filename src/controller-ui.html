@@ -147,7 +147,11 @@
     <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener>
     <music-clef id="clef" octave="4" mode="major" key="C" scale="{{scale}}"></music-clef>
 
-    <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
+    <shape-plain id="shapePlain"
+                 state="[[state]]"
+                 held-keys="[[heldKeys]]"
+                 on-deselect-all="deselect"
+                 on-new-shape="_newShape"></shape-plain>
 
     <template is="dom-if" if="[[user]]">
       <paper-material id="paperName" elevation=1>
@@ -200,7 +204,14 @@
         }
       }
 
-      _notifyScale(scale){
+      _newShape(e){
+        e.stopPropagation();
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.viewPort, e.detail.x, e.detail.y);
+        let matrix = {x: pos.x, y: pos.y, sx:1, sy:1, a:0};
+        this._fire("add-shape", matrix);
+      }
+
+      _notifyScale(scale) {
         this._fire("new-scale", scale);
       }
 
@@ -257,7 +268,7 @@
         this.set("heldKeys", e.detail);
       }
 
-      _fire(name, detail){
+      _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }

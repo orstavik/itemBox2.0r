@@ -102,6 +102,7 @@
       }
 
       _toArray(shapes) {
+        if (!shapes) return undefined;
         const res = [];
         for (let key of Object.keys(shapes)) {
           if (shapes[key])
