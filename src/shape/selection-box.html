@@ -65,12 +65,12 @@
       _down(e) {
         e.preventDefault();
         this._fire("deselect-all");
-        this.start = e.detail;
+        this.start = e;
       }
 
       _up(e) {
-        if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.timeStamp) > 600)
-          this._fire("new-shape", {x: e.x, y: e.y});
+        if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.start.timeStamp) > 600)
+          this._fire("new-shape", {x: e.detail.x, y: e.detail.y});
       }
 
       _track(e) {
@@ -78,7 +78,7 @@
         if (e.detail.state === "end")
           return this.set("active", false);
 
-        this.set("rect", Rectangle.makeFromTwoPoints(this.start, e.detail));
+        this.set("rect", Rectangle.makeFromTwoPoints(this.start.detail, e.detail));
         this.set("active", true);
       }
 
