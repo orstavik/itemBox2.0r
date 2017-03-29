@@ -65,7 +65,7 @@
       /*:host([action=scaling]) [type=point]{ background: crimson; }*/
     </style>
 
-    <div id="boxBody" hidden="[[empty]]" type="box" style$="[[_style]]" action="[[action]]">
+    <div id="boxBody" hidden="[[_isEmpty(shapes)]]" type="box" style$="[[_style]]" action="[[action]]">
       <div id="top-left" type="point" on-down="_startTracking" on-track="_doTracking"></div>
       <div id="top" type="point" hidden="[[multi]]" on-down="_startTracking" on-track="_doTracking"></div>
       <div id="top-right" type="point" on-down="_startTracking" on-track="_doTracking"></div>
@@ -105,17 +105,17 @@
             computed: "_isMulti(shapes)",
             reflectToAttribute: true
           },
-          empty: {
-            type: Boolean,
-            computed: "_isEmpty(shapes)",
-            reflectToAttribute: true
-          },
           action: {
             type: String,
             value: "",
             reflectToAttribute: true
           }
         }
+      }
+
+      constructor(){
+        super();
+        this.set("shapes", null);
       }
 
       _isEmpty(shapes) {
