@@ -106,7 +106,7 @@
 
     <div class="filledCard">
       <div id="historyPipe">
-        <template is="dom-repeat" items="[[history.actions]]">
+        <template is="dom-repeat" items="[[history]]">
           <div class$="historyPoint [[item.action]]"
                active$="[[_isActive(index, activePoint)]]"
                data-index$="[[index]]"
@@ -133,7 +133,7 @@
       static get properties() {
         return {
           history: {
-            type: Object,
+            type: Array,
             observer: "_historyChange"
           },
           activePoint: {
@@ -166,9 +166,9 @@
       }
 
       _makeHistoryPoint(activePoint, history) {
-        if (activePoint < 0 || !history)
+        if (activePoint < 0 || !history || history.length === 0)
           return null;
-        let historyPoint = history.actions[activePoint];
+        let historyPoint = history[activePoint];
         if (this.parentActive && historyPoint && historyPoint.state)
           this._fire("timetravel-on", historyPoint.state);
         return historyPoint;
@@ -176,7 +176,7 @@
 
       _historyChange(history) {
         this.set("activePoint", 0);
-        this.set("emptyHistory", history && history.actions.length > 0);
+        this.set("emptyHistory", history && history.length > 0);
       }
 
       _isActive(index) {
@@ -225,9 +225,10 @@
       }
 
       _wheel(e) {
+        e.stopPropagation();
         if (e.deltaY < 0 && this.activePoint > 0)
           this.set("activePoint", this.activePoint - 1);
-        else if (e.deltaY > 0 && this.activePoint < this.history.actions.length - 1)
+        else if (e.deltaY > 0 && this.activePoint < this.history.length - 1)
           this.set("activePoint", this.activePoint + 1);
       }
 

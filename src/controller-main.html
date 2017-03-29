@@ -1,5 +1,3 @@
-<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
-
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
 
@@ -17,9 +15,11 @@
                      on-system-error="_systemError"></controller-data>-->
 
     <controller-ui state="[[state]]"
+                   history="[[history]]"
                    on-new-scale="_newScale"
                    on-add-shape="_addShape"
                    on-change-shapes="_changeShapes"
+                   on-change-shapes-end="_changeShapesEnd"
                    on-delete-selected="_deleteSelected"
                    on-deselect-all="_deselect"
                    on-select="_selectSingle"
@@ -39,20 +39,22 @@
 
       static get properties() {
         return {
-          timeMachine: Array,
+          history: Array,
           defaultState: Object,
           fluidState: Object,
           state: {
             type: Object,
-            computed: "_mergeFinal(defaultState, fluidState)"
+            computed: "_mergeFinal(defaultState, fluidState)",
+            observer: "_stateChanged"
           }
         }
       }
 
       connectedCallback() {
         super.connectedCallback();
+//        this._unfilteredTimeMachine = [];
         this.setProperties({
-          timeMachine: [],
+          history: [],
           fluidState: {},
           defaultState: {viewPort: {x: 0, y: 0, s: 1}}
         });
@@ -62,32 +64,51 @@
 
       _mergeFinal(A, B) {
         const C = Tools.mergeDeepWithNullToDelete(A, B);
-        this.push("timeMachine", C);
         return this._postProcess(C);
       }
 
-      _postProcess(C) {                                 //postProcess is not added to the timeMachine
-        C = Object.assign({}, C);
+      //todo the parts that happens in the postProcess IS ALLOWED TO make structures that are SYCLICAL,
+      //todo adding branches to the state that are not DAG.
+      _postProcess(C) {
+        C = Object.assign({}, C);   //todo should we do mutating changes on C instead of this??
+        C.date = new Date();
         C.shapes = Tools.filterPath(C.shapes, null, null);
         C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
+//        this._unfilteredTimeMachine.push(C);
         return C;
+      }
+
+      _stateChanged(C) {
+        if (!this._addToTimeMachine)
+          return;
+        this.push("history", C);
+        this._addToTimeMachine = false;
+      }
+
+      _changeShapesEnd() {
+        this._addToTimeMachine = true;
+        this.set("fluidState", Object.assign({}, this.fluidState));
       }
 
       _changeShapes(e) {
         let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
-        merged.action  = "change";             //todo adding type of action to the state.
+        merged.action = "change";             //todo adding type of action to the state.
         this.set("fluidState", merged);
       }
 
-      _addShape(e){
-        this.set("fluidState", Tools.pushIn(this.fluidState, ["shapes"], {matrix: e.detail}));
+      _addShape(e) {
+        this._addToTimeMachine = true;
+        let newState = Tools.pushIn(this.fluidState, ["shapes"], {matrix: e.detail});
+        newState.action = "add";             //todo adding type of action to the state.
+        this.set("fluidState", newState);
       }
 
       _deleteSelected(e) {
+        this._addToTimeMachine = true;
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
         let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
-        filtered.action  = "del";             //todo adding type of action to the state.
+        filtered.action = "del";             //todo adding type of action to the state.
         this.set("fluidState", filtered);
       }
 

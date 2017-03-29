@@ -62,8 +62,8 @@
     <div id="jsonWrapper">
       <div id="topShadow"></div>
       <div id="scrollWrapper" on-scroll="_createShadow">
-        <template is="dom-repeat" items="[[petals]]" as="petal">
-          <json-object key="[[petal.number]]" obj="[[petal]]" level=2 on-click="selectJsonObject"></json-object>
+        <template is="dom-repeat" items="[[shapesArray]]">
+          <json-object key="[[item.key]]" obj="[[item.value]]" level=2 on-click="selectJsonObject"></json-object>
         </template>
       </div>
     </div>
@@ -79,8 +79,29 @@
 
       static get properties() {
         return {
-          petals: Array
+          shapes: Array,
+          shapesArray: {
+            type: Array,
+            computed: "_objToArray(shapes)"
+          }
         }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("wheel", this._wheel.bind(this));
+      }
+
+      _wheel(e) {
+        e.stopPropagation();
+      }
+
+      _objToArray(shapes) {
+        if (!shapes)
+          return undefined;
+        return Object.keys(shapes).map(key => {
+          return {key: key, value: shapes[key]};
+        });
       }
 
       _createShadow(e) {
@@ -91,7 +112,7 @@
       }
 
       _makeCopy() {
-        this.$.copyText.value = JSON.stringify(this.petals);
+        this.$.copyText.value = JSON.stringify(this.shapes);
         this.$.copyText.select();
         document.execCommand("copy");
       }

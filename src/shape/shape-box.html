@@ -169,6 +169,7 @@
           case 'end':
             e.currentTarget.removeAttribute("active");
             this.set("action", "");
+            this._fire("change-shapes-end");
         }
       }
 
@@ -192,7 +193,7 @@
         let matrices = {};
         for (let key in this.shapes)
           matrices[key] = {matrix: MatrixData.move(this.shapes[key].matrix, x / s, y / s)};
-        this._changeShapes(matrices);
+        this._fire("change-shapes", matrices);
       }
 
       _rotateShapes(x, y, ddx, ddy, s) {
@@ -213,7 +214,7 @@
           let move = Rectangle.calculateRotationMovement(this.rect.center, shape.rect.center, a);
           matrices[key] = {matrix: MatrixData.rotate(shape.matrix, a, move.x / s, move.y / s)};
         }
-        this._changeShapes(matrices);
+        this._fire("change-shapes", matrices);
       }
 
       _scaleShapes(id, dx, dy, s) {
@@ -264,11 +265,11 @@
             )
           };
         }
-        this._changeShapes(matrices);
+        this._fire("change-shapes", matrices);
       }
 
-      _changeShapes(shapes) {
-        this.dispatchEvent(new CustomEvent("change-shapes", {composed: true, bubbles: true, detail: shapes}));
+      _fire(name, detail){
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
     customElements.define(ShapeBox.is, ShapeBox);

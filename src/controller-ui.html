@@ -13,7 +13,7 @@
 <link rel="import" href="ui/grow-child-button.html">
 <link rel="import" href="ui/json-wrapper.html">
 <link rel="import" href="ui/color-palette.html">
-<!--<link rel="import" href="ui/app-ui-history.html">-->
+<link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
 <link rel="import" href="ui/messages-system.html">
 
@@ -167,7 +167,7 @@
 
     <tools-button id="tools" icon="icons:build">
       <grow-child-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
-        <json-wrapper petals="[[petals]]"></json-wrapper>
+        <json-wrapper shapes="[[state.shapes]]"></json-wrapper>
       </grow-child-button>
       <grow-child-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
         <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"
@@ -175,7 +175,7 @@
       </grow-child-button>
       <grow-child-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
-        <!--<app-ui-history history="[[history]]" parent-active="[[historyActive]]"></app-ui-history>-->
+        <app-ui-history history="[[history]]" parent-active="[[historyActive]]"></app-ui-history>
       </grow-child-button>
     </tools-button>
 
@@ -197,6 +197,7 @@
       static get properties() {
         return {
           state: Object,
+          history: Array,
           scale: {
             type: Object,
             observer: "_notifyScale"
