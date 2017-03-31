@@ -150,10 +150,6 @@ class Tools {
     return obj[path[path.length - 1]];
   }
 
-  static pushIn(obj, path, value) {
-    return Tools.setInNoCheck(obj, path.concat([(Tools.__pushCounter++)]), value);
-  }
-
   /**
    * Immutable filter that strips out
    * 1) entries of A that are matching exactly entries in B
@@ -255,6 +251,4 @@ class Tools {
       return res;
     return undefined;
   }
-
 }
-Tools.__pushCounter = 0;
