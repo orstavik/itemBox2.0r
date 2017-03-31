@@ -12,30 +12,22 @@
             type: Object,
             notify: true,
           },
-          provider: {
-            type: Object,
-            value: function() {
-              return new firebase.auth.GoogleAuthProvider();
-            }
-          }
+          provider: Object,
         };
       }
 
       connectedCallback() {
         super.connectedCallback();
-        firebase.auth().onAuthStateChanged(this.setUser.bind(this));
+        firebase.auth().onAuthStateChanged(user => this.set("user"));
+        this.set("provider", new firebase.auth.GoogleAuthProvider());
       }
 
       signIn() {
-        firebase.auth().signInWithPopup(this.provider).catch(this._fire.bind(this, "system-error"));
+        firebase.auth().signInWithPopup(this.provider).catch(err => this._fire("system-error", err));
       }
 
       signOut() {
         firebase.auth().signOut().catch(err => this._fire("system-error", err));
-      }
-
-      setUser(user) {
-        this.set("user", user);
       }
 
       _fire(name, detail){
