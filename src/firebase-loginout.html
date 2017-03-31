@@ -18,7 +18,7 @@
 
       connectedCallback() {
         super.connectedCallback();
-        firebase.auth().onAuthStateChanged(user => this.set("user"));
+        firebase.auth().onAuthStateChanged(user => this.set("user", user));
         this.set("provider", new firebase.auth.GoogleAuthProvider());
       }
 
