@@ -1,0 +1,102 @@
+<dom-module id="controller-fluid">
+  <template>
+    <style>
+      :host { display: block; }
+    </style>
+    <slot></slot>
+  </template>
+  <script>
+    class ControllerFluid extends Polymer.Element {
+
+      static get is() {
+        return "controller-fluid";
+      }
+
+      static get properties() {
+        return {
+          state: Object,
+          fluidState: {
+            type: Object,
+            notify: true
+          }
+        };
+      }
+
+      constructor() {
+        super();
+        this.addEventListener("new-scale", this._newScale.bind(this));
+        this.addEventListener("add-shape", this._addShape.bind(this));
+        this.addEventListener("change-shapes", this._changeShapes.bind(this));
+        this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
+        this.addEventListener("delete-selected", this._deleteSelected.bind(this));
+        this.addEventListener("deselect-all", this._deselect.bind(this));
+        this.addEventListener("select", this._selectSingle.bind(this));
+        this.addEventListener("shape-location", this._registerUIshape.bind(this));
+        this.addEventListener("new-box-selection", this._select.bind(this));
+        this.addEventListener("view-changed", this._viewChanged.bind(this));
+        this.fluidState = {};
+      }
+
+      reset(){
+        this.set("fluidState", {});
+      }
+
+      setPath(path, value){
+        this.set("fluidState", Tools.setIn(this.fluidState, path, value));
+      }
+
+      _changeShapesEnd() {
+        this._addToTimeMachine = true;
+        this.set("fluidState", Object.assign({}, this.fluidState));
+      }
+
+      _changeShapes(e) {
+        let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
+        merged.action = "change";
+        this.set("fluidState", merged);
+      }
+
+      _addShape(e) {
+        this._addToTimeMachine = true;
+        let newState = Tools.setIn(this.fluidState, ["shapes", Tools.genKey()], {matrix: e.detail});
+        newState.action = "add";
+        this.set("fluidState", newState);
+      }
+
+      _deleteSelected(e) {
+        this._addToTimeMachine = true;
+        let dels = {shapes: {}};
+        Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
+        let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
+        filtered.action = "del";
+        this.set("fluidState", filtered);
+      }
+
+      _newScale(e) {
+        console.log(e);
+      }
+
+      _registerUIshape(e) {
+        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes"].concat(e.detail.path), e.detail.value));
+      }
+
+      _deselect() {
+        let newState = Tools.setInPathWithNullAsWildCard(this.fluidState, ["shapes", null, "selected"], false);
+        this.set("fluidState", newState);
+      }
+
+      _selectSingle(e) {
+        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes", e.detail, "selected"], true));
+      }
+
+      _select(e) {
+        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail}));
+      }
+
+      _viewChanged(e) {
+        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {viewPort: e.detail}));
+      }
+    }
+    customElements.define(ControllerFluid.is, ControllerFluid);
+  </script>
+</dom-module>

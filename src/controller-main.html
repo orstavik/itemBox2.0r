@@ -1,32 +1,20 @@
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
+<link rel="import" href="controller-route.html">
+<link rel="import" href="controller-fluid.html">
 
 <dom-module id="controller-main">
   <template>
     <style>
       :host { height: 100%; }
     </style>
+    <controller-route id="route" route-in="[[state.route.url]]"></controller-route>
 
-    <!--<controller-data id="data"
-                     server-user="{{serverUser}}"
-                     user-state="{{serverUserState}}"
-                     sketches="{{persistedGenericState}}"
+    <controller-data id="data" server-state="{{serverUserState}}" state="[[state]]"></controller-data>
 
-                     on-system-error="_systemError"></controller-data>-->
-
-    <controller-ui state="[[state]]"
-                   history="[[history]]"
-                   on-new-scale="_newScale"
-                   on-add-shape="_addShape"
-                   on-change-shapes="_changeShapes"
-                   on-change-shapes-end="_changeShapesEnd"
-                   on-delete-selected="_deleteSelected"
-                   on-deselect-all="_deselect"
-                   on-select="_selectSingle"
-                   on-shape-location="_registerUIshape"
-                   on-new-box-selection="_select"
-                   on-view-changed="_viewChanged">
-    </controller-ui>
+    <controller-fluid state="[[state]]" fluid-state="{{fluidState}}">
+      <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
+    </controller-fluid>
 
   </template>
 
@@ -41,40 +29,57 @@
         return {
           history: Array,
           defaultState: Object,
+          serverUserState: Object,
+          routeState: Object,
           fluidState: Object,
+          userState: {
+            type: Object,
+            computed: "_merge(defaultState, serverUserState)"
+          },
+          userFluidState: {
+            type: Object,
+            computed: "_merge(userState, fluidState)"
+          },
+          routedUserFluidState: {
+            type: Object,
+            computed: "_merge(userFluidState, routeState)"
+          },
           state: {
             type: Object,
-            computed: "_mergeFinal(defaultState, fluidState)",
+            computed: "_process(routedUserFluidState)",
             observer: "_stateChanged"
           }
         }
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-//        this._unfilteredTimeMachine = [];
+      constructor(){
+        super();
+        this.addEventListener("route-changed", this._routeChanged.bind(this));
+        this.addEventListener("system-message", this._systemMessage.bind(this));
+        this.addEventListener("system-error", this._systemMessage.bind(this));
+        this.addEventListener("help-message", this._helpMessage.bind(this));
+        this.addEventListener("sign-in", this._signIn.bind(this));
+        this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
           history: [],
-          fluidState: {},
-          defaultState: {viewPort: {x: 0, y: 0, s: 1}}
+          defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: {url: "unsaved"}}
         });
-        this.addEventListener("system-message", this._systemMessage.bind(this));
-        this.addEventListener("help-message", this._helpMessage.bind(this));
       }
 
-      _mergeFinal(A, B) {
-        const C = Tools.mergeDeepWithNullToDelete(A, B);
-        return this._postProcess(C);
+      _merge(A, B) {
+        return Tools.mergeDeepWithNullToDelete(A, B);
       }
 
-      //todo the parts that happens in the postProcess IS ALLOWED TO make structures that are SYCLICAL,
-      //todo adding branches to the state that are not DAG.
-      _postProcess(C) {
-        C = Object.assign({}, C);   //todo should we do mutating changes on C instead of this??
+      //todo syclical structures ALLOWED here, adding branches to the state that are not DAG.
+      //processing of the state in the coontroller UI makes the state easier to work with in the UI
+      //its purpose is to prepare the view for different things
+      _process(C) {
+        C = Object.assign({}, C);
         C.date = new Date();
+        C.route = ControllerRoute.parseUrl(C.route.url);
+//        C.shapes = C.sketches.test.shapes;
         C.shapes = Tools.filterPath(C.shapes, null, null);
         C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
-//        this._unfilteredTimeMachine.push(C);
         return C;
       }
 
@@ -85,64 +90,28 @@
         this._addToTimeMachine = false;
       }
 
-      _changeShapesEnd() {
-        this._addToTimeMachine = true;
-        this.set("fluidState", Object.assign({}, this.fluidState));
+      _routeChanged(e) {
+        let route = undefined;
+        if (e.detail !== "")
+          route = {route: {url: e.detail}};
+        this.set("routeState", route);
       }
 
-      _changeShapes(e) {
-        let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
-        merged.action = "change";             //todo adding type of action to the state.
-        this.set("fluidState", merged);
+      _signIn() {
+        this.$.data.signIn();
       }
 
-      _addShape(e) {
-        this._addToTimeMachine = true;
-        let newState = Tools.pushIn(this.fluidState, ["shapes"], {matrix: e.detail});
-        newState.action = "add";             //todo adding type of action to the state.
-        this.set("fluidState", newState);
-      }
-
-      _deleteSelected(e) {
-        this._addToTimeMachine = true;
-        let dels = {shapes: {}};
-        Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
-        let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
-        filtered.action = "del";             //todo adding type of action to the state.
-        this.set("fluidState", filtered);
-      }
-
-      _newScale(e) {
-        console.log(e);
-      }
-
-      _registerUIshape(e) {
-        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes"].concat(e.detail.path), e.detail.value));
-      }
-
-      _deselect() {
-        let newState = Tools.setInPathWithNullAsWildCard(this.fluidState, ["shapes", null, "selected"], false);
-        this.set("fluidState", newState);
-      }
-
-      _selectSingle(e) {
-        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes", e.detail, "selected"], true));
-      }
-
-      _select(e) {
-        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail}));
-      }
-
-      _viewChanged(e) {
-        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {viewPort: e.detail}));
+      _signOut() {
+        this.$.data.signOut();
+        this.$.fluid.reset();
       }
 
       _systemMessage(e) {
-        this.set("fluidState", Tools.pushIn(this.fluidState, ["systemMessages"], e.detail));
+        this.$.fluid.setPath(["systemMessages", Tools.genKey()], e.detail);
       }
 
       _helpMessage(e) {
-        this.set("fluidState", Tools.pushIn(this.fluidState, ["helpMessages"], e.detail));
+        this.$.fluid.setPath(["helpMessages", Tools.genKey()], e.detail);
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);
