@@ -11,23 +11,31 @@
           user: {
             type: Object,
             notify: true,
+          },
+          provider: {
+            type: Object,
+            value: function() {
+              return new firebase.auth.GoogleAuthProvider();
+            }
           }
         };
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+        firebase.auth().onAuthStateChanged(this.setUser.bind(this));
+      }
+
       signIn() {
-        let provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(function (result) {
-          // This gives you a Google Access Token. You can use it to access the Google API.
-          // let token = result.credential.accessToken;
-          this.set("user", result.user);
-        }.bind(this)).catch(this._fire.bind(this, "system-error"));
+        firebase.auth().signInWithPopup(this.provider).catch(this._fire.bind(this, "system-error"));
       }
 
       signOut() {
-        firebase.auth().signOut().then(function () {
-          this.set("user", null);
-        }.bind(this)).catch(this._fire.bind(this, "system-error"));
+        firebase.auth().signOut().bind(this).catch(this._fire.bind(this, "system-error"));
+      }
+
+      setUser(user) {
+        this.set("user", user);
       }
 
       _fire(name, detail){
