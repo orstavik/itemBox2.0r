@@ -20,6 +20,13 @@
           result: {
             type: Object,
             notify: true,
+            //todo read only
+          },
+          resultWithPath: {
+            type: Object,
+            computed: "_makeResultWithPath(path, result)",
+            notify: true,
+            //todo read only
           },
           once: {
             type: Boolean,
@@ -77,10 +84,15 @@
       updateMerge(updates) {
         if (!this.active || !this._ref)
           return;
+        updates = Tools.filterDeep(updates, this.result);
         let fullPathUpdates = Tools.extendKeys(this._path + "/", updates);
         this._ref.root.update(fullPathUpdates, function () {
           this._fire("system-message", "updated changes: " + Object.keys(updates));
         }.bind(this));
+      }
+
+      _makeResultWithPath(path, result){
+        return result ? {path: path.split("/"), result: result} : undefined;
       }
 
       _fire(name, detail) {
