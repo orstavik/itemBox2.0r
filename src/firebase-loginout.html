@@ -31,7 +31,7 @@
       }
 
       signOut() {
-        firebase.auth().signOut().bind(this).catch(this._fire.bind(this, "system-error"));
+        firebase.auth().signOut().catch(err => this._fire("system-error", err));
       }
 
       setUser(user) {
