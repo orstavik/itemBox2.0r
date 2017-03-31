@@ -18,15 +18,15 @@
 
       connectedCallback() {
         super.connectedCallback();
-        window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);
-        this._locationBarChanged();
+        window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);   //triggers every time the user clicks a link
+        this._locationBarChanged();       //must fire to get the initial url
       }
 
       _routeInChanged(routeIn) {
         if (routeIn === location.hash.substr(2))
           return;
         window.history.pushState({}, null, '/#/' + routeIn);
-        this._locationBarChanged();
+        this._locationBarChanged();       //must fire because history.pushState does not trigger hashchange
       }
 
       _locationBarChanged() {
