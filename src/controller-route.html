@@ -8,65 +8,56 @@
 
       static get properties() {
         return {
-          _hash: String,
-          parsedHash: {
-            type: Object,
-            computed: "_parseHash(_hash)"
-          },
-          routeState: {
-            type: Object,
-            computed: "_makeRouteState(parsedHash)",
-            notify: true
+          _url: String,
+          routeIn: {
+            type: String,
+            observer: "_routeInChanged"
           }
         };
       }
 
-      constructor() {
-        super();
-        this.set("_hash", location.hash.substr(2));
+      connectedCallback() {
+        super.connectedCallback();
         window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);
+        this._locationBarChanged();
       }
 
-      openPage(hash) {
-        let url = this._concatHash(hash);
-        if (url !== this._hash) {
-          window.history.pushState({}, null, '/#/' + url);
-          this._locationBarChanged();
-        }
+      _routeInChanged(routeIn) {
+        if (routeIn === location.hash.substr(2))
+          return;
+        window.history.pushState({}, null, '/#/' + routeIn);
+        this._locationBarChanged();
       }
 
-      _locationBarChanged(e) {
-        this.set("_hash", location.hash.substr(2));
+      _locationBarChanged() {
+        this._fire("route-changed", location.hash.substr(2));
       }
 
-      _makeRouteState(hash) {
-        return {route: hash};
-      }
-
-      _concatHash(hash) {
-        let str = Object.values(hash.path).join("/");
-        if (hash.query)
-          str += "?" + Object.keys(hash.query).map(key => key + "=" + hash.query[key]).join("&");
-        return str;
-      }
-
-      _parseHash(hash) {
-        let Arr = hash.split("?");
-        let path = {};
-        Arr[0].split("/").forEach(function (each, index) {
+      static parseUrl(urlString) {
+        let ar = urlString.split("?");
+        const path = {};
+        ar[0].split("/").filter(item => item !== "").forEach(function (each, index) {
           path["s" + index] = each;
         });
-        if (!Arr[1])
-          return {path: path};
-        let query = {};
-        Arr[1].split("&").forEach(function (each) {
+        if (!ar[1])
+          return {url: urlString, path: path};
+        const query = {};
+        ar[1].split("&").forEach(function (each) {
           let arr = each.split("=");
           query[arr[0]] = arr[1];
         });
-        return {
-          path: path,
-          query: query
-        }
+        return {url: urlString, path: path, query: query};
+      }
+
+      static concatUrlMap(urlMap) {
+        let str = Object.values(urlMap.path).join("/");
+        if (urlMap.query)
+          str += "?" + Object.keys(urlMap.query).map(key => key + "=" + urlMap.query[key]).join("&");
+        return str;
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
     customElements.define(ControllerRoute.is, ControllerRoute);
