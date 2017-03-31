@@ -1,15 +1,14 @@
-<dom-module id="controller-route">
+<dom-module id="hash-router">
   <script>
-    class ControllerRoute extends Polymer.Element {
+    class HashRouter extends Polymer.Element {
 
       static get is() {
-        return "controller-route";
+        return "hash-router";
       }
 
       static get properties() {
         return {
-          _url: String,
-          routeIn: {
+          urlIn: {
             type: String,
             observer: "_routeInChanged"
           }
@@ -60,6 +59,6 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
-    customElements.define(ControllerRoute.is, ControllerRoute);
+    customElements.define(HashRouter.is, HashRouter);
   </script>
 </dom-module>

@@ -1,8 +1,11 @@
+<link rel="import" href="hash-router.html">
+
 <dom-module id="controller-fluid">
   <template>
     <style>
       :host { display: block; }
     </style>
+    <hash-router id="route" url-in="[[state.route.url]]"></hash-router>
     <slot></slot>
   </template>
   <script>
@@ -15,8 +18,11 @@
       static get properties() {
         return {
           state: Object,
+          routeState: Object,
+          uiState: Object,
           fluidState: {
             type: Object,
+            computed: "_merge(uiState, routeState)",
             notify: true
           }
         };
@@ -24,6 +30,8 @@
 
       constructor() {
         super();
+        this.addEventListener("route-changed", this._routeChanged.bind(this));
+        this.addEventListener("new-sketch", this._newSketch.bind(this));
         this.addEventListener("new-scale", this._newScale.bind(this));
         this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
@@ -34,38 +42,57 @@
         this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("new-box-selection", this._select.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
-        this.fluidState = {};
+        this.uiState = {};
       }
 
-      reset(){
-        this.set("fluidState", {});
+      _merge(A, B) {
+        console.log("fluid");
+        console.log(B);
+        return Tools.mergeDeepWithNullToDelete(A, B);
       }
 
-      setPath(path, value){
-        this.set("fluidState", Tools.setIn(this.fluidState, path, value));
+      _routeChanged(e) {
+        let route = undefined;
+        if (e.detail !== "")
+          route = {route: HashRouter.parseUrl(e.detail)};
+        this.set("routeState", route);
+      }
+
+      reset() {
+        this.setProperties({
+          "routeState": {},
+          "uiState": {}
+        });
+      }
+
+      _newSketch(e) {
+        this.setProperties({
+          "routeState": {route: HashRouter.parseUrl(e.detail.url)},
+          "uiState": e.detail.copy ? this.uiState : {}
+        });
       }
 
       _changeShapesEnd(e) {
         e.stopPropagation();
         this._addToTimeMachine = true;
-        this.set("fluidState", Object.assign({}, this.fluidState));
+        this.set("uiState", Object.assign({}, this.uiState));
       }
 
       _changeShapes(e) {
         e.stopPropagation();
-        let merged = Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail});
+        let merged = Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail});
         merged.action = "change";
-        this.set("fluidState", merged);
+        this.set("uiState", merged);
       }
 
       _newShape(e) {
         e.stopPropagation();
         this._addToTimeMachine = true;
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.viewPort, e.detail.x, e.detail.y);
-        let matrix = {x: pos.x, y: pos.y, sx:1, sy:1, a:0};
-        let newState = Tools.setIn(this.fluidState, ["shapes", Tools.genKey()], {matrix: matrix});
+        let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
+        let newState = Tools.setIn(this.uiState, ["shapes", Tools.genKey()], {matrix: matrix});
         newState.action = "add";
-        this.set("fluidState", newState);
+        this.set("uiState", newState);
       }
 
       _deleteSelected(e) {
@@ -73,9 +100,9 @@
         this._addToTimeMachine = true;
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
-        let filtered = Tools.mergeDeepWithNullToDelete(this.fluidState, dels);
+        let filtered = Tools.mergeDeepWithNullToDelete(this.uiState, dels);
         filtered.action = "del";
-        this.set("fluidState", filtered);
+        this.set("uiState", filtered);
       }
 
       _newScale(e) {
@@ -85,28 +112,28 @@
 
       _registerUIshape(e) {
         e.stopPropagation();
-        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes"].concat(e.detail.path), e.detail.value));
+        this.set("uiState", Tools.setIn(this.uiState, ["shapes"].concat(e.detail.path), e.detail.value));
       }
 
       _deselect(e) {
         e.stopPropagation();
-        let newState = Tools.setInPathWithNullAsWildCard(this.fluidState, ["shapes", null, "selected"], false);
-        this.set("fluidState", newState);
+        let newState = Tools.setInPathWithNullAsWildCard(this.uiState, ["shapes", null, "selected"], false);
+        this.set("uiState", newState);
       }
 
       _selectSingle(e) {
         e.stopPropagation();
-        this.set("fluidState", Tools.setIn(this.fluidState, ["shapes", e.detail, "selected"], true));
+        this.set("uiState", Tools.setIn(this.uiState, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
         e.stopPropagation();
-        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {shapes: e.detail}));
+        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail}));
       }
 
       _viewChanged(e) {
         e.stopPropagation();
-        this.set("fluidState", Tools.mergeDeepWithNullToDelete(this.fluidState, {viewPort: e.detail}));
+        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {viewPort: e.detail}));
       }
     }
     customElements.define(ControllerFluid.is, ControllerFluid);

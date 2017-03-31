@@ -1,6 +1,5 @@
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
-<link rel="import" href="controller-route.html">
 <link rel="import" href="controller-fluid.html">
 
 <dom-module id="controller-main">
@@ -8,12 +7,9 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-route id="route" route-in="[[state.route.url]]"></controller-route>
-
-    <controller-data id="data" server-state="{{serverUserState}}" state="[[state]]"></controller-data>
-
-    <controller-fluid id="fluid" state="[[state]]" fluid-state="{{fluidState}}">
-      <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
+    <controller-data id="data" state="[[activeState]]" server-state="{{serverUserState}}"></controller-data>
+    <controller-fluid id="fluid" state="[[activeState]]" fluid-state="{{fluidState}}">
+      <controller-ui state="[[activeState]]" history="[[history]]"></controller-ui>
     </controller-fluid>
 
   </template>
@@ -29,8 +25,8 @@
         return {
           history: Array,
           defaultState: Object,
+          messagesState: Object,
           serverUserState: Object,
-          routeState: Object,
           fluidState: Object,
           userState: {
             type: Object,
@@ -40,21 +36,28 @@
             type: Object,
             computed: "_merge(userState, fluidState)"
           },
-          routedUserFluidState: {
+          messagesUserFluidState: {
             type: Object,
-            computed: "_merge(userFluidState, routeState)"
+            computed: "_merge(userFluidState, messagesState)"
           },
           state: {
             type: Object,
-            computed: "_process(routedUserFluidState)",
-            observer: "_stateChanged"
-          }
+            computed: "_process(messagesUserFluidState)"
+          },
+          active: Boolean,
+          activeState: Object
         }
       }
 
-      constructor(){
+      static get observers() {
+        return [
+          "_stateChanged(state)",
+          "_activeStateChanged(active,state)",
+        ];
+      }
+
+      constructor() {
         super();
-        this.addEventListener("route-changed", this._routeChanged.bind(this));
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("system-error", this._systemMessage.bind(this));
         this.addEventListener("help-message", this._helpMessage.bind(this));
@@ -62,8 +65,19 @@
         this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
           history: [],
-          defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: {url: "unsaved"}}
+          messagesState: {systemMessages: {}, helpMessages: {}},
+          defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
         });
+        setTimeout(function () {      //todo I don't trust this one without the setTimeout 0, but it works without..
+          this.set("active", true);
+        }.bind(this), 0);
+      }
+
+      _activeStateChanged(active, state) {
+        if (active){
+          console.log(state);
+          this.set("activeState", state);
+        }
       }
 
       _merge(A, B) {
@@ -76,25 +90,17 @@
       _process(C) {
         C = Object.assign({}, C);
         C.date = new Date();
-        C.route = ControllerRoute.parseUrl(C.route.url);
 //        C.shapes = C.sketches.test.shapes;
         C.shapes = Tools.filterPath(C.shapes, null, null);
         C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
         return C;
       }
 
-      _stateChanged(C) {
+      _stateChanged(state) {
         if (!this._addToTimeMachine)
           return;
-        this.push("history", C);
+        this.push("history", state);
         this._addToTimeMachine = false;
-      }
-
-      _routeChanged(e) {
-        let route = undefined;
-        if (e.detail !== "")
-          route = {route: {url: e.detail}};
-        this.set("routeState", route);
       }
 
       _signIn() {
@@ -107,11 +113,11 @@
       }
 
       _systemMessage(e) {
-        this.$.fluid.setPath(["systemMessages", Tools.genKey()], e.detail);
+        this.set("messagesState", Tools.setIn(this.messagesState, ["systemMessages", Tools.genKey()], e.detail));
       }
 
       _helpMessage(e) {
-        this.$.fluid.setPath(["helpMessages", Tools.genKey()], e.detail);
+        this.set("messagesState", Tools.setIn(this.messagesState, ["helpMessages", Tools.genKey()], e.detail));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);
