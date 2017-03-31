@@ -1,0 +1,74 @@
+<dom-module id="controller-route">
+  <script>
+    class ControllerRoute extends Polymer.Element {
+
+      static get is() {
+        return "controller-route";
+      }
+
+      static get properties() {
+        return {
+          _hash: String,
+          parsedHash: {
+            type: Object,
+            computed: "_parseHash(_hash)"
+          },
+          routeState: {
+            type: Object,
+            computed: "_makeRouteState(parsedHash)",
+            notify: true
+          }
+        };
+      }
+
+      constructor() {
+        super();
+        this.set("_hash", location.hash.substr(2));
+        window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);
+      }
+
+      openPage(hash) {
+        let url = this._concatHash(hash);
+        if (url !== this._hash) {
+          window.history.pushState({}, null, '/#/' + url);
+          this._locationBarChanged();
+        }
+      }
+
+      _locationBarChanged(e) {
+        this.set("_hash", location.hash.substr(2));
+      }
+
+      _makeRouteState(hash) {
+        return {route: hash};
+      }
+
+      _concatHash(hash) {
+        let str = Object.values(hash.path).join("/");
+        if (hash.query)
+          str += "?" + Object.keys(hash.query).map(key => key + "=" + hash.query[key]).join("&");
+        return str;
+      }
+
+      _parseHash(hash) {
+        let Arr = hash.split("?");
+        let path = {};
+        Arr[0].split("/").forEach(function (each, index) {
+          path["s" + index] = each;
+        });
+        if (!Arr[1])
+          return {path: path};
+        let query = {};
+        Arr[1].split("&").forEach(function (each) {
+          let arr = each.split("=");
+          query[arr[0]] = arr[1];
+        });
+        return {
+          path: path,
+          query: query
+        }
+      }
+    }
+    customElements.define(ControllerRoute.is, ControllerRoute);
+  </script>
+</dom-module>
