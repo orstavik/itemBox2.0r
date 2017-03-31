@@ -58,21 +58,26 @@
       }
     </style>
     <template is="dom-repeat" items="[[sketchData.array]]">
-      <paper-material elevation="1" class="sketchCard">
-        <div class="contentBox">
-          <div>
-            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" contenteditable="true" on-pointerdown="_stopProp">
-              [[item.value.name]]</h4>
-            <iron-icon icon="create"></iron-icon>
-            <span>[[_toDate(item.value.created)]]</span>
+      <a href="#/[[item.key]]">
+        <!--todo fix the value in the a link -->
+        <paper-material elevation="1" class="sketchCard">
+          <div class="contentBox">
+            <div>
+              <h4 data-key$="[[item.key]]" on-input="_changeSketchName" contenteditable="true"
+                  on-pointerdown="_stopProp">
+                [[item.value.name]]</h4>
+              <iron-icon icon="create"></iron-icon>
+              <span>[[_toDate(item.value.created)]]</span>
+            </div>
+            <div class="buttonRow">
+              <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview
+              </paper-button>
+              <paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>
+              <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Remove</paper-button>
+            </div>
           </div>
-          <div class="buttonRow">
-            <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview</paper-button>
-            <paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>
-            <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Remove</paper-button>
-          </div>
-        </div>
-      </paper-material>
+        </paper-material>
+      </a>
     </template>
   </template>
   <script>

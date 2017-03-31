@@ -150,14 +150,14 @@
     <shape-plain id="shapePlain"
                  state="[[state]]"
                  held-keys="[[heldKeys]]"
-                 on-deselect-all="deselect"
-                 on-new-shape="_newShape"></shape-plain>
+                 on-deselect-all="deselect"></shape-plain>
 
     <template is="dom-if" if="[[_BOOL(state.user)]]">
       <paper-material id="paperName" elevation=1>
-        <div hidden="[[!sketchData.id]]" id="sketchName">[[sketchData.name]]</div>
-        <div hidden="[[sketchData.id]]" id="sketchName">New Sketch</div>
-        <div hidden="[[sketchData.id]]" on-click="_newSketch" class="iconBox">
+        <div id="sketchName">[[state.route.path.s0]]</div>
+        <!-- todo add type in text and send event and ask to save the sketch with this name-->
+        <!-- todo add state.savedStatus -->
+        <div hidden="[[!state.savedStatus]]" on-click="_newSketch" class="iconBox">
           <div>
             <iron-icon icon="save"></iron-icon>
           </div>
@@ -203,13 +203,6 @@
             observer: "_notifyScale"
           },
         }
-      }
-
-      _newShape(e){
-        e.stopPropagation();
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.viewPort, e.detail.x, e.detail.y);
-        let matrix = {x: pos.x, y: pos.y, sx:1, sy:1, a:0};
-        this._fire("add-shape", matrix);
       }
 
       _notifyScale(scale) {
