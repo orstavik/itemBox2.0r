@@ -153,7 +153,7 @@
                  on-deselect-all="deselect"
                  on-new-shape="_newShape"></shape-plain>
 
-    <template is="dom-if" if="[[user]]">
+    <template is="dom-if" if="[[_BOOL(state.user)]]">
       <paper-material id="paperName" elevation=1>
         <div hidden="[[!sketchData.id]]" id="sketchName">[[sketchData.name]]</div>
         <div hidden="[[sketchData.id]]" id="sketchName">New Sketch</div>
@@ -179,8 +179,8 @@
       </grow-child-button>
     </tools-button>
 
-    <grow-button id="account" class="top right" icon="account-circle" signed$="[[toBool(user)]]">
-      <app-login sketch-data="[[sketchData]]" user="[[user]]"></app-login>
+    <grow-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.user)]]">
+      <app-login sketch-data="[[sketchData]]" user="[[state.user]]"></app-login>
     </grow-button>
 
     <messages-help messages="[[state.helpMessages]]" count=3></messages-help>
@@ -267,6 +267,10 @@
 
       _keyUp(e) {
         this.set("heldKeys", e.detail);
+      }
+
+      _BOOL(obj){
+        return !!obj;
       }
 
       _fire(name, detail) {
