@@ -127,7 +127,7 @@
 
       <div class="secondCol">
         <div class="accountName">[[_userName]]</div>
-        <paper-button id="signIn" raised on-click="_signIn" hidden$="[[_toBool(user)]]">Sign in with Google
+        <paper-button id="signIn" raised on-click="_signIn" hidden$="[[_BOOL(user)]]">Sign in with Google
         </paper-button>
         <paper-button raised on-click="_signOut" hidden$="[[!user]]">Sign out</paper-button>
       </div>
@@ -139,7 +139,7 @@
     </div>
     <div class="shadow"></div>
     <div class="sketchRow">
-      <div class="addWrapper" removed$="[[_toBool(user)]]">
+      <div class="addWrapper" removed$="[[_BOOL(user)]]">
         <span class="addText">Sign in to save your sketches</span>
       </div>
       <div class="scrollWrapper" removed$="[[!user]]">
@@ -169,6 +169,11 @@
         }
       }
 
+      connectedCallback(){
+        super.connectedCallback();
+        this.set("user", null); //its a polymer bug
+      }
+
       _signIn() {
         this.dispatchEvent(new CustomEvent("sign-in", {composed: true, bubbles: true}));
       }
@@ -185,7 +190,7 @@
         return user ? user.photoURL : "./images/anonymous.png";
       }
 
-      _toBool(obj) {
+      _BOOL(obj) {
         return !!obj;
       }
     }
