@@ -7,9 +7,9 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-data id="data" state="[[activeState]]" server-state="{{serverUserState}}"></controller-data>
-    <controller-fluid id="fluid" state="[[activeState]]" fluid-state="{{fluidState}}">
-      <controller-ui state="[[activeState]]" history="[[history]]"></controller-ui>
+    <controller-data id="data" state="[[state]]" server-state="{{serverUserState}}"></controller-data>
+    <controller-fluid id="fluid" state="[[state]]" fluid-state="{{fluidState}}">
+      <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
     </controller-fluid>
 
   </template>
@@ -30,30 +30,24 @@
           fluidState: Object,
           userState: {
             type: Object,
-            computed: "_merge(defaultState, serverUserState)"
+            computed: "_mergeUser(defaultState, serverUserState)"
           },
           userFluidState: {
             type: Object,
-            computed: "_merge(userState, fluidState)"
+            computed: "_mergeUserFluid(userState, fluidState)"
           },
           messagesUserFluidState: {
             type: Object,
-            computed: "_merge(userFluidState, messagesState)"
+            computed: "_mergeMessagesUserFluidState(userFluidState, messagesState)"
           },
           state: {
             type: Object,
-            computed: "_process(messagesUserFluidState)"
+            computed: "_processState(messagesUserFluidState)",
+            observer: "_stateChanged"
+
           },
           active: Boolean,
-          activeState: Object
         }
-      }
-
-      static get observers() {
-        return [
-          "_stateChanged(state)",
-          "_activeStateChanged(active,state)",
-        ];
       }
 
       constructor() {
@@ -68,28 +62,31 @@
           messagesState: {systemMessages: {}, helpMessages: {}},
           defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
         });
-        setTimeout(function () {      //todo I don't trust this one without the setTimeout 0, but it works without..
-          this.set("active", true);
+        setTimeout(function () {      //todo it works without the setTimeout 0, but can we trust it..
+          this.set("active", true);   //by waiting until all the other state properties are set before we activate the merge funnel, we avoid bugs due to racce conditions
+          this.set("defaultState", Object.assign({}, this.defaultState));
         }.bind(this), 0);
       }
 
-      _activeStateChanged(active, state) {
-        if (active){
-          console.log(state);
-          this.set("activeState", state);
-        }
+      _mergeMessagesUserFluidState(A, B) {
+        return this.active ? Tools.mergeDeepWithNullToDelete(A, B) : this.messagesUserFluidState;
       }
 
-      _merge(A, B) {
-        return Tools.mergeDeepWithNullToDelete(A, B);
+      _mergeUserFluid(A, B) {
+        return this.active ? Tools.mergeDeepWithNullToDelete(A, B) : this.userFluidState;
+      }
+
+      _mergeUser(A, B) {
+        return this.active ? Tools.mergeDeepWithNullToDelete(A, B) : this.userState;
       }
 
       //todo syclical structures ALLOWED here, adding branches to the state that are not DAG.
       //processing of the state in the coontroller UI makes the state easier to work with in the UI
       //its purpose is to prepare the view for different things
-      _process(C) {
+      _processState(C) {
+        if (!this.active)
+          return this.state;
         C = Object.assign({}, C);
-        C.date = new Date();
 //        C.shapes = C.sketches.test.shapes;
         C.shapes = Tools.filterPath(C.shapes, null, null);
         C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
@@ -97,10 +94,7 @@
       }
 
       _stateChanged(state) {
-        if (!this._addToTimeMachine)
-          return;
-        this.push("history", state);
-        this._addToTimeMachine = false;
+        this.set("history", this.history.concat([state]));
       }
 
       _signIn() {
@@ -108,8 +102,11 @@
       }
 
       _signOut() {
+        this.active = false;              //synchronic state action start
         this.$.data.signOut();
         this.$.fluid.reset();
+        this.active = true;               //synchronic state action stop
+        this.set("defaultState", Object.assign({}, this.defaultState)); //redo the state tree
       }
 
       _systemMessage(e) {

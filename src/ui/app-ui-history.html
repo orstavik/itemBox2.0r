@@ -45,7 +45,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        box-shadow: 0 0 6px 0px rgba(0,0,0,0.7);
+        box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.7);
         /*transition: background-color 0.2s, width 0.1s, height 0.1s;*/
         transition-duration: 0.2s;
         z-index: 1;
@@ -60,7 +60,7 @@
         cursor: pointer;
       }
       .historyPoint > iron-icon {
-        --iron-icon-fill-color: rgba(0,0,0,0.4);
+        --iron-icon-fill-color: rgba(0, 0, 0, 0.4);
         --iron-icon-width: 28px;
         --iron-icon-height: 28px;
         pointer-events: none;
@@ -106,13 +106,13 @@
 
     <div class="filledCard">
       <div id="historyPipe">
-        <template is="dom-repeat" items="[[history]]">
-          <div class$="historyPoint [[item.action]]"
+        <template is="dom-repeat" items="[[filteredHistory]]">
+          <div class$="historyPoint [[item.action.type]]"
                active$="[[_isActive(index, activePoint)]]"
                data-index$="[[index]]"
                style$="[[_calcStyle(activePoint, index)]]"
                on-click="_click">
-               <iron-icon icon="av:repeat" hidden$="[[!_isActive(index, activePoint)]]"></iron-icon>
+            <iron-icon icon="av:repeat" hidden$="[[!_isActive(index, activePoint)]]"></iron-icon>
           </div>
         </template>
       </div>
@@ -120,7 +120,7 @@
         <span class="pointType">[[historyPoint.action]]</span>
         <span class="pointTime">[[_howLongAgo(historyPoint)]]</span>
       </div>
-      <span class="emptyCard" hidden$="[[emptyHistory]]">You haven't done anything!</span>
+      <span class="emptyCard" hidden$="[[_isEmptyArray(filteredHistory)]]">You haven't done anything!</span>
     </div>
   </template>
 
@@ -132,37 +132,38 @@
 
       static get properties() {
         return {
-          history: {
-            type: Array,
-            observer: "_historyChange"
-          },
+          history: Array,
+          filteredHistory: Array,
           activePoint: {
             type: Number,
             value: 0
           },
           historyPoint: {
             type: Object,
-            computed: "_makeHistoryPoint(activePoint, history)"
+            computed: "_makeHistoryPoint(activePoint, filteredHistory)"
           },
-          parentActive: {
-            type: Boolean,
-            observer: "_parentActiveChange"
-          },
-          emptyHistory: Boolean
+          parentActive: Boolean
         }
       }
 
-      _parentActiveChange(){
-        if (this.parentActive)
-          this.dispatchEvent(new CustomEvent("help-message", {composed: true, bubbles: true, detail: "Scroll to view old version. Click the expanded historypoint to roll back."}));
-        else
-          this._fire("timetravel-off", null);
+      static get observers() {
+        return [
+          "_historyChange(history)",
+          "_parentActiveChange(parentActive)"
+        ];
       }
 
-      connectedCallback() {
-        super.connectedCallback();
+      _parentActiveChange() {
+        if (this.parentActive)
+          this._fire("help-message", "Scroll to view old version. Click the expanded historypoint to roll back.");
+        else
+          this._fire("timetravel-off");
+      }
+
+      constructor() {
+        super();
         this.addEventListener("wheel", this._wheel.bind(this));
-//        new MutationObserver(this._parentIsActive.bind(this)).observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
+        this.filteredHistory = [];
       }
 
       _makeHistoryPoint(activePoint, history) {
@@ -175,8 +176,18 @@
       }
 
       _historyChange(history) {
-        this.set("activePoint", 0);
-        this.set("emptyHistory", history && history.length > 0);
+        if (this._isEmptyArray(history))
+          return;
+        let last = history[history.length - 1];
+        let type = last.action.type;
+        if (type === "new-shape" || type === "delete-selected" || type === "change-shapes-end") {
+          this.set("activePoint", 0);
+          this.push("filteredHistory", last);
+        }
+      }
+
+      _isEmptyArray(a) {
+        return !a || a.length === 0;
       }
 
       _isActive(index) {
@@ -185,23 +196,23 @@
 
       _calcStyle(active, index) {
         let dif = index - active;
-        let shift = (24*(Math.pow(0.8,Math.abs(dif))-1))/(0.8-1);
+        let shift = (24 * (Math.pow(0.8, Math.abs(dif)) - 1)) / (0.8 - 1);
         if (dif < 0)
           shift *= -1;
-        let size = Math.pow(0.8, Math.abs(active-index));
-        return "transform: translateY("+shift+"px) scale("+size+");";
+        let size = Math.pow(0.8, Math.abs(active - index));
+        return "transform: translateY(" + shift + "px) scale(" + size + ");";
       }
 
       _calcShift(active) {
-        let shift = (24*(Math.pow(0.8,active)-1))/(0.8-1);
-        return "transform: translateY(-"+shift+"px);";
+        let shift = (24 * (Math.pow(0.8, active) - 1)) / (0.8 - 1);
+        return "transform: translateY(-" + shift + "px);";
       }
 
       _howLongAgo(historyPoint) {
         if (!historyPoint)
           return null;
         const current = new Date().getTime();
-        const then = historyPoint.date.getTime();
+        const then = historyPoint.action.timeStamp;
         const differenceInSec = (current - then) / 1000;
         if (differenceInSec < 60)
           return Math.floor(differenceInSec) + " sec. ago";
@@ -236,6 +247,8 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
 
+//        new MutationObserver(this._parentIsActive.bind(this)).observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
+//
 //      _parentIsActive(mutations) {
 //        for (let mutation of mutations) {
 //          if (mutation.attributeName == "active") {

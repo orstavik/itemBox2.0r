@@ -46,12 +46,18 @@
       }
 
       _merge(A, B) {
-        console.log("fluid");
-        console.log(B);
-        return Tools.mergeDeepWithNullToDelete(A, B);
+        let C = Tools.mergeDeepWithNullToDelete(A, B);
+        C.action = {type: this._type, timeStamp: new Date().getTime()};
+        return C;
+      }
+
+      _preprocessEventHandling(e){
+        e.stopPropagation();
+        this._type = e.type;
       }
 
       _routeChanged(e) {
+        this._preprocessEventHandling(e);
         let route = undefined;
         if (e.detail !== "")
           route = {route: HashRouter.parseUrl(e.detail)};
@@ -66,6 +72,7 @@
       }
 
       _newSketch(e) {
+        this._preprocessEventHandling(e);
         this.setProperties({
           "routeState": {route: HashRouter.parseUrl(e.detail.url)},
           "uiState": e.detail.copy ? this.uiState : {}
@@ -73,66 +80,56 @@
       }
 
       _changeShapesEnd(e) {
-        e.stopPropagation();
-        this._addToTimeMachine = true;
+        this._preprocessEventHandling(e);
         this.set("uiState", Object.assign({}, this.uiState));
       }
 
       _changeShapes(e) {
-        e.stopPropagation();
-        let merged = Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail});
-        merged.action = "change";
-        this.set("uiState", merged);
+        this._preprocessEventHandling(e);
+        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail}));
       }
 
       _newShape(e) {
-        e.stopPropagation();
-        this._addToTimeMachine = true;
+        this._preprocessEventHandling(e);
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.viewPort, e.detail.x, e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        let newState = Tools.setIn(this.uiState, ["shapes", Tools.genKey()], {matrix: matrix});
-        newState.action = "add";
-        this.set("uiState", newState);
+        this.set("uiState", Tools.setIn(this.uiState, ["shapes", Tools.genKey()], {matrix: matrix}));
       }
 
       _deleteSelected(e) {
-        e.stopPropagation();
-        this._addToTimeMachine = true;
+        this._preprocessEventHandling(e);
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
-        let filtered = Tools.mergeDeepWithNullToDelete(this.uiState, dels);
-        filtered.action = "del";
-        this.set("uiState", filtered);
+        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, dels));
       }
 
       _newScale(e) {
-        e.stopPropagation();
+        this._preprocessEventHandling(e);
         console.log(e);
       }
 
       _registerUIshape(e) {
-        e.stopPropagation();
+        this._preprocessEventHandling(e);
         this.set("uiState", Tools.setIn(this.uiState, ["shapes"].concat(e.detail.path), e.detail.value));
       }
 
       _deselect(e) {
-        e.stopPropagation();
-        let newState = Tools.setInPathWithNullAsWildCard(this.uiState, ["shapes", null, "selected"], false);
-        this.set("uiState", newState);
+        this._preprocessEventHandling(e);
+        this.set("uiState", Tools.setInPathWithNullAsWildCard(this.uiState, ["shapes", null, "selected"], false));
       }
 
       _selectSingle(e) {
-        e.stopPropagation();
+        this._preprocessEventHandling(e);
         this.set("uiState", Tools.setIn(this.uiState, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
-        e.stopPropagation();
+        this._preprocessEventHandling(e);
         this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail}));
       }
 
       _viewChanged(e) {
-        e.stopPropagation();
+        this._preprocessEventHandling(e);
         this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {viewPort: e.detail}));
       }
     }
