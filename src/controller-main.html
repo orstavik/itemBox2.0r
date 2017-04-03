@@ -1,0 +1,120 @@
+<link rel="import" href="controller-ui.html">
+<link rel="import" href="controller-data.html">
+<link rel="import" href="controller-fluid.html">
+
+<dom-module id="controller-main">
+  <template>
+    <style>
+      :host { height: 100%; }
+    </style>
+    <controller-data id="data" state="[[state]]" server-state="{{serverUserState}}"></controller-data>
+    <controller-fluid id="fluid" state="[[state]]" fluid-state="{{fluidState}}">
+      <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
+    </controller-fluid>
+
+  </template>
+
+  <script>
+
+    class ControllerMain extends Polymer.Element {
+      static get is() {
+        return "controller-main";
+      }
+
+      static get properties() {
+        return {
+          history: Array,
+          defaultState: Object,
+          messagesState: Object,
+          serverUserState: Object,
+          fluidState: Object,
+          userState: {
+            type: Object,
+            computed: "_mergeUser(defaultState, serverUserState, active)"
+          },
+          userFluidState: {
+            type: Object,
+            computed: "_mergeUserFluid(userState, fluidState)"
+          },
+          messagesUserFluidState: {
+            type: Object,
+            computed: "_mergeMessagesUserFluidState(userFluidState, messagesState)"
+          },
+          state: {
+            type: Object,
+            computed: "_processState(messagesUserFluidState)",
+            observer: "_stateChanged"
+
+          },
+          active: {               //the merge funnel does not produce any new state output if:
+            type: Boolean,        // a) the active is false or
+            value: true           // b) any of the partial states === undefined
+          }
+        }
+      }
+
+      constructor() {
+        super();
+        this.addEventListener("system-message", this._systemMessage.bind(this));
+        this.addEventListener("system-error", this._systemMessage.bind(this));
+        this.addEventListener("help-message", this._helpMessage.bind(this));
+        this.addEventListener("sign-in", this._signIn.bind(this));
+        this.addEventListener("sign-out", this._signOut.bind(this));
+        this.setProperties({
+          history: [],
+          messagesState: {systemMessages: {}, helpMessages: {}},
+          defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
+        });
+      }
+
+      _mergeMessagesUserFluidState(A, B) {
+        return A === undefined || B === undefined ? this.messagesUserFluidState : Tools.mergeDeepWithNullToDelete(A, B);
+      }
+
+      _mergeUserFluid(A, B) {
+        return A === undefined || B === undefined ? this.userFluidState : Tools.mergeDeepWithNullToDelete(A, B);
+      }
+
+      _mergeUser(A, B, active) {
+        return !active || A === undefined || B === undefined ? this.userState : Tools.mergeDeepWithNullToDelete(A, B);
+      }
+
+      //todo syclical structures ALLOWED here, adding branches to the state that are not DAG.
+      //processing of the state in the coontroller UI makes the state easier to work with in the UI
+      //its purpose is to prepare the view for different things
+      _processState(C) {
+        if (!C)
+          return C;
+        C = Object.assign({}, C);
+//        C.shapes = C.sketches.test.shapes;
+        C.shapes = Tools.filterPath(C.shapes, null, null);
+        C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
+        return C;
+      }
+
+      _stateChanged(state) {
+        this.set("history", this.history.concat([state]));
+      }
+
+      _signIn() {
+        this.$.data.signIn();
+      }
+
+      _signOut() {
+        this.set("active", false);  //synchronic state action start
+        this.$.data.signOut();
+        this.$.fluid.reset();
+        this.set("active", true);   //synchronic state action stop
+      }
+
+      _systemMessage(e) {
+        this.set("messagesState", Tools.setIn(this.messagesState, ["systemMessages", Tools.genKey()], e.detail));
+      }
+
+      _helpMessage(e) {
+        this.set("messagesState", Tools.setIn(this.messagesState, ["helpMessages", Tools.genKey()], e.detail));
+      }
+    }
+    customElements.define(ControllerMain.is, ControllerMain);
+  </script>
+</dom-module>
