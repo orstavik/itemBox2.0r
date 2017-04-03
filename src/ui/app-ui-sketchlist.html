@@ -57,7 +57,7 @@
         color: white;
       }
     </style>
-    <template is="dom-repeat" items="[[sketchData.array]]">
+    <template is="dom-repeat" items="[[sketchesArray]]">
       <a href="#/[[item.key]]">
         <!--todo fix the value in the a link -->
         <paper-material elevation="1" class="sketchCard">
@@ -70,10 +70,9 @@
               <span>[[_toDate(item.value.created)]]</span>
             </div>
             <div class="buttonRow">
-              <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview
-              </paper-button>
-              <paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>
-              <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Remove</paper-button>
+              <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview</paper-button>
+              <!--<paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>-->
+              <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Delete</paper-button>
             </div>
           </div>
         </paper-material>
@@ -90,8 +89,19 @@
       static get properties() {
         return {
           uid: String,
-          sketchData: Object,
+          sketchesArray: {
+            type: Array,
+            computed: "_toArray(sketches)"
+          },
+          sketches: Object
         }
+      }
+
+      _toArray(sketches) {
+        if (!sketches) return sketches;
+        return Object.keys(sketches).map(function (key) {
+          return {key: key, value: sketches[key]};
+        });
       }
 
       _toDate(num) {

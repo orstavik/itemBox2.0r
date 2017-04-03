@@ -150,7 +150,7 @@
     </tools-button>
 
     <grow-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.user)]]">
-      <app-login sketch-data="[[sketchData]]" user="[[state.user]]"></app-login>
+      <app-login sketches="[[state.sketches]]" user="[[state.user]]"></app-login>
     </grow-button>
 
     <messages-help messages="[[state.helpMessages]]" count=3></messages-help>

@@ -143,7 +143,7 @@
         <span class="addText">Sign in to save your sketches</span>
       </div>
       <div class="scrollWrapper" removed$="[[!user]]">
-        <app-ui-sketchlist id="sketchlist" uid="[[user.uid]]" sketch-data="[[sketchData]]"></app-ui-sketchlist>
+        <app-ui-sketchlist id="sketchlist" uid="[[user.uid]]" sketches="[[sketches]]"></app-ui-sketchlist>
       </div>
     </div>
 
@@ -165,13 +165,13 @@
             type: String,
             computed: "_setUserName(user)"
           },
-          sketchData: Object
+          sketches: Object
         }
       }
 
       connectedCallback(){
         super.connectedCallback();
-        this.set("user", null); //its a polymer bug
+        this.set("user", null); //its a polymer bug needed to initialize the first computed value for _userName and _userImage
       }
 
       _signIn() {
