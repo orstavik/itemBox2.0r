@@ -1,0 +1,44 @@
+<dom-module id="controller-history">
+  <script>
+    class ControllerHistory extends Polymer.Element {
+
+      static get is() {
+        return "controller-history";
+      }
+
+      static get properties() {
+        return {
+          state: Object,
+          fullHistory: {
+            type: Array,
+            notify: true
+          },
+          filteredHistory: {
+            type: Array,
+            notify: true
+          }
+        };
+      }
+
+      static get observers() {
+        return ["updateHistories(state)"];
+      }
+
+      constructor() {
+        super();
+        this.fullHistory = [];
+        this.filteredHistory = [];
+      }
+
+      updateHistories(state) {
+        if (!state)
+          return;
+        this.set("fullHistory", [state].concat(this.fullHistory));
+        let type = state.action.type;
+        if (type === "new-shape" || type === "delete-selected" || type === "change-shapes-end")
+          this.set("filteredHistory", [state].concat(this.filteredHistory));
+      }
+    }
+    customElements.define(ControllerHistory.is, ControllerHistory);
+  </script>
+</dom-module>

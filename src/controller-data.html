@@ -46,7 +46,11 @@
             computed: "_makeState(mergedServerUserState, sketchDataFromServer)",
             notify: true
           },
-          state: Object
+          state: Object,
+          history: {
+            type: Array,
+            observer: "_historyChanged"
+          }
         };
       }
 
@@ -79,6 +83,24 @@
 
       updateChanges(changes) {
         this.$.serverUserState.updateMerge(changes);
+      }
+
+
+      _historyChanged(history) {
+        if (!history || history.length === 0)
+          return;
+        let D = Object.assign({}, history[0]);
+        delete D.viewPort;
+        delete D.route;
+        delete D.user;
+        delete D.selecteds;
+        console.log("store this?");
+        console.log(D);
+//        debounce(storeData, 2000);
+//        debugger;
+//        let toBeServified = Tools.filterDeep(D, this.userState);
+//        toBeServified.viewPort = null;
+//
       }
 
       _fire(name, detail) {

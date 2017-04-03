@@ -106,7 +106,7 @@
 
     <div class="filledCard">
       <div id="historyPipe">
-        <template is="dom-repeat" items="[[filteredHistory]]">
+        <template is="dom-repeat" items="[[history]]">
           <div class$="historyPoint [[item.action.type]]"
                active$="[[_isActive(index, activePoint)]]"
                data-index$="[[index]]"
@@ -120,7 +120,7 @@
         <span class="pointType">[[historyPoint.action]]</span>
         <span class="pointTime">[[_howLongAgo(historyPoint)]]</span>
       </div>
-      <span class="emptyCard" hidden$="[[_isEmptyArray(filteredHistory)]]">You haven't done anything!</span>
+      <span class="emptyCard" hidden$="[[_isEmptyArray(history)]]">You haven't done anything!</span>
     </div>
   </template>
 
@@ -133,14 +133,13 @@
       static get properties() {
         return {
           history: Array,
-          filteredHistory: Array,
           activePoint: {
             type: Number,
             value: 0
           },
           historyPoint: {
             type: Object,
-            computed: "_makeHistoryPoint(activePoint, filteredHistory)"
+            computed: "_makeHistoryPoint(activePoint, history)"
           },
           parentActive: Boolean
         }
@@ -163,7 +162,6 @@
       constructor() {
         super();
         this.addEventListener("wheel", this._wheel.bind(this));
-        this.filteredHistory = [];
       }
 
       _makeHistoryPoint(activePoint, history) {
@@ -176,14 +174,7 @@
       }
 
       _historyChange(history) {
-        if (this._isEmptyArray(history))
-          return;
-        let last = history[history.length - 1];
-        let type = last.action.type;
-        if (type === "new-shape" || type === "delete-selected" || type === "change-shapes-end") {
-          this.set("activePoint", 0);
-          this.push("filteredHistory", last);
-        }
+        this.set("activePoint", 0);
       }
 
       _isEmptyArray(a) {

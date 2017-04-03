@@ -1,13 +1,15 @@
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
 <link rel="import" href="controller-fluid.html">
+<link rel="import" href="controller-history.html">
 
 <dom-module id="controller-main">
   <template>
     <style>
       :host { height: 100%; }
     </style>
-    <controller-data id="data" state="[[state]]" server-state="{{serverUserState}}"></controller-data>
+    <controller-history id="history" state="[[state]]" filtered-history="{{history}}"></controller-history>
+    <controller-data id="data" state="[[state]]" history="[[history]]" server-state="{{serverUserState}}"></controller-data>
     <controller-fluid id="fluid" state="[[state]]" fluid-state="{{fluidState}}">
       <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
     </controller-fluid>
@@ -42,8 +44,7 @@
           },
           state: {
             type: Object,
-            computed: "_processState(messagesUserFluidState)",
-            observer: "_stateChanged"
+            computed: "_processState(messagesUserFluidState)"
 
           },
           active: {               //the merge funnel does not produce any new state output if:
@@ -61,7 +62,6 @@
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
-          history: [],
           messagesState: {systemMessages: {}, helpMessages: {}},
           defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
         });
@@ -90,10 +90,6 @@
         C.shapes = Tools.filterPath(C.shapes, null, null);
         C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
         return C;
-      }
-
-      _stateChanged(state) {
-        this.set("history", this.history.concat([state]));
       }
 
       _signIn() {
