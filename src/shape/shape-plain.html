@@ -27,10 +27,10 @@
       }
     </style>
 
-    <shape-box id="shapeBox" shapes="[[state.selecteds]]" view-port="[[state.viewPort]]"></shape-box>
-    <selection-box id="selection" shapes="[[state.shapes]]"></selection-box>
-    <coordinate-lines view-port="[[state.viewPort]]"></coordinate-lines>
-    <space-camera id="camera" view-port="[[state.viewPort]]">
+    <shape-box id="shapeBox" shapes="[[state.selecteds]]" view-port="[[state.A.0.viewPort]]"></shape-box>
+    <selection-box id="selection" shapes="[[state.activeSketch.shapes]]"></selection-box>
+    <coordinate-lines view-port="[[state.A.0.viewPort]]"></coordinate-lines>
+    <space-camera id="camera" view-port="[[state.A.0.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
         <shape-object id$="[[item.key]]"
                       selected$="[[item.value.selected]]"
@@ -65,7 +65,7 @@
           },
           shapesArray: {
             type: Array,
-            computed: "_toArray(state.shapes)"
+            computed: "_toArray(state.activeSketch.shapes)"
           }
         }
       }

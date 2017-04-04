@@ -5,7 +5,7 @@
     <style>
       :host { display: block; }
     </style>
-    <hash-router id="route" url-in="[[state.route.url]]"></hash-router>
+    <hash-router id="route" url-in="[[state.A.0.route.url]]"></hash-router>
     <slot></slot>
   </template>
   <script>
@@ -19,13 +19,20 @@
         return {
           state: Object,
           routeState: Object,
-          uiState: Object,
+//          uiState: Object,
+          activeSketchSnap: Object,
+          viewPortSnap: Object,
+          uiSnap: {
+            type: Object,
+            computed: "_mergeUiSnap(activeSketchSnap, viewPortSnap)",
+//            observer: "_fluidChanged"
+          },
           fluidState: {
             type: Object,
-            computed: "_merge(uiState, routeState)",
+            computed: "_merge(uiSnap, routeState)",
             observer: "_fluidChanged"
           },
-          actionType : String
+          actionType: String
         };
       }
 
@@ -40,21 +47,29 @@
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
         this.addEventListener("deselect-all", this._deselect.bind(this));
         this.addEventListener("select", this._selectSingle.bind(this));
-        this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("new-box-selection", this._select.bind(this));
+        this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
         this.uiState = {};
       }
 
       _merge(A, B) {
+        if (B === undefined)
+          return undefined;
         return Tools.mergeDeepWithNullToDelete(A, B);
       }
 
-      _fluidChanged(C){
-        this._fire("state-change", {type: this.actionType, state: C});
+      _mergeUiSnap(activeSketchSnap, viewPortSnap) {
+        let x = {sketches: {}};
+        x.sketches[this.state.A[0].route.path.s0] = activeSketchSnap;
+        return Tools.mergeDeepWithNullToDelete(viewPortSnap, x);
       }
 
-      _preprocessEventHandling(e){
+      _fluidChanged(C) {
+        this._fire("snap-change", {type: this.actionType, snap: C});
+      }
+
+      _preprocessEventHandling(e) {
         e.stopPropagation();
         this.set("actionType", e.type);
       }
@@ -70,40 +85,44 @@
       reset() {
         this.setProperties({
           "routeState": {},
-          "uiState": {}
+          "activeSketchSnap": {},
+          "viewPortSnap": {}
         });
       }
 
       _newSketch(e) {
         this._preprocessEventHandling(e);
+        console.log("The preservation of the previous state is not supported yet.");
         this.setProperties({
           "routeState": {route: HashRouter.parseUrl(e.detail.url)},
-          "uiState": e.detail.copy ? this.uiState : {}
+          "viewPortSnap": {},
+          "activeSketchSnap": {}
         });
       }
 
       _changeShapesEnd(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Object.assign({}, this.uiState));
+//        this.set("activeSketchSnap", Object.assign({}, this.activeSketchSnap));
       }
 
       _changeShapes(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail}));
+        console.log(this.activeSketchSnap);
+        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, {shapes: e.detail}));
       }
 
       _newShape(e) {
         this._preprocessEventHandling(e);
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.viewPort, e.detail.x, e.detail.y);
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.A[0].viewPort, e.detail.x, e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        this.set("uiState", Tools.setIn(this.uiState, ["shapes", Tools.genKey()], {matrix: matrix}));
+        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes", Tools.genKey()], {matrix: matrix}));
       }
 
       _deleteSelected(e) {
         this._preprocessEventHandling(e);
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
-        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, dels));
+        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, dels));
       }
 
       _newScale(e) {
@@ -113,27 +132,28 @@
 
       _registerUIshape(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.setIn(this.uiState, ["shapes"].concat(e.detail.path), e.detail.value));
+        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes"].concat(e.detail.path), e.detail.value));
       }
 
       _deselect(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.setInPathWithNullAsWildCard(this.uiState, ["shapes", null, "selected"], false));
+        //todo alternative path might be simpler
+        this.set("activeSketchSnap", Tools.setInPathWithNullAsWildCard(this.activeSketchSnap, ["shapes", null, "selected"], false));
       }
 
       _selectSingle(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.setIn(this.uiState, ["shapes", e.detail, "selected"], true));
+        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {shapes: e.detail}));
+        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, {shapes: e.detail}));
       }
 
       _viewChanged(e) {
         this._preprocessEventHandling(e);
-        this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {viewPort: e.detail}));
+        this.set("viewPortSnap", {viewPort: e.detail});
       }
 
       _fire(name, detail) {

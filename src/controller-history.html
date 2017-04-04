@@ -8,36 +8,102 @@
 
       static get properties() {
         return {
-          state: Object,
-          fullHistory: {
+          snap: Object,
+          A: {                                //array of all the snaps
             type: Array,
-            notify: true
+            computed: "_makeA(snap)"
           },
-          filteredHistory: {
+          B: {                                //array of the edit snaps
             type: Array,
+            computed: "_makeB(snap)"
+          },
+          selecteds: {
+            type: Object,
+            computed: "_makeSelecteds(snap)"
+          },
+          activeSketch: {
+            type: Object,
+            computed: "_makeActiveSketch(snap)"
+          },
+          C: {                                //array of the system messages snaps
+            type: Array,
+            computed: "_makeC(snap)"
+          },
+          D: {                                //array of the help messages snaps
+            type: Array,
+            computed: "_makeD(snap)"
+          },
+          state: {
+            type: Object,
+            value: function () {
+              return {};
+            },
+            computed: "_makeState(A,B,C,D)",
             notify: true
           }
         };
       }
 
-      static get observers() {
-        return ["updateHistories(state)"];
+      _makeA(snap) {
+        return [snap].concat(this.A);
       }
 
-      constructor() {
-        super();
-        this.fullHistory = [];
-        this.filteredHistory = [];
+      _makeB(snap) {
+        let t = snap.action.type;
+        if (t === "new-shape" || t === "delete-selected" || t === "change-shapes-end")
+          return [snap].concat(this.B);
+        return this.B;
       }
 
-      updateHistories(state) {
-        if (!state)
-          return;
-        this.set("fullHistory", [state].concat(this.fullHistory));
-        let type = state.action.type;
-        if (type === "new-shape" || type === "delete-selected" || type === "change-shapes-end")
-          this.set("filteredHistory", [state].concat(this.filteredHistory));
-        console.log(type);
+      _makeActiveSketch(snap) {
+        if (snap && snap.sketches)
+          return snap.sketches[snap.route.path.s0];   //make the null values stay in the shapes, and a bug appears..
+      }
+
+      _makeSelecteds(snap) {
+        let t = snap.action.type;
+        if (snap && snap.sketches)
+          return Tools.matchesPathValue(snap.sketches[snap.route.path.s0].shapes, [null, "selected"], true);
+
+//        if (t === "delete-selected" || t === "deselect-all" || t === "select" || t === "new-box-selection" || t === "new-shape" || t === "change-shapes-end")
+//        return this.selecteds;
+      }
+
+      _makeC(snap) {
+        if (snap.action.type === "system-message")
+          return [snap].concat(this.C);
+        return this.C;
+      }
+
+      _makeD(snap) {
+        if (snap.action.type === "help-message")
+          return [snap].concat(this.D);
+        return this.D;
+      }
+
+      /*
+       * state
+       *   A                   arrayOfStates[]                   state => state.A.0
+       ******** (subset views) ***********
+       *   filteredHistory     arrayOfStates[]
+       *   activeSketch        object
+       *   selecteds           object
+       *   systemMessages      arrayOfStates[]
+       *   helpMessages        arrayOfStates[]
+       * */
+
+      _makeState(A, B, C, D) {
+        const res = {
+          A: A,
+          editSnaps: B,
+          systemMessageSnaps: C,
+          helpMessageSnaps: D,
+//          now: A[0],
+          activeSketch: this.activeSketch,
+          selecteds: this.selecteds
+        };
+        console.log(res);
+        return res;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);

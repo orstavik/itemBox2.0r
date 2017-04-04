@@ -8,10 +8,10 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-history id="history" state="[[state]]" filtered-history="{{history}}"></controller-history>
-    <controller-data id="data" state="[[state]]" history="[[history]]" on-state-change="_serverUserStateChange"></controller-data>
-    <controller-fluid id="fluid" state="[[state]]" on-state-change="_fluidStateChange">
-      <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
+    <controller-history id="history" snap="[[snap]]" state="{{state}}"></controller-history>
+    <controller-data id="data" state="[[state]]" on-snap-change="_serverUserSnapChange"></controller-data>
+    <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
+      <controller-ui state="[[state]]"></controller-ui>
     </controller-fluid>
 
   </template>
@@ -25,27 +25,22 @@
 
       static get properties() {
         return {
-          history: Array,
-          defaultState: Object,
-          messagesState: Object,
-          serverUserState: Object,
-          fluidState: Object,
-          userState: {
+          state: Object,
+          defaultSnap: Object,
+          messagesSnap: Object,
+          serverUserSnap: Object,
+          fluidSnap: Object,
+          userSnap: {
             type: Object,
-            computed: "_mergeUser(defaultState, serverUserState, active)"
+            computed: "_mergeUser(defaultSnap, serverUserSnap, active)"
           },
-          userFluidState: {
+          userFluidSnap: {
             type: Object,
-            computed: "_mergeUserFluid(userState, fluidState)"
+            computed: "_mergeUserFluid(userSnap, fluidSnap)"
           },
-          messagesUserFluidState: {
+          snap: {
             type: Object,
-            computed: "_mergeMessagesUserFluidState(userFluidState, messagesState)"
-          },
-          state: {
-            type: Object,
-            computed: "_processState(messagesUserFluidState)"
-
+            computed: "_mergeTree(userFluidSnap, messagesSnap)"
           },
           active: {               //the merge funnel does not produce any new state output if:
             type: Boolean,        // a) the active is false or
@@ -63,45 +58,39 @@
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
-          messagesState: {systemMessages: {}, helpMessages: {}},
-          defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
+          messagesSnap: {},
+          defaultSnap: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
         });
       }
 
-      _fluidStateChange(e){
+      _fluidSnapChange(e) {
         this.set("actionType", e.detail.type);
-        this.set("fluidState", e.detail.state);
+        this.set("fluidSnap", e.detail.snap);
       }
 
-      _serverUserStateChange(e){
+      _serverUserSnapChange(e) {
         this.set("actionType", e.detail.type);
-        this.set("serverUserState", e.detail.state);
+        this.set("serverUserSnap", e.detail.snap);
       }
 
-      _mergeMessagesUserFluidState(A, B) {
-        return A === undefined || B === undefined ? this.messagesUserFluidState : Tools.mergeDeepWithNullToDelete(A, B);
+      _mergeTree(A, B) {
+        if (A === undefined || B === undefined)
+          return this.messagesUserFluidSnap;
+        let C = Tools.mergeDeepWithNullToDelete(A, B);
+        C.action = {type: this.actionType, timeStamp: new Date().getTime()};
+        return C;
       }
 
       _mergeUserFluid(A, B) {
-        return A === undefined || B === undefined ? this.userFluidState : Tools.mergeDeepWithNullToDelete(A, B);
+        if (A === undefined || B === undefined)
+          return this.userFluidSnap;
+        return Tools.mergeDeepWithNullToDelete(A, B);
       }
 
       _mergeUser(A, B, active) {
-        return !active || A === undefined || B === undefined ? this.userState : Tools.mergeDeepWithNullToDelete(A, B);
-      }
-
-      //todo syclical structures ALLOWED here, adding branches to the state that are not DAG.
-      //processing of the state in the coontroller UI makes the state easier to work with in the UI
-      //its purpose is to prepare the view for different things
-      _processState(C) {
-        if (!C)
-          return C;
-        C.action = {type: this.actionType, timeStamp: new Date().getTime()};
-        C = Object.assign({}, C);
-//        C.shapes = C.sketches.test.shapes;
-        C.shapes = Tools.filterPath(C.shapes, null, null);
-        C.selecteds = Tools.matchesPathValue(C.shapes, [null, "selected"], true);
-        return C;
+        if (!active || A === undefined || B === undefined)
+          return this.userSnap;
+        return Tools.mergeDeepWithNullToDelete(A, B);
       }
 
       _signIn() {
@@ -116,11 +105,11 @@
       }
 
       _systemMessage(e) {
-        this.set("messagesState", Tools.setIn(this.messagesState, ["systemMessages", Tools.genKey()], e.detail));
+        this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["systemMessage"], e.detail));
       }
 
       _helpMessage(e) {
-        this.set("messagesState", Tools.setIn(this.messagesState, ["helpMessages", Tools.genKey()], e.detail));
+        this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["helpMessage"], e.detail));
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);
