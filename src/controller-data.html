@@ -70,8 +70,9 @@
       }
 
       _makeState(mergedServerUserState, sketchDataFromServer) {
-        this.set("actionType", "sketch-updated");
         let sketchState = sketchDataFromServer ? Tools.setInNoCheck({}, sketchDataFromServer.path, sketchDataFromServer.result) : undefined;
+        if (sketchState)
+          this.set("actionType", "sketch-updated");
         return Tools.mergeDeepWithNullToDelete(mergedServerUserState, sketchState);
       }
 
