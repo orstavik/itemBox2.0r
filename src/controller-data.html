@@ -44,13 +44,14 @@
           serverState: {
             type: Object,
             computed: "_makeState(mergedServerUserState, sketchDataFromServer)",
-            notify: true
+            observer: "_newServerState"
           },
           state: Object,
           history: {
             type: Array,
             observer: "_historyChanged"
-          }
+          },
+          actionType: String
         };
       }
 
@@ -59,11 +60,17 @@
         this._ref = firebase.database().ref();
       }
 
+      _newServerState(C) {
+        this._fire("state-change", {type: this.actionType, state: C});
+      }
+
       _makeMergedServerUserState(serverUserState, serverUser) {
+        this.set("actionType", "user-loaded");
         return Tools.mergeDeepWithNullToDelete(serverUserState, {user: serverUser});
       }
 
       _makeState(mergedServerUserState, sketchDataFromServer) {
+        this.set("actionType", "sketch-updated");
         let sketchState = sketchDataFromServer ? Tools.setInNoCheck({}, sketchDataFromServer.path, sketchDataFromServer.result) : undefined;
         return Tools.mergeDeepWithNullToDelete(mergedServerUserState, sketchState);
       }
@@ -107,7 +114,7 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
 
-      _BOOL(one){
+      _BOOL(one) {
         return !!one;
       }
 

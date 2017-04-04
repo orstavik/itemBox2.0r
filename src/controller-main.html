@@ -9,8 +9,8 @@
       :host { height: 100%; }
     </style>
     <controller-history id="history" state="[[state]]" filtered-history="{{history}}"></controller-history>
-    <controller-data id="data" state="[[state]]" history="[[history]]" server-state="{{serverUserState}}"></controller-data>
-    <controller-fluid id="fluid" state="[[state]]" fluid-state="{{fluidState}}">
+    <controller-data id="data" state="[[state]]" history="[[history]]" on-state-change="_serverUserStateChange"></controller-data>
+    <controller-fluid id="fluid" state="[[state]]" on-state-change="_fluidStateChange">
       <controller-ui state="[[state]]" history="[[history]]"></controller-ui>
     </controller-fluid>
 
@@ -50,7 +50,8 @@
           active: {               //the merge funnel does not produce any new state output if:
             type: Boolean,        // a) the active is false or
             value: true           // b) any of the partial states === undefined
-          }
+          },
+          actionType: String
         }
       }
 
@@ -65,6 +66,16 @@
           messagesState: {systemMessages: {}, helpMessages: {}},
           defaultState: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
         });
+      }
+
+      _fluidStateChange(e){
+        this.set("actionType", e.detail.type);
+        this.set("fluidState", e.detail.state);
+      }
+
+      _serverUserStateChange(e){
+        this.set("actionType", e.detail.type);
+        this.set("serverUserState", e.detail.state);
       }
 
       _mergeMessagesUserFluidState(A, B) {
@@ -85,6 +96,7 @@
       _processState(C) {
         if (!C)
           return C;
+        C.action = {type: this.actionType, timeStamp: new Date().getTime()};
         C = Object.assign({}, C);
 //        C.shapes = C.sketches.test.shapes;
         C.shapes = Tools.filterPath(C.shapes, null, null);

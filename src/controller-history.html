@@ -37,6 +37,7 @@
         let type = state.action.type;
         if (type === "new-shape" || type === "delete-selected" || type === "change-shapes-end")
           this.set("filteredHistory", [state].concat(this.filteredHistory));
+        console.log(type);
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);

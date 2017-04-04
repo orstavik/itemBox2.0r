@@ -23,8 +23,9 @@
           fluidState: {
             type: Object,
             computed: "_merge(uiState, routeState)",
-            notify: true
-          }
+            observer: "_fluidChanged"
+          },
+          actionType : String
         };
       }
 
@@ -46,14 +47,16 @@
       }
 
       _merge(A, B) {
-        let C = Tools.mergeDeepWithNullToDelete(A, B);
-        C.action = {type: this._type, timeStamp: new Date().getTime()};
-        return C;
+        return Tools.mergeDeepWithNullToDelete(A, B);
+      }
+
+      _fluidChanged(C){
+        this._fire("state-change", {type: this.actionType, state: C});
       }
 
       _preprocessEventHandling(e){
         e.stopPropagation();
-        this._type = e.type;
+        this.set("actionType", e.type);
       }
 
       _routeChanged(e) {
@@ -131,6 +134,10 @@
       _viewChanged(e) {
         this._preprocessEventHandling(e);
         this.set("uiState", Tools.mergeDeepWithNullToDelete(this.uiState, {viewPort: e.detail}));
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
     customElements.define(ControllerFluid.is, ControllerFluid);
