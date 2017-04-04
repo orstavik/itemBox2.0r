@@ -50,7 +50,7 @@
 
       _makeB(now) {
         let t = now.action.type;
-        if (t === "new-shape" || t === "delete-selected" || t === "change-shapes-end")
+        if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
           return [now].concat(this.B);
         return this.B;
       }
