@@ -72,7 +72,7 @@
       }
 
       _makeSelecteds(activeSketch) {
-        return Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true);
+        return activeSketch? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }
 
       /*

@@ -18,18 +18,16 @@
       static get properties() {
         return {
           state: Object,
-          routeState: Object,
-//          uiState: Object,
+          route: Object,
           activeSketchSnap: Object,
-          viewPortSnap: Object,
+          viewPort: Object,
           uiSnap: {
             type: Object,
-            computed: "_mergeUiSnap(activeSketchSnap, viewPortSnap)",
-//            observer: "_fluidChanged"
+            computed: "_mergeUiSnap(activeSketchSnap, viewPort)",
           },
-          fluidState: {
+          fluidSnap: {
             type: Object,
-            computed: "_merge(uiSnap, routeState)",
+            computed: "_merge(uiSnap, route)",
             observer: "_fluidChanged"
           },
           actionType: String
@@ -50,19 +48,18 @@
         this.addEventListener("new-box-selection", this._select.bind(this));
         this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
-        this.uiState = {};
       }
 
-      _merge(A, B) {
-        if (B === undefined)
+      _merge(uiSnap, route) {
+        if (route === undefined)
           return undefined;
-        return Tools.mergeDeepWithNullToDelete(A, B);
+        return Tools.mergeDeepWithNullToDelete(uiSnap, {route: route});
       }
 
-      _mergeUiSnap(activeSketchSnap, viewPortSnap) {
+      _mergeUiSnap(activeSketchSnap, viewPort) {
         let x = {sketches: {}};
-        x.sketches[this.state.A[0].route.path.s0] = activeSketchSnap;
-        return Tools.mergeDeepWithNullToDelete(viewPortSnap, x);
+        x.sketches[this.state.now.route.path.s0] = activeSketchSnap;
+        return Tools.mergeDeepWithNullToDelete({viewPort: viewPort}, x);
       }
 
       _fluidChanged(C) {
@@ -78,15 +75,15 @@
         this._preprocessEventHandling(e);
         let route = undefined;
         if (e.detail !== "")
-          route = {route: HashRouter.parseUrl(e.detail)};
-        this.set("routeState", route);
+          route = HashRouter.parseUrl(e.detail);
+        this.set("route", route);
       }
 
       reset() {
         this.setProperties({
-          "routeState": {},
-          "activeSketchSnap": {},
-          "viewPortSnap": {}
+          "route": undefined,
+          "activeSketchSnap": undefined,
+          "viewPort": undefined
         });
       }
 
@@ -94,26 +91,25 @@
         this._preprocessEventHandling(e);
         console.log("The preservation of the previous state is not supported yet.");
         this.setProperties({
-          "routeState": {route: HashRouter.parseUrl(e.detail.url)},
-          "viewPortSnap": {},
-          "activeSketchSnap": {}
+          "route": HashRouter.parseUrl(e.detail.url),
+          "viewPort": undefined,
+          "activeSketchSnap": undefined
         });
       }
 
       _changeShapesEnd(e) {
         this._preprocessEventHandling(e);
-//        this.set("activeSketchSnap", Object.assign({}, this.activeSketchSnap));
+        this.set("activeSketchSnap", Object.assign({}, this.activeSketchSnap));
       }
 
       _changeShapes(e) {
         this._preprocessEventHandling(e);
-        console.log(this.activeSketchSnap);
         this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, {shapes: e.detail}));
       }
 
       _newShape(e) {
         this._preprocessEventHandling(e);
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.A[0].viewPort, e.detail.x, e.detail.y);
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.detail.x, e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
         this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes", Tools.genKey()], {matrix: matrix}));
       }
@@ -153,7 +149,7 @@
 
       _viewChanged(e) {
         this._preprocessEventHandling(e);
-        this.set("viewPortSnap", {viewPort: e.detail});
+        this.set("viewPort", e.detail);
       }
 
       _fire(name, detail) {
