@@ -8,10 +8,10 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-history id="history" snap="[[snap]]" state="{{state}}"></controller-history>
+    <controller-history id="history" state="{{state}}" snap="[[snap]]"></controller-history>
     <controller-data id="data" state="[[state]]" on-snap-change="_serverUserSnapChange"></controller-data>
     <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
-      <controller-ui state="[[state]]"></controller-ui>
+      <controller-ui id="ui" state="[[state]]"></controller-ui>
     </controller-fluid>
 
   </template>
@@ -105,10 +105,12 @@
       }
 
       _systemMessage(e) {
+        this.set("actionType", "system-message");
         this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["systemMessage"], e.detail));
       }
 
       _helpMessage(e) {
+        this.set("actionType", "help-message");
         this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["helpMessage"], e.detail));
       }
     }
