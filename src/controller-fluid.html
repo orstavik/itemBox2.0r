@@ -19,16 +19,11 @@
         return {
           state: Object,
           route: Object,
-          activeSketchSnap: Object,
+          activeSketchChanges: Object,
           viewPort: Object,
-          uiSnap: {
-            type: Object,
-            computed: "_mergeUiSnap(activeSketchSnap, viewPort)",
-          },
           fluidSnap: {
             type: Object,
-            computed: "_merge(uiSnap, route)",
-            observer: "_fluidChanged"
+            computed: "_merge(activeSketchChanges, viewPort, route)"
           },
           actionType: String
         };
@@ -50,20 +45,18 @@
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(uiSnap, route) {
-        if (route === undefined)
+      _merge(activeSketchChanges, viewPort, route) {
+        if (route === undefined)                        //do not return anything if the route object is not instatiated
           return undefined;
-        return Tools.mergeDeepWithNullToDelete(uiSnap, {route: route});
-      }
-
-      _mergeUiSnap(activeSketchSnap, viewPort) {
-        let x = {sketches: {}};
-        x.sketches[this.state.now.route.path.s0] = activeSketchSnap;
-        return Tools.mergeDeepWithNullToDelete({viewPort: viewPort}, x);
-      }
-
-      _fluidChanged(C) {
-        this._fire("snap-change", {type: this.actionType, snap: C});
+        let A = {route: route};
+        if (viewPort)
+          A.viewPort = viewPort;
+        if (activeSketchChanges){
+          A.sketches = {};
+          A.sketches[this.state.now.route.path.s0] = activeSketchChanges;
+        }
+        this._fire("snap-change", {type: this.actionType, snap: A});
+        return A;
       }
 
       _preprocessEventHandling(e) {
@@ -73,16 +66,19 @@
 
       _routeChanged(e) {
         this._preprocessEventHandling(e);
-        let route = undefined;
-        if (e.detail !== "")
-          route = HashRouter.parseUrl(e.detail);
-        this.set("route", route);
+        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
+        this.set("route", e.detail === "" ? undefined: HashRouter.parseUrl(e.detail));
+      }
+
+      _viewChanged(e) {
+        this._preprocessEventHandling(e);
+        this.set("viewPort", e.detail);
       }
 
       reset() {
         this.setProperties({
           "route": undefined,
-          "activeSketchSnap": undefined,
+          "activeSketchChanges": undefined,
           "viewPort": undefined
         });
       }
@@ -93,32 +89,32 @@
         this.setProperties({
           "route": HashRouter.parseUrl(e.detail.url),
           "viewPort": undefined,
-          "activeSketchSnap": undefined
+          "activeSketchChanges": undefined
         });
       }
 
       _changeShapesEnd(e) {
         this._preprocessEventHandling(e);
-        this.set("activeSketchSnap", Object.assign({}, this.activeSketchSnap));
+        this.set("activeSketchChanges", Object.assign({}, this.activeSketchChanges));
       }
 
       _changeShapes(e) {
         this._preprocessEventHandling(e);
-        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, {shapes: e.detail}));
+        this.set("activeSketchChanges", Tools.mergeDeepWithNullToDelete(this.activeSketchChanges, {shapes: e.detail}));
       }
 
       _newShape(e) {
         this._preprocessEventHandling(e);
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.detail.x, e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes", Tools.genKey()], {matrix: matrix}));
+        this.set("activeSketchChanges", Tools.setIn(this.activeSketchChanges, ["shapes", Tools.genKey(), "matrix"], matrix));
       }
 
       _deleteSelected(e) {
         this._preprocessEventHandling(e);
         let dels = {shapes: {}};
         Object.keys(this.state.selecteds).map(key => dels.shapes[key] = null);
-        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, dels));
+        this.set("activeSketchChanges", Tools.mergeDeepWithNullToDelete(this.activeSketchChanges, dels));
       }
 
       _newScale(e) {
@@ -128,31 +124,26 @@
 
       _registerUIshape(e) {
         this._preprocessEventHandling(e);
-        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes"].concat(e.detail.path), e.detail.value));
+        this.set("activeSketchChanges", Tools.setIn(this.activeSketchChanges, ["shapes", e.detail.key, "rect"], e.detail.value));
       }
 
       _deselect(e) {
         this._preprocessEventHandling(e);
         //todo alternative path might be simpler
-        this.set("activeSketchSnap", Tools.setInPathWithNullAsWildCard(this.activeSketchSnap, ["shapes", null, "selected"], false));
+        this.set("activeSketchChanges", Tools.setInPathWithNullAsWildCard(this.activeSketchChanges, ["shapes", null, "selected"], false));
       }
 
       _selectSingle(e) {
         this._preprocessEventHandling(e);
-        this.set("activeSketchSnap", Tools.setIn(this.activeSketchSnap, ["shapes", e.detail, "selected"], true));
+        this.set("activeSketchChanges", Tools.setIn(this.activeSketchChanges, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
         this._preprocessEventHandling(e);
-        this.set("activeSketchSnap", Tools.mergeDeepWithNullToDelete(this.activeSketchSnap, {shapes: e.detail}));
+        this.set("activeSketchChanges", Tools.mergeDeepWithNullToDelete(this.activeSketchChanges, {shapes: e.detail}));
       }
 
-      _viewChanged(e) {
-        this._preprocessEventHandling(e);
-        this.set("viewPort", e.detail);
-      }
-
-      _fire(name, detail) {
+     _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
