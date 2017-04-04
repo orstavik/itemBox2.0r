@@ -8,28 +8,28 @@
 
       static get properties() {
         return {
-          snap: Object,
-          A: {                                //array of all the snaps
+          now: Object,
+          A: {                                //history array of all nows
             type: Array,
-            computed: "_makeA(snap)"
+            computed: "_makeA(now)"
           },
-          B: {                                //array of the edit snaps
+          B: {                                //partial history array of nows: edit events only
             type: Array,
-            computed: "_makeB(snap)"
+            computed: "_makeB(now)"
           },
-          C: {                                //array of the system messages snaps
+          C: {                                //partial history array of nows: system messages only
             type: Array,
-            computed: "_makeC(snap)"
+            computed: "_makeC(now)"
           },
-          D: {                                //array of the help messages snaps
+          D: {                                //partial history array of nows: help messages only
             type: Array,
-            computed: "_makeD(snap)"
+            computed: "_makeD(now)"
           },
-          activeSketch: {
+          activeSketch: {                     //partial now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(snap.sketches, snap.route.path.s0)"
+            computed: "_makeActiveSketch(now.sketches, now.route.path.s0)"
           },
-          selecteds: {
+          selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
             computed: "_makeSelecteds(activeSketch)"
           },
@@ -41,29 +41,29 @@
       }
 
       static get observers(){
-        return ["_makeState(A,B,C,D,snap,activeSketch,selecteds)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(A,B,C,D,now,activeSketch,selecteds)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
-      _makeA(snap) {
-        return [snap].concat(this.A);
+      _makeA(now) {
+        return [now].concat(this.A);
       }
 
-      _makeB(snap) {
-        let t = snap.action.type;
+      _makeB(now) {
+        let t = now.action.type;
         if (t === "new-shape" || t === "delete-selected" || t === "change-shapes-end")
-          return [snap].concat(this.B);
+          return [now].concat(this.B);
         return this.B;
       }
 
-      _makeC(snap) {
-        if (snap.action.type === "system-message")
-          return [snap].concat(this.C);
+      _makeC(now) {
+        if (now.action.type === "system-message")
+          return [now].concat(this.C);
         return this.C;
       }
 
-      _makeD(snap) {
-        if (snap.action.type === "help-message")
-          return [snap].concat(this.D);
+      _makeD(now) {
+        if (now.action.type === "help-message")
+          return [now].concat(this.D);
         return this.D;
       }
 
@@ -77,23 +77,22 @@
 
       /*
        * state
-       *   A                   arrayOfStates[]
+       *   A                   arrayOfNows[]
+       *   now                 now === A[0]  / "state.now" equals "state.A.0" in the Polymer binding language.
        ******** (subset views) ***********
-       *   now                 object === A[0]  / state.now === state.A.0 in the Polymer binding language.
-       *   activeSketch        object
-       *   selecteds           object
-       *   filteredHistory     arrayOfStates[]
-       *   systemMessages      arrayOfStates[]
-       *   helpMessages        arrayOfStates[]
+       *   activeSketch        partial now
+       *   selecteds           partial now
+       *   filteredHistory     partial arrayOfNows[]
+       *   systemMessages      partial arrayOfNows[]
+       *   helpMessages        partial arrayOfNows[]
        **/
-
-      _makeState(A, B, C, D, snap, activeSketch, selecteds) {
+      _makeState(A, B, C, D, now, activeSketch, selecteds) {
         this.set("state", {
           A: A,
+          now: now,
           editSnaps: B,
           systemMessageSnaps: C,
           helpMessageSnaps: D,
-          now: snap,
           activeSketch: activeSketch,
           selecteds: selecteds
         });

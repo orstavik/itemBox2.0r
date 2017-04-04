@@ -8,7 +8,7 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-history id="history" state="{{state}}" snap="[[snap]]"></controller-history>
+    <controller-history id="history" state="{{state}}" now="[[snap]]"></controller-history>
     <controller-data id="data" state="[[state]]" on-snap-change="_serverUserSnapChange"></controller-data>
     <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
       <controller-ui id="ui" state="[[state]]"></controller-ui>
