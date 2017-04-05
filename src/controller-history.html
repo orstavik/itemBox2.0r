@@ -44,37 +44,6 @@
         return ["_makeState(A,B,C,D,now,activeSketch,selecteds)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
-      _makeA(now) {
-        return [now].concat(this.A);
-      }
-
-      _makeB(now) {
-        let t = now.action.type;
-        if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
-          return [now].concat(this.B);
-        return this.B;
-      }
-
-      _makeC(now) {
-        if (now.action.type === "system-message")
-          return [now].concat(this.C);
-        return this.C;
-      }
-
-      _makeD(now) {
-        if (now.action.type === "help-message")
-          return [now].concat(this.D);
-        return this.D;
-      }
-
-      _makeActiveSketch(sketches, name) {
-        return sketches ? sketches[name] : undefined;   //make the null values stay in the shapes, and a bug appears..
-      }
-
-      _makeSelecteds(activeSketch) {
-        return activeSketch? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
-      }
-
       /*
        * state
        *   A                   arrayOfNows[]
@@ -82,9 +51,9 @@
        ******** (subset views) ***********
        *   activeSketch        partial now
        *   selecteds           partial now
-       *   filteredHistory     partial arrayOfNows[]
-       *   systemMessages      partial arrayOfNows[]
-       *   helpMessages        partial arrayOfNows[]
+       *   editSnaps           partial arrayOfNows[]
+       *   systemMessageSnaps  partial arrayOfNows[]
+       *   helpMessageSnaps    partial arrayOfNows[]
        **/
       _makeState(A, B, C, D, now, activeSketch, selecteds) {
         this.set("state", {
@@ -96,6 +65,37 @@
           activeSketch: activeSketch,
           selecteds: selecteds
         });
+      }
+
+      _makeA(now) {
+        return this.A ? [now].concat(this.A): [now];
+      }
+
+      _makeB(now) {
+        let t = now.action.type;
+        if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
+          return this.B? [now].concat(this.B) : [now];
+        return this.B;
+      }
+
+      _makeC(now) {
+        if (now.action.type === "system-message")
+          return this.C? [now].concat(this.C) : [now];
+        return this.C;
+      }
+
+      _makeD(now) {
+        if (now.action.type === "help-message")
+          return this.D? [now].concat(this.D) : [now];
+        return this.D;
+      }
+
+      _makeActiveSketch(sketches, name) {
+        return sketches ? sketches[name] : undefined;   //make the null values stay in the shapes, and a bug appears..
+      }
+
+      _makeSelecteds(activeSketch) {
+        return activeSketch? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);
