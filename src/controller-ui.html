@@ -131,13 +131,13 @@
 
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
-    <paper-material id="sketchNamePaper" hidden$="[[!state.A.0.user]]" status$="[[state.A.0.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.A.0.route.path.s0]]</div>
+    <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
+      <div id="sketchName">[[state.now.route.path.s0]]</div>
     </paper-material>
 
     <tools-button id="tools" icon="icons:build">
       <grow-child-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
-        <json-wrapper shapes="[[state.A.0.shapes]]"></json-wrapper>
+        <json-wrapper shapes="[[state.now.shapes]]"></json-wrapper>
       </grow-child-button>
       <grow-child-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
         <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"
@@ -149,8 +149,8 @@
       </grow-child-button>
     </tools-button>
 
-    <grow-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.A.0.user)]]">
-      <app-login sketches="[[state.A.0.sketches]]" user="[[state.A.0.user]]"></app-login>
+    <grow-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
+      <app-login sketches="[[state.now.sketches]]" user="[[state.now.user]]"></app-login>
     </grow-button>
 
     <messages-help messages="[[state.helpMessageSnaps]]" count=3></messages-help>
