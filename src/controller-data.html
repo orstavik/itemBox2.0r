@@ -14,13 +14,13 @@
     <!--persisted-data="{{systemSketches}}"></app-indexeddb-mirror>-->
 
     <firebase-on id="sketchData"
-                 active$="[[_AND(state.A.0.user, state.A.0.route.path.s0)]]"
+                 active$="[[_AND(state.now.user, state.now.route.path.s0)]]"
                  result-with-path="{{sketchDataFromServer}}"
-                 path="sketches/[[state.A.0.route.path.s0]]/shapes"></firebase-on>
+                 path="sketches/[[state.now.route.path.s0]]/shapes"></firebase-on>
 
     <firebase-on id="serverUserSnap"
-                 active$="[[_BOOL(state.A.0.user)]]"
-                 path="/users/[[state.A.0.user.uid]]"
+                 active$="[[_BOOL(state.now.user)]]"
+                 path="/users/[[state.now.user.uid]]"
                  result="{{serverUserSnap}}"
                  on-found-no-data="_newUser"></firebase-on>
     <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
@@ -46,12 +46,13 @@
             computed: "_makeSnap(mergedServerUserSnap, sketchDataFromServer)",
             observer: "_newServerSnap"
           },
-          state: {
-            type: Object,
-            observer: "_stateChanged"
-          },
+          state: Object,
           actionType: String
         };
+      }
+
+      static get observers() {
+        return ["_editsChanged(state.editSnaps)"];    //todo there is a Polymer bug here now. this observer is triggered always when the state object change and not only when the state.editSnaps object has changed, meaning it is running much more often than needed.
       }
 
       constructor() {
@@ -88,24 +89,26 @@
         this._fire("system-message", "Welcome new user!");
       }
 
-      updateChanges(changes) {
-        this.$.serverUserSnap.updateMerge(changes);
+      //must be called before setting up a new activeSketch.
+      saveChanges() {
+        if (!this.state.activeSketch)
+          return;
+        //app-logic
+        // - extracting shape = null
+        // - extracting shape.matrix
+        let activeShapes = this.state.activeSketch.shapes;
+        let filteredShapes = {};
+        for (let key in activeShapes)
+          filteredShapes[key] = (activeShapes[key] === null) ? null : {matrix: activeShapes[key].matrix};
+        this.$.sketchData.updateMerge(filteredShapes);
       }
 
-
-      _stateChanged(state) {
-//        let D = Object.assign({}, history[0]);
-//        delete D.viewPort;
-//        delete D.route;
-//        delete D.user;
-//        delete D.selecteds;
-        console.log("store this?");
-        console.log(state.filteredHistory);
-//        debounce(storeData, 2000);
-//        debugger;
-//        let toBeServified = Tools.filterDeep(D, this.userSnap);
-//        toBeServified.viewPort = null;
-//
+      _editsChanged(edits) {
+        this._saveDebouncer = Polymer.Debouncer.debounce(
+          this._saveDebouncer,
+          Polymer.Async.timeOut.after(2000),
+          this.saveChanges.bind(this)
+        );
       }
 
       _fire(name, detail) {

@@ -70,7 +70,10 @@
 
       _serverUserSnapChange(e) {
         this.set("actionType", e.detail.type);
-        this.set("serverUserSnap", e.detail.snap);
+        this.set("active", false);                  //1. stop the presses before you
+        this.set("serverUserSnap", e.detail.snap);  //2. set the serverUserSnap
+        this.$.fluid.reduceFluid(e.detail.snap);    //3. because filter the fluidSnap must be done (this.fluidSnap is updated immediately)
+        this.set("active", true);                   //4. before you start the presses again so that the fluid and the served snaps are merged
       }
 
       _mergeTree(A, B) {

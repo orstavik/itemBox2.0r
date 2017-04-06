@@ -5,7 +5,7 @@
     <style>
       :host { display: block; }
     </style>
-    <hash-router id="route" url-in="[[state.A.0.route.url]]"></hash-router>
+    <hash-router id="route" url-in="[[state.now.route.url]]"></hash-router>
     <slot></slot>
   </template>
   <script>
@@ -21,7 +21,7 @@
           route: Object,
           sketch: Object,
           viewPort: Object,
-          fluidSnap: {
+          fluidNow: {
             type: Object,
             computed: "_merge(sketch, viewPort, route)"
           },
@@ -48,22 +48,22 @@
       _merge(sketch, viewPort, route) {
         if (route === undefined)               //don't merge if the route object is not instantiated
           return undefined;
-        let A = {route: route};
+        let now = {route: route};
         if (viewPort)
-          A.viewPort = viewPort;
-        if (sketch){
-          A.sketches = {};
-          A.sketches[this.state.now.route.path.s0] = sketch;
+          now.viewPort = viewPort;
+        if (sketch) {
+          now.sketches = {};
+          now.sketches[this.state.now.route.path.s0] = sketch;
         }
-        this._fire("snap-change", {type: this.actionType, snap: A});
-        return A;
+        this._fire("snap-change", {type: this.actionType, snap: now});
+        return now;
       }
 
       _routeChanged(e) {
         e.stopPropagation();
         this.set("actionType", "route");
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("route", e.detail === "" ? undefined: HashRouter.parseUrl(e.detail));
+        this.set("route", e.detail === "" ? undefined : HashRouter.parseUrl(e.detail));
       }
 
       _viewChanged(e) {
@@ -78,6 +78,15 @@
           "sketch": undefined,
           "viewPort": undefined
         });
+      }
+
+      reduceFluid(serverNow) {
+        let diffSketch = undefined;
+        if (serverNow.sketches && this.state.now.route.path.s0)
+          diffSketch = Tools.filterDeep(this.sketch, serverNow.sketches[this.state.now.route.path.s0]);
+        let diffRoute = Tools.filterDeep(this.fluidNow.route, serverNow.route);
+        if (diffSketch || diffRoute)
+          this.setProperties({"sketch": diffSketch, "route": diffRoute});
       }
 
       _newSketch(e) {
@@ -150,7 +159,7 @@
         this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
       }
 
-     _fire(name, detail) {
+      _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }

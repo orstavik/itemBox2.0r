@@ -42,25 +42,30 @@ class Tools {
    * where path is an array of keys as strings. Only works with objects.
    *
    *     let tree = {a: {x: 1}, b: {y: {"12": "something"}}};
-   *     let flatTree = Tools.flatten(tree);
-   *     //[{path: ["a","x"], value: 1}, {path: ["b","y","12"], value: "something"}]
+   *     let flatTree = Tools.flatten(tree, "start", "/");
+   *     //flatTree == {"start/a/x": 1, "start/b/y/12: "something"}
    *
    * @param object object to be flattened
-   * @returns an array of [{path: <array>, value: ?}] for that object
+   * @param startPath <string> to be used (att! does this path use the same segment separator as you send in)
+   * @param separator "/" or "."
+   * @returns an object of [{path: <array>, value: ?}] for that object
    */
-  static flatten(object) {
-    const res = []; //mutable
-    Tools._flattenImpl(object, [], res);
-    return res;
-  }
+  static flatten(object, startPath, separator) {
+    startPath = startPath ? [startPath] : [];
+    separator = separator || ".";
 
-  static _flattenImpl(obj, path, res) {
-    if (!(obj instanceof Object)) {
-      res.push({path: path, value: obj});
-      return;
-    }
-    for (let key of Object.keys(obj))
-      Tools._flattenImpl(obj[key], path.concat([key]), res);
+    const _flattenImpl = function (obj, path, separator, res) {
+      if (obj instanceof Object) {
+        for (let key of Object.keys(obj))
+          _flattenImpl(obj[key], path.concat([key]), separator, res);
+      } else {
+        res[path.join(separator)] = obj;
+      }
+    };
+
+    const res = {}; //mutable
+    _flattenImpl(object, startPath, separator, res);
+    return res;
   }
 
   /**
@@ -162,9 +167,8 @@ class Tools {
    *          a new object C which is an immuted version of the partially filtered A.
    */
   static filterDeep(A, B) {
-    console.log("WTF OMG!! Not tested Tools.filterDeep with null in the state");
-    const noA = A === undefined || Tools.emptyObject(A);    //todo not tested for handling null
-    const noB = B === undefined || Tools.emptyObject(B);    //todo not tested for handling null
+    const noA = A === undefined || Tools.emptyObject(A);
+    const noB = B === undefined || Tools.emptyObject(B);
     if (noA && noB) return undefined;
     if (noB) return A;
     if (noA) return undefined;
@@ -176,6 +180,10 @@ class Tools {
     for (let key of Object.keys(A)) {
       const a = A[key];
       const b = B[key];
+      if (a === null && b === undefined){
+        hasFiltered = true;                            //todo Work with this, maybe make a nicer model in realtimeboard.
+        continue;                                      /*second check is removing A[key]=null && B[key]=undefined*/
+      }
       let c = Tools.filterDeep(a, b);
       if (c !== a)
         hasFiltered = true;

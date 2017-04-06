@@ -84,9 +84,13 @@
       updateMerge(updates) {
         if (!this.active || !this._ref)
           return;
-        updates = Tools.filterDeep(updates, this.result);
-        let fullPathUpdates = Tools.extendKeys(this._path + "/", updates);
-        this._ref.root.update(fullPathUpdates, function () {
+        let diffBetweenServerAndState = Tools.filterDeep(updates, this.result);
+        if (!diffBetweenServerAndState)
+          return;
+        let flat = Tools.flatten(diffBetweenServerAndState, this.path, "/");
+        console.log("sending the following to the db");
+        console.log(flat);
+        this._ref.root.update(flat, function () {
           this._fire("system-message", "updated changes: " + Object.keys(updates));
         }.bind(this));
       }
