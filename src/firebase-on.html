@@ -82,7 +82,7 @@
       }
 
       updateMerge(updates) {
-        if (!this.active || !this._ref)
+        if (!this.active || !this._ref || !updates || Object.keys(updates).length === 0)
           return;
         let diffBetweenServerAndState = Tools.filterDeep(updates, this.result);
         if (!diffBetweenServerAndState)

@@ -65,7 +65,12 @@
 
       _fluidSnapChange(e) {
         this.set("actionType", e.detail.type);
+        this.set("active", false);                  //1. stop the presses before you
+        //if (e.detail.type === "something that will change the active sketch)
+        //  this.$.data.flushSaveChangesDebouncer();
+        this.$.data.saveChangesDebounced(e.detail.snap);
         this.set("fluidSnap", e.detail.snap);
+        this.set("active", true);                   //4. before you start the presses again so that the fluid and the served snaps are merged
       }
 
       _serverUserSnapChange(e) {

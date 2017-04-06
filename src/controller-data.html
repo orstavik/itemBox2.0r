@@ -51,10 +51,6 @@
         };
       }
 
-      static get observers() {
-        return ["_editsChanged(state.editSnaps)"];    //todo there is a Polymer bug here now. this observer is triggered always when the state object change and not only when the state.editSnaps object has changed, meaning it is running much more often than needed.
-      }
-
       constructor() {
         super();
         this._ref = firebase.database().ref();
@@ -90,24 +86,26 @@
       }
 
       //must be called before setting up a new activeSketch.
-      saveChanges() {
-        if (!this.state.activeSketch)
+      saveChanges(fluidSnap) {
+        let activeSketch = fluidSnap.sketches ? fluidSnap.sketches[fluidSnap.route.path.s0] : undefined;
+        if (!activeSketch)
           return;
-        //app-logic
-        // - extracting shape = null
-        // - extracting shape.matrix
-        let activeShapes = this.state.activeSketch.shapes;
+        let activeShapes = activeSketch.shapes;
         let filteredShapes = {};
-        for (let key in activeShapes)
-          filteredShapes[key] = (activeShapes[key] === null) ? null : {matrix: activeShapes[key].matrix};
+        for (let key in activeShapes){                                               //app-logic
+          if (activeShapes[key] === null)                                            // - extracting shape = null
+            filteredShapes[key] = null;
+          else if (activeShapes[key].matrix)                                         // - extracting shape.matrix
+            filteredShapes[key] = {matrix: activeShapes[key].matrix};
+        }
         this.$.sketchData.updateMerge(filteredShapes);
       }
 
-      _editsChanged(edits) {
+      saveChangesDebounced(fluidSnap) {
         this._saveDebouncer = Polymer.Debouncer.debounce(
           this._saveDebouncer,
-          Polymer.Async.timeOut.after(2000),
-          this.saveChanges.bind(this)
+          Polymer.Async.timeOut.after(10),
+          this.saveChanges.bind(this, fluidSnap)
         );
       }
 
