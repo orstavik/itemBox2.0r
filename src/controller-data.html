@@ -104,7 +104,7 @@
       saveChangesDebounced(fluidSnap) {
         this._saveDebouncer = Polymer.Debouncer.debounce(
           this._saveDebouncer,
-          Polymer.Async.timeOut.after(10),
+          Polymer.Async.timeOut.after(33),
           this.saveChanges.bind(this, fluidSnap)
         );
       }

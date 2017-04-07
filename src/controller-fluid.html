@@ -63,7 +63,7 @@
         e.stopPropagation();
         this.set("actionType", "route");
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("route", e.detail === "" ? undefined : HashRouter.parseUrl(e.detail));
+        this.set("route", e.detail);
       }
 
       _viewChanged(e) {

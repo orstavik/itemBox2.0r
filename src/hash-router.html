@@ -11,6 +11,10 @@
           urlIn: {
             type: String,
             observer: "_routeInChanged"
+          },
+          routeOut: {
+            type: Object,
+            observer: "_routeOutChanged"
           }
         };
       }
@@ -29,7 +33,12 @@
       }
 
       _locationBarChanged() {
-        this._fire("route-changed", location.hash.substr(2));
+        let hashUrl = location.hash.substr(2);
+        this.set("routeOut", hashUrl === "" ? undefined: HashRouter.parseUrl(hashUrl));
+      }
+
+      _routeOutChanged(route){
+        this._fire("route-changed", route);
       }
 
       static parseUrl(urlString) {
