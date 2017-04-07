@@ -82,8 +82,14 @@
 
       reduceFluid(serverNow) {
         let diffSketch = undefined;
-        if (serverNow.sketches && this.state.now.route.path.s0)
-          diffSketch = Tools.filterDeep(this.sketch, serverNow.sketches[this.state.now.route.path.s0]);
+        if (serverNow.sketches && this.state.now.route.path.s0) {
+          let serverSketch = serverNow.sketches[this.state.now.route.path.s0];
+          diffSketch = Tools.filterDeep(this.sketch, serverSketch);
+          for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
+            if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
+              delete diffSketch[key];
+          }
+        }
         let diffRoute = Tools.filterDeep(this.fluidNow.route, serverNow.route);
         if (diffSketch || diffRoute)
           this.setProperties({"sketch": diffSketch, "route": diffRoute});
