@@ -55,7 +55,7 @@
         this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
           messagesSnap: {},
-          defaultSnap: {viewPort: {x: 0, y: 0, s: 1}, route: HashRouter.parseUrl("unsaved")}
+          defaultSnap: {viewPort: {x: 0, y: 0, s: 1}, session: {sketchName: "unsaved"}}
         });
       }
 

@@ -27,7 +27,7 @@
           },
           activeSketch: {                     //partial now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(now.sketches, now.route.path.s0)"
+            computed: "_makeActiveSketch(now.sketches, now.session.sketchName)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,

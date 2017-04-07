@@ -132,7 +132,7 @@
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.now.route.path.s0]]</div>
+      <div id="sketchName">[[state.now.session.sketchName]]</div>
     </paper-material>
 
     <tools-button id="tools" icon="icons:build">

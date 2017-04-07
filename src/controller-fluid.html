@@ -5,7 +5,7 @@
     <style>
       :host { display: block; }
     </style>
-    <hash-router id="route" url-in="[[state.now.route.url]]"></hash-router>
+    <hash-router id="route" url-in="[[state.now.session.sketchName]]"></hash-router>
     <slot></slot>
   </template>
   <script>
@@ -18,12 +18,12 @@
       static get properties() {
         return {
           state: Object,
-          route: Object,
+          session: Object,
           sketch: Object,
           viewPort: Object,
           fluidNow: {
             type: Object,
-            computed: "_merge(sketch, viewPort, route)"
+            computed: "_merge(sketch, viewPort, session)"
           },
           actionType: String
         };
@@ -45,15 +45,15 @@
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(sketch, viewPort, route) {
-        if (route === undefined)               //don't merge if the route object is not instantiated
+      _merge(sketch, viewPort, session) {
+        if (session === undefined)               //don't merge if the route object is not instantiated
           return undefined;
-        let now = {route: route};
+        let now = {session: session};
         if (viewPort)
           now.viewPort = viewPort;
         if (sketch) {
           now.sketches = {};
-          now.sketches[this.state.now.route.path.s0] = sketch;
+          now.sketches[this.state.now.session.sketchName] = sketch;
         }
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
@@ -63,7 +63,7 @@
         e.stopPropagation();
         this.set("actionType", "route");
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("route", e.detail);
+        this.set("session", e.detail && e.detail.path ? {sketchName: e.detail.path.s0}: {});
       }
 
       _viewChanged(e) {
@@ -74,7 +74,7 @@
 
       reset() {
         this.setProperties({
-          "route": undefined,
+          "session": {},
           "sketch": undefined,
           "viewPort": undefined
         });
@@ -82,17 +82,16 @@
 
       reduceFluid(serverNow) {
         let diffSketch = undefined;
-        if (serverNow.sketches && this.state.now.route.path.s0) {
-          let serverSketch = serverNow.sketches[this.state.now.route.path.s0];
+        if (serverNow.sketches && this.state.now.session.sketchName) {
+          let serverSketch = serverNow.sketches[this.state.now.session.sketchName];
           diffSketch = Tools.filterDeep(this.sketch, serverSketch);
           for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
           }
         }
-        let diffRoute = Tools.filterDeep(this.fluidNow.route, serverNow.route);
-        if (diffSketch || diffRoute)
-          this.setProperties({"sketch": diffSketch, "route": diffRoute});
+        if (diffSketch)
+          this.setProperties({"sketch": diffSketch});
       }
 
       _newSketch(e) {
@@ -100,7 +99,7 @@
         this.set("actionType", e.type);
         console.log("The preservation of the previous state is not supported yet.");
         this.setProperties({
-          "route": HashRouter.parseUrl(e.detail.url),
+          "session": {sketchName: e.detail.url},
           "viewPort": undefined,
           "sketch": undefined
         });
