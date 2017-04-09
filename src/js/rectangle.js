@@ -1,10 +1,17 @@
 class Rectangle {
   static addCenter(rect) {
-    rect.center = {
-      x: (rect.left + rect.right) / 2,
-      y: (rect.top + rect.bottom) / 2
+    return {
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      center: {
+        x: (rect.left + rect.right) / 2,
+        y: (rect.top + rect.bottom) / 2
+      }
     };
-    return rect;
   }
 
   static union(rects) {
