@@ -91,14 +91,24 @@
       }
 
       _rectChanged() {
-        let selected = {};
+        let selecteds = {};
         for (let key in this.shapes) {
           let shape = this.shapes[key];
-          if (shape)        //tackle null in shapes
-            selected[key] = {selected: Rectangle.pointIsWithinBorders(this.rect, shape.rect.center)};
+          if (shape && Rectangle.pointIsWithinBorders(this.rect, shape.rect.center))
+            selecteds[key] = true;
         }
-        this._fire("new-box-selection", selected);
+        this._fire("new-box-selection", selecteds);
       }
+
+//      _rectChanged() {
+//        let selected = {};
+//        for (let key in this.shapes) {
+//          let shape = this.shapes[key];
+//          if (shape)        //tackle null in shapes
+//            selected[key] = {selected: Rectangle.pointIsWithinBorders(this.rect, shape.rect.center)};
+//        }
+//        this._fire("new-box-selection", selected);
+//      }
 
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));

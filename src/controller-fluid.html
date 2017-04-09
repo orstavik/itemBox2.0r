@@ -20,10 +20,11 @@
           state: Object,
           session: Object,
           sketch: Object,
+          selects: Object,
           viewPort: Object,
           fluidNow: {
             type: Object,
-            computed: "_merge(sketch, viewPort, session)"
+            computed: "_merge(sketch, viewPort, session, selects)"
           },
           actionType: String
         };
@@ -45,12 +46,13 @@
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(sketch, viewPort, session) {
+      _merge(sketch, viewPort, session, selects) {
         if (session === undefined)               //don't merge if the route object is not instantiated
           return undefined;
         let now = {session: session};
         if (viewPort)
           now.viewPort = viewPort;
+        now.selects = selects;
         if (sketch) {
           now.sketches = {};
           now.sketches[this.state.now.session.sketchName] = sketch;
@@ -63,7 +65,7 @@
         e.stopPropagation();
         this.set("actionType", "route");
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("session", e.detail && e.detail.path ? {sketchName: e.detail.path.s0}: {});
+        this.set("session", e.detail && e.detail.path ? {sketchName: e.detail.path.s0} : {});
       }
 
       _viewChanged(e) {
@@ -76,7 +78,8 @@
         this.setProperties({
           "session": {},
           "sketch": undefined,
-          "viewPort": undefined
+          "viewPort": undefined,
+          "selects": undefined
         });
       }
 
@@ -101,6 +104,7 @@
         this.setProperties({
           "session": {sketchName: e.detail.url},
           "viewPort": undefined,
+          "selects": undefined,
           "sketch": undefined
         });
       }
@@ -129,8 +133,12 @@
         e.stopPropagation();
         this.set("actionType", "delete-shape");
         let shapes = {};
-        Object.keys(this.state.selecteds).map(key => shapes[key] = null);
-        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes}));
+        this.setProperties({
+          "selects": undefined,
+          "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes})
+        });
+//        Object.keys(this.state.selecteds).map(key => shapes[key] = null);
+//        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes}));
       }
 
       _newScale(e) {
@@ -149,19 +157,22 @@
         e.stopPropagation();
         this.set("actionType", "select");
         //todo alternative path might be simpler
-        this.set("sketch", Tools.setInPathWithNullAsWildCard(this.sketch, ["shapes", null, "selected"], false));
+        this.set("selects", undefined);
+//        this.set("sketch", Tools.setInPathWithNullAsWildCard(this.sketch, ["shapes", null, "selected"], false));
       }
 
       _selectSingle(e) {
         e.stopPropagation();
         this.set("actionType", "select");
-        this.set("sketch", Tools.setIn(this.sketch, ["shapes", e.detail, "selected"], true));
+        this.set("selects", Tools.setIn(this.state.selects, [e.detail], true));
+//        this.set("sketch", Tools.setIn(this.sketch, ["shapes", e.detail, "selected"], true));
       }
 
       _select(e) {
         e.stopPropagation();
         this.set("actionType", "select");
-        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
+        this.set("selects", e.detail);
+//        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
       }
 
       _fire(name, detail) {

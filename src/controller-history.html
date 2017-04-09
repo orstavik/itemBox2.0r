@@ -31,7 +31,7 @@
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(activeSketch)"
+            computed: "_makeSelecteds(activeSketch, now.selects)"
           },
           state: {
             type: Object,
@@ -40,7 +40,7 @@
         };
       }
 
-      static get observers(){
+      static get observers() {
         return ["_makeState(A,B,C,D,now,activeSketch,selecteds)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
@@ -68,25 +68,25 @@
       }
 
       _makeA(now) {
-        return this.A ? [now].concat(this.A): [now];
+        return this.A ? [now].concat(this.A) : [now];
       }
 
       _makeB(now) {
         let t = now.action.type;
         if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
-          return this.B? [now].concat(this.B) : [now];
+          return this.B ? [now].concat(this.B) : [now];
         return this.B;
       }
 
       _makeC(now) {
         if (now.action.type === "system-message")
-          return this.C? [now].concat(this.C) : [now];
+          return this.C ? [now].concat(this.C) : [now];
         return this.C;
       }
 
       _makeD(now) {
         if (now.action.type === "help-message")
-          return this.D? [now].concat(this.D) : [now];
+          return this.D ? [now].concat(this.D) : [now];
         return this.D;
       }
 
@@ -94,8 +94,14 @@
         return sketches ? sketches[name] : undefined;   //make the null values stay in the shapes, and a bug appears..
       }
 
-      _makeSelecteds(activeSketch) {
-        return activeSketch? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
+      _makeSelecteds(activeSketch, selects) {
+        if (!activeSketch || !selects)
+          return undefined;
+        let selectsShapes = {};
+        for (let key in selects)
+          selectsShapes[key] = activeSketch.shapes[key];
+        return selectsShapes;
+//        return activeSketch ? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);
