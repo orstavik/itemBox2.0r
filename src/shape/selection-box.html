@@ -91,12 +91,12 @@
       }
 
       _rectChanged() {
-        let selecteds = {};
+        let selects = {};
         for (let key in this.rects) {
           if (Rectangle.pointIsWithinBorders(this.rect, this.rects[key].center))
-            selecteds[key] = true;
+            selects[key] = true;
         }
-        this._fire("new-box-selection", selecteds);
+        this._fire("new-box-selection", selects);
       }
 
 //      _rectChanged() {
