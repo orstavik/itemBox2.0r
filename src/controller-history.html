@@ -25,14 +25,6 @@
             type: Array,
             computed: "_makeD(now)"
           },
-          activeSketch: {                     //partial now: the active sketch
-            type: Object,
-            computed: "_makeActiveSketch(now.sketches, now.session.sketchName, now.fluidActiveSketch)"
-          },
-          selecteds: {                        //partial now: the selected shapes in the active sketch
-            type: Object,
-            computed: "_makeSelecteds(activeSketch, now.selects, now.rects)"
-          },
           state: {
             type: Object,
             notify: true
@@ -41,7 +33,7 @@
       }
 
       static get observers() {
-        return ["_makeState(A,B,C,D,now,activeSketch,selecteds)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(A,B,C,D,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
       /*
@@ -52,21 +44,17 @@
        *    - rects
        *    - sketches
        ******** (subset views) ***********
-       *   activeSketch        partial now
-       *   selecteds           partial now
        *   editSnaps           partial arrayOfNows[]
        *   systemMessageSnaps  partial arrayOfNows[]
        *   helpMessageSnaps    partial arrayOfNows[]
        **/
-      _makeState(A, B, C, D, now, activeSketch, selecteds) {
+      _makeState(A, B, C, D, now) {
         this.set("state", {
           A: A,
           now: now,
           editSnaps: B,
           systemMessageSnaps: C,
-          helpMessageSnaps: D,
-          activeSketch: activeSketch,
-          selecteds: selecteds
+          helpMessageSnaps: D
         });
       }
 
@@ -91,25 +79,6 @@
         if (now.action.type === "help-message")
           return this.D ? [now].concat(this.D) : [now];
         return this.D;
-      }
-
-      _makeActiveSketch(sketches, name, fluidActiveSketch) {
-        if (!sketches)
-          return undefined;
-        return Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-      }
-
-      _makeSelecteds(activeSketch, selects, rects) {
-        if (!activeSketch || !selects || !rects)
-          return undefined;
-        let selectsShapes = {};
-        for (let key in selects){
-          selectsShapes[key] = activeSketch.shapes[key];
-          selectsShapes[key].rect = rects[key];
-          selectsShapes[key].selected = true;
-        }
-        return selectsShapes;
-//        return activeSketch ? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);

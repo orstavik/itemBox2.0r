@@ -27,7 +27,7 @@
       }
     </style>
 
-    <shape-box id="shapeBox" shapes="[[state.selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
+    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
     <selection-box id="selection" rects="[[state.now.rects]]"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.now.viewPort]]">
@@ -63,11 +63,48 @@
             type: Boolean,
             reflectToAttribute: true
           },
+          activeSketch: {                     //partial now: the active sketch
+            type: Object,
+            computed: "_makeActiveSketch(state.now.sketches, state.now.session.sketchName, state.now.fluidActiveSketch)"
+          },
+          selecteds: {                        //partial now: the selected shapes in the active sketch
+            type: Object,
+            computed: "_makeSelecteds(activeSketch, state.now.selects, state.now.rects)"
+          },
           shapesArray: {
             type: Array,
-            computed: "_toArray(state.activeSketch.shapes)"
+            computed: "_toArray(activeSketch.shapes)"
           }
         }
+      }
+
+      _makeActiveSketch(sketches, name, fluidActiveSketch) {
+        if (!sketches)
+          return undefined;
+        return Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+      }
+
+      _makeSelecteds(activeSketch, selects, rects) {
+        if (!activeSketch || !selects || !rects)
+          return undefined;
+        let selectsShapes = {};
+        for (let key in selects){
+          selectsShapes[key] = activeSketch.shapes[key];
+          selectsShapes[key].rect = rects[key];
+          selectsShapes[key].selected = true;
+        }
+        return selectsShapes;
+//        return activeSketch ? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
+      }
+
+      _toArray(shapes) {
+        if (!shapes) return undefined;
+        const res = [];
+        for (let key of Object.keys(shapes)) {
+          if (shapes[key])
+            res.push({key: key, value: shapes[key]});
+        }
+        return res;
       }
 
       connectedCallback() {
@@ -99,16 +136,6 @@
 
       _checkIfMoveable(heldKeys) {
         this.moveable = heldKeys.isDown("Space");
-      }
-
-      _toArray(shapes) {
-        if (!shapes) return undefined;
-        const res = [];
-        for (let key of Object.keys(shapes)) {
-          if (shapes[key])
-            res.push({key: key, value: shapes[key]});
-        }
-        return res;
       }
 
       _select(e) {
