@@ -145,11 +145,9 @@
         for (let key in this.state.now.selects)
           deletes[key] = null;
         this.setProperties({
-          "selects": undefined,
+          "selects": {},
           "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: deletes})
         });
-//        Object.keys(this.state.selecteds).map(key => shapes[key] = null);
-//        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes}));
       }
 
       _newScale(e) {
@@ -161,29 +159,30 @@
       _registerUIshape(e) {
         e.stopPropagation();
         this.set("actionType", "shape-rect");
-        this.set("rects", Tools.setIn(this.rects, [e.detail.key], e.detail.value));
+        let rects = Object.assign({}, this.state.now.rects);
+        rects[e.detail.key] = e.detail.value;
+        this.set("rects", rects);
         //todo need to filter rects so that if matrices are removed, so will the rects be
       }
 
       _deselect(e) {
         e.stopPropagation();
         this.set("actionType", "select");
-        this.set("selects", undefined);
-//        this.set("sketch", Tools.setInPathWithNullAsWildCard(this.sketch, ["shapes", null, "selected"], false));
+        this.set("selects", {});
       }
 
       _selectSingle(e) {
         e.stopPropagation();
         this.set("actionType", "select");
-        this.set("selects", Tools.setIn(this.state.selects, [e.detail], true));
-//        this.set("sketch", Tools.setIn(this.sketch, ["shapes", e.detail, "selected"], true));
+        let selects = Object.assign({}, this.state.now.selects);
+        selects[e.detail] = true;
+        this.set("selects", selects);
       }
 
       _select(e) {
         e.stopPropagation();
         this.set("actionType", "select");
         this.set("selects", e.detail);
-//        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
       }
 
       _fire(name, detail) {
