@@ -34,10 +34,11 @@
 
       _locationBarChanged() {
         let hashUrl = location.hash.substr(2);
-        this.set("routeOut", hashUrl === "" ? undefined: HashRouter.parseUrl(hashUrl));
+        this.set("routeOut", HashRouter.parseUrl(hashUrl));
       }
 
       _routeOutChanged(route){
+        this.urlIn = HashRouter.concatUrlMap(route); //att!! this MUST not trigger the observer for routeIn
         this._fire("route-changed", route);
       }
 
