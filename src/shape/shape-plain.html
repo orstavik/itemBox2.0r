@@ -28,7 +28,7 @@
     </style>
 
     <shape-box id="shapeBox" shapes="[[state.selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" shapes="[[state.activeSketch.shapes]]"></selection-box>
+    <selection-box id="selection" rects="[[state.now.rects]]"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.now.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">

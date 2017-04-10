@@ -31,7 +31,7 @@
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(activeSketch, now.selects)"
+            computed: "_makeSelecteds(activeSketch, now.selects, now.rects)"
           },
           state: {
             type: Object,
@@ -48,6 +48,9 @@
        * state
        *   A                   arrayOfNows[]
        *   now                 now === A[0]  / "state.now" equals "state.A.0" in the Polymer binding language.
+       *    - selects
+       *    - rects
+       *    - sketches
        ******** (subset views) ***********
        *   activeSketch        partial now
        *   selecteds           partial now
@@ -94,12 +97,15 @@
         return sketches ? sketches[name] : undefined;   //make the null values stay in the shapes, and a bug appears..
       }
 
-      _makeSelecteds(activeSketch, selects) {
-        if (!activeSketch || !selects)
+      _makeSelecteds(activeSketch, selects, rects) {
+        if (!activeSketch || !selects || !rects)
           return undefined;
         let selectsShapes = {};
-        for (let key in selects)
+        for (let key in selects){
           selectsShapes[key] = activeSketch.shapes[key];
+          selectsShapes[key].rect = rects[key];
+          selectsShapes[key].selected = true;
+        }
         return selectsShapes;
 //        return activeSketch ? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }

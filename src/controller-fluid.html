@@ -21,10 +21,11 @@
           session: Object,
           sketch: Object,
           selects: Object,
+          rects: Object,
           viewPort: Object,
           fluidNow: {
             type: Object,
-            computed: "_merge(sketch, viewPort, session, selects)"
+            computed: "_merge(sketch, viewPort, session, selects, rects)"
           },
           actionType: String
         };
@@ -46,13 +47,14 @@
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(sketch, viewPort, session, selects) {
+      _merge(sketch, viewPort, session, selects, rects) {
         if (session === undefined)               //don't merge if the route object is not instantiated
           return undefined;
         let now = {session: session};
         if (viewPort)
           now.viewPort = viewPort;
         now.selects = selects;
+        now.rects = rects;
         if (sketch) {
           now.sketches = {};
           now.sketches[this.state.now.session.sketchName] = sketch;
@@ -150,13 +152,13 @@
       _registerUIshape(e) {
         e.stopPropagation();
         this.set("actionType", "shape-rect");
-        this.set("sketch", Tools.setIn(this.sketch, ["shapes", e.detail.key, "rect"], e.detail.value));
+        this.set("rects", Tools.setIn(this.rects, [e.detail.key], e.detail.value));
+        //todo need to filter rects so that if matrices are removed, so will the rects be
       }
 
       _deselect(e) {
         e.stopPropagation();
         this.set("actionType", "select");
-        //todo alternative path might be simpler
         this.set("selects", undefined);
 //        this.set("sketch", Tools.setInPathWithNullAsWildCard(this.sketch, ["shapes", null, "selected"], false));
       }

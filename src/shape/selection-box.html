@@ -33,7 +33,7 @@
 
       static get properties() {
         return {
-          shapes: Object,
+          rects: Object,
           rect: {
             type: Object,
             observer: "_rectChanged"
@@ -92,9 +92,8 @@
 
       _rectChanged() {
         let selecteds = {};
-        for (let key in this.shapes) {
-          let shape = this.shapes[key];
-          if (shape && Rectangle.pointIsWithinBorders(this.rect, shape.rect.center))
+        for (let key in this.rects) {
+          if (Rectangle.pointIsWithinBorders(this.rect, this.rects[key].center))
             selecteds[key] = true;
         }
         this._fire("new-box-selection", selecteds);
