@@ -65,11 +65,11 @@
           },
           activeSketch: {                     //partial now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(state.now.sketches, state.now.session.sketchName, state.now.fluidActiveSketch)"
+            computed: "_makeActiveSketch(state.now.sketches, state.now.session.sketchName, state.now.fluidActiveSketch, state.now.selects, state.now.rects)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(activeSketch, state.now.selects, state.now.rects)"
+            computed: "_makeSelecteds(activeSketch, state.now.selects)"
           },
           shapesArray: {
             type: Array,
@@ -78,32 +78,29 @@
         }
       }
 
-      _makeActiveSketch(sketches, name, fluidActiveSketch) {
+      _makeActiveSketch(sketches, name, fluidActiveSketch, selects, rects) {
         if (!sketches)
           return undefined;
-        return Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+        let mergeableSelects = {};
+        for (let key in selects)
+          mergeableSelects[key] = {selected: true, rect: rects[key]};
+        return Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
       }
 
-      _makeSelecteds(activeSketch, selects, rects) {
-        if (!activeSketch || !selects || !rects)
+      _makeSelecteds(activeSketch, selects) {
+        if (!activeSketch || !selects)
           return undefined;
         let selectsShapes = {};
-        for (let key in selects){
+        for (let key in selects)
           selectsShapes[key] = activeSketch.shapes[key];
-          selectsShapes[key].rect = rects[key];
-          selectsShapes[key].selected = true;
-        }
         return selectsShapes;
-//        return activeSketch ? Tools.matchesPathValue(activeSketch.shapes, [null, "selected"], true) : undefined;
       }
 
       _toArray(shapes) {
-        if (!shapes) return undefined;
         const res = [];
-        for (let key of Object.keys(shapes)) {
-          if (shapes[key])
-            res.push({key: key, value: shapes[key]});
-        }
+        for (let key in shapes)
+          if (shapes[key]) res.push({key: key, value: shapes[key]});
         return res;
       }
 
