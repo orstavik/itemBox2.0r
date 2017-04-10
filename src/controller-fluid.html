@@ -55,15 +55,10 @@
         if (session === undefined)               //don't merge if the route object is not instantiated
           return undefined;
         let now = {session: session};
-        if (viewPort)
-          now.viewPort = viewPort;
+        now.viewPort = viewPort;
         now.selects = selects;
         now.rects = rects;
-        if (sketch) {
-//          now.sketches = {};
-//          now.sketches[this.state.now.session.sketchName] = sketch;
-          now.fluidActiveSketch = sketch;
-        }
+        now.fluidActiveSketch = sketch;
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
       }
