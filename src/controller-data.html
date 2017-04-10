@@ -47,6 +47,10 @@
             observer: "_newServerSnap"
           },
           state: Object,
+          fluidActiveSketch: {
+            type: Object,
+            observer: "saveChangesDebounced"
+          },
           actionType: String
         };
       }
@@ -86,11 +90,10 @@
       }
 
       //must be called before setting up a new activeSketch.
-      saveChanges(fluidSnap) {
-        let activeSketch = fluidSnap.sketches ? fluidSnap.sketches[fluidSnap.session.sketchName] : undefined;
-        if (!activeSketch)
+      saveChanges(fluidActiveSketch) {
+        if (!fluidActiveSketch)
           return;
-        let activeShapes = activeSketch.shapes;
+        let activeShapes = fluidActiveSketch.shapes;
         let filteredShapes = {};
         for (let key in activeShapes){                                               //app-logic
           if (activeShapes[key] === null)                                            // - extracting shape = null

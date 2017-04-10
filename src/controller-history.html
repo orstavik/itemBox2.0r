@@ -27,7 +27,7 @@
           },
           activeSketch: {                     //partial now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(now.sketches, now.session.sketchName)"
+            computed: "_makeActiveSketch(now.sketches, now.session.sketchName, now.fluidActiveSketch)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
@@ -93,8 +93,10 @@
         return this.D;
       }
 
-      _makeActiveSketch(sketches, name) {
-        return sketches ? sketches[name] : undefined;   //make the null values stay in the shapes, and a bug appears..
+      _makeActiveSketch(sketches, name, fluidActiveSketch) {
+        if (!sketches)
+          return undefined;
+        return Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
       }
 
       _makeSelecteds(activeSketch, selects, rects) {

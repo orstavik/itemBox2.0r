@@ -9,8 +9,10 @@
       :host { height: 100%; }
     </style>
     <controller-history id="history" state="{{state}}" now="[[snap]]"></controller-history>
-    <controller-data id="data" state="[[state]]" on-snap-change="_serverUserSnapChange"></controller-data>
-    <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
+    <controller-data id="data" state="[[state]]" fluid-active-sketch="[[state.now.fluidActiveSketch]]"
+                     on-snap-change="_serverUserSnapChange"></controller-data>
+    <controller-fluid id="fluid" state="[[state]]" server-sketches="[[state.now.sketches]]"
+                      on-snap-change="_fluidSnapChange">
       <controller-ui id="ui" state="[[state]]"></controller-ui>
     </controller-fluid>
 
@@ -30,17 +32,9 @@
           messagesSnap: Object,
           serverUserSnap: Object,
           fluidSnap: Object,
-          userFluidSnap: {
-            type: Object,
-            computed: "_mergeUserFluid(serverUserSnap, fluidSnap)"
-          },
-          userSnap: {
-            type: Object,
-            computed: "_mergeUser(defaultSnap, userFluidSnap)"
-          },
           snap: {
             type: Object,
-            computed: "_mergeTree(userSnap, messagesSnap)"
+            computed: "merge(defaultSnap, serverUserSnap, fluidSnap, messagesSnap)"
           },
           actionType: String
         }
@@ -61,40 +55,23 @@
 
       _fluidSnapChange(e) {
         this.set("actionType", e.detail.type);
-        //if (e.detail.type === "something that will change the active sketch)
-        //  this.$.data.flushSaveChangesDebouncer();
-        this.$.data.saveChangesDebounced(e.detail.snap);
-        this._lastIn = e.detail.snap;
         this.set("fluidSnap", e.detail.snap);
       }
 
       _serverUserSnapChange(e) {
         this.set("actionType", e.detail.type);
-        this.$.fluid.reduceFluid(e.detail.snap);    //3. because filter the fluidSnap must be done (this.fluidSnap is updated immediately)
-        this._lastIn = e.detail.snap;
         this.set("serverUserSnap", e.detail.snap);  //2. set the serverUserSnap
       }
 
-      _mergeTree(A, B) {
-        if (A === undefined || B === undefined || this._inactive)
+      merge(defaultSnap, serverUserSnap, fluidSnap, messagesSnap) {
+        if (!fluidSnap || !defaultSnap || !messagesSnap || !serverUserSnap) //we must wait for the initialization of all the snaps
           return this.snap;
-        let C = Tools.mergeDeepWithNullToDelete(A, B);
-        C.action = {type: this.actionType, timeStamp: new Date().getTime()};
-        return C;
-      }
-
-      _mergeUserFluid(A, B) {
-        if (A === undefined || B === undefined)
-          return this.userFluidSnap;
-        if (this._lastIn === A)
-          return Tools.mergeDeepWithNullToDelete(B, A);
-        return Tools.mergeDeepWithNullToDelete(A, B);
-      }
-
-      _mergeUser(A, B) {
-        if (A === undefined || B === undefined)
-          return this.userSnap;
-        return Tools.mergeDeepWithNullToDelete(A, B);
+        let snap = Object.assign({}, defaultSnap);
+        snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
+        snap = Tools.mergeDeepWithNullToDelete(snap, fluidSnap);            //merges viewPort and session onto defaultSnap
+        snap = Tools.mergeDeepWithNullToDelete(snap, messagesSnap);         //adds, does not merge
+        snap.action = {type: this.actionType, timeStamp: new Date().getTime()};
+        return snap;
       }
 
       _signIn() {
@@ -102,11 +79,11 @@
       }
 
       _signOut() {
-        this._inactive = true;            //        this.set("active", false);  //synchronic state action start
+        let defaultSnapCache = this.defaultSnap;
+        this.set("defaultSnap", undefined);          //synchronic state action start
         this.$.data.signOut();
         this.$.fluid.reset();
-        this._inactive = false;           //        this.set("active", true);   //synchronic state action stop
-        this.set("defaultSnap", Object.assign({}, this.defaultSnap));
+        this.set("defaultSnap", defaultSnapCache);   //synchronic state action stop
       }
 
       _systemMessage(e) {

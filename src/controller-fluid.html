@@ -27,7 +27,11 @@
             type: Object,
             computed: "_merge(sketch, viewPort, session, selects, rects)"
           },
-          actionType: String
+          actionType: String,
+          serverSketches: {
+            type: Object,
+            observer: "reduceFluidMatrix"
+          }
         };
       }
 
@@ -56,8 +60,9 @@
         now.selects = selects;
         now.rects = rects;
         if (sketch) {
-          now.sketches = {};
-          now.sketches[this.state.now.session.sketchName] = sketch;
+//          now.sketches = {};
+//          now.sketches[this.state.now.session.sketchName] = sketch;
+          now.fluidActiveSketch = sketch;
         }
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
@@ -85,18 +90,20 @@
         });
       }
 
-      reduceFluid(serverNow) {
+      reduceFluidMatrix(serverSketches) {
+        //todo here, we can also reduce the rects if we want, and yes, this we want to do!
         let diffSketch = undefined;
-        if (serverNow.sketches && this.state.now.session.sketchName) {
-          let serverSketch = serverNow.sketches[this.state.now.session.sketchName];
+        if (!this.sketch)
+          return;
+        if (serverSketches && this.state.now.session.sketchName) {
+          let serverSketch = serverSketches[this.state.now.session.sketchName];
           diffSketch = Tools.filterDeep(this.sketch, serverSketch);
           for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
           }
         }
-        if (diffSketch)
-          this.setProperties({"sketch": diffSketch});
+        this.setProperties({"sketch": diffSketch});
       }
 
       _newSketch(e) {
@@ -134,10 +141,12 @@
       _deleteSelected(e) {
         e.stopPropagation();
         this.set("actionType", "delete-shape");
-        let shapes = {};
+        let deletes = {};
+        for (let key in this.state.now.selects)
+          deletes[key] = null;
         this.setProperties({
           "selects": undefined,
-          "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes})
+          "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: deletes})
         });
 //        Object.keys(this.state.selecteds).map(key => shapes[key] = null);
 //        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: shapes}));
