@@ -9,21 +9,21 @@
       static get properties() {
         return {
           now: Object,
-          A: {                                //history array of all nows
+          history: {                                //history array of all nows
             type: Array,
-            computed: "_makeA(now)"
+            computed: "_makeHistory(now)"
           },
-          B: {                                //partial history array of nows: edit events only
+          editHistory: {                            //partial history array of nows: edit events only
             type: Array,
-            computed: "_makeB(now)"
+            computed: "_makeEditHistory(now)"
           },
-          C: {                                //partial history array of nows: system messages only
+          systemMessageHistory: {                   //partial history array of nows: system messages only
             type: Array,
-            computed: "_makeC(now)"
+            computed: "_makeSystemMessageHistory(now)"
           },
-          D: {                                //partial history array of nows: help messages only
+          helpMessageHistory: {                     //partial history array of nows: help messages only
             type: Array,
-            computed: "_makeD(now)"
+            computed: "_makeHelpMessageHistory(now)"
           },
           state: {
             type: Object,
@@ -33,52 +33,54 @@
       }
 
       static get observers() {
-        return ["_makeState(A,B,C,D,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
       /*
        * state
-       *   A                   arrayOfNows[]
-       *   now                 now === A[0]  / "state.now" equals "state.A.0" in the Polymer binding language.
+       *   history                   arrayOfNows[]
+       *   now                 now === history[0]  / "state.now" equals "state.history.0" in the Polymer binding language.
        *    - selects
        *    - rects
        *    - sketches
+       *    - fluidActiveSketch
        ******** (subset views) ***********
        *   editSnaps           partial arrayOfNows[]
        *   systemMessageSnaps  partial arrayOfNows[]
        *   helpMessageSnaps    partial arrayOfNows[]
        **/
-      _makeState(A, B, C, D, now) {
+      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now) {
         this.set("state", {
-          A: A,
+          history: history,
           now: now,
-          editSnaps: B,
-          systemMessageSnaps: C,
-          helpMessageSnaps: D
+          editSnaps: editHistory,
+          systemMessageSnaps: systemMessageHistory,
+          helpMessageSnaps: helpMessageHistory
         });
+        console.log(this.state);
       }
 
-      _makeA(now) {
-        return this.A ? [now].concat(this.A) : [now];
+      _makeHistory(now) {
+        return this.history ? [now].concat(this.history) : [now];
       }
 
-      _makeB(now) {
+      _makeEditHistory(now) {
         let t = now.action.type;
         if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
-          return this.B ? [now].concat(this.B) : [now];
-        return this.B;
+          return this.editHistory ? [now].concat(this.editHistory) : [now];
+        return this.editHistory;
       }
 
-      _makeC(now) {
+      _makeSystemMessageHistory(now) {
         if (now.action.type === "system-message")
-          return this.C ? [now].concat(this.C) : [now];
-        return this.C;
+          return this.systemMessageHistory ? [now].concat(this.systemMessageHistory) : [now];
+        return this.systemMessageHistory;
       }
 
-      _makeD(now) {
+      _makeHelpMessageHistory(now) {
         if (now.action.type === "help-message")
-          return this.D ? [now].concat(this.D) : [now];
-        return this.D;
+          return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
+        return this.helpMessageHistory;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);

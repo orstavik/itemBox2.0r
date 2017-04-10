@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="indexed-mirror.html">
 <link rel="import" href="firebase-on.html">
 <link rel="import" href="firebase-loginout.html">
 
@@ -9,9 +9,9 @@
         display: none;
       }
     </style>
-    <app-indexeddb-mirror key="systemSketches"
-                          data="{{serverSystemSketches}}"
-                          persisted-data="{{sketchDataFromServer}}"></app-indexeddb-mirror>
+    <indexed-mirror key="systemSketches"
+                    data="{{serverSystemSketches}}"
+                    stored-data="{{sketchDataFromServer}}"></indexed-mirror>
 
     <firebase-on id="sketchData"
                  active$="[[_AND(state.now.user, state.now.session.sketchName)]]"
