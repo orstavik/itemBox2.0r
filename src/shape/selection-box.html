@@ -46,6 +46,10 @@
             type: Boolean,
             value: false,
             reflectToAttribute: true
+          },
+          selectsOut: {
+            type: Object,
+            observer: "_alertNewSelecteds"
           }
         }
       }
@@ -56,6 +60,7 @@
         Polymer.Gestures.addListener(this, "up", this._up.bind(this));
         Polymer.Gestures.addListener(this, "track", this._track.bind(this));
         this.addEventListener("dblclick", this._dblclick.bind(this));
+        this.selectsOut = {};
       }
 
       _dblclick(e) {
@@ -91,12 +96,23 @@
       }
 
       _rectChanged() {
-        let selects = {};
+        let mutated = false;
         for (let key in this.rects) {
-          if (Rectangle.pointIsWithinBorders(this.rect, this.rects[key].center))
-            selects[key] = true;
+          let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, this.rects[key].center);
+          if (pointIsWithinBorders === !this.selectsOut[key]) {
+            mutated = true;
+            if (pointIsWithinBorders)
+              this.selectsOut[key] = true;
+            else
+              delete this.selectsOut[key];
+          }
         }
-        this._fire("new-box-selection", selects);
+        if (mutated)
+          this.set("selectsOut", Object.assign({}, this.selectsOut));
+      }
+
+      _alertNewSelecteds(selectsOut) {
+        this._fire("new-box-selection", selectsOut);
       }
 
       _fire(name, detail) {
