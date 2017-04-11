@@ -63,29 +63,15 @@
             type: Boolean,
             reflectToAttribute: true
           },
-          activeSketch: {                     //partial now: the active sketch
-            type: Object,
-            computed: "_makeActiveSketch(state.now.sketches, state.now.session.sketchName, state.now.fluidActiveSketch, state.now.selects, state.now.rects)"
-          },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(activeSketch, state.now.selects)"
+            computed: "_makeSelecteds(state.activeSketch, state.now.selects)"
           },
           shapesArray: {
             type: Array,
-            computed: "_toArray(activeSketch.shapes)"
+            computed: "_toArray(state.activeSketch.shapes)"
           }
         }
-      }
-
-      _makeActiveSketch(sketches, name, fluidActiveSketch, selects, rects) {
-        if (!sketches)
-          return undefined;
-        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-        let mergeableSelects = {};
-        for (let key in selects)
-          mergeableSelects[key] = {selected: true, rect: rects[key]};
-        return Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
       }
 
       _makeSelecteds(activeSketch, selects) {

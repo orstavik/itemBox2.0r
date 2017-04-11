@@ -168,8 +168,8 @@
             return this._transformShapes(e.currentTarget, e.detail);
           case 'end':
             e.currentTarget.removeAttribute("active");
-            this.set("action", "");
-            this._fire("change-shapes-end");
+            this._fire("change-shapes-end", this.action);
+            this.set("action", "");;
         }
       }
 
@@ -178,13 +178,13 @@
         const ddy = e.ddy !== undefined ? e.ddy : e.dy;
         switch (target.getAttribute("type")) {
           case "grabber":
-            this.set("action", "moving");
+            this.set("action", "shape-move");
             return this._moveShapes(ddx, ddy, this.viewPort.s);
           case "point":
-            this.set("action", "scaling");
+            this.set("action", "shape-scale");
             return this._scaleShapes(target.id, ddx, ddy, this.viewPort.s);
           case "rotator":
-            this.set("action", "rotating");
+            this.set("action", "shape-rotate");
             return this._rotateShapes(e.x, e.y, ddx, ddy, this.viewPort.s);
         }
       }

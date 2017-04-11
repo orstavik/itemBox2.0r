@@ -1,9 +1,9 @@
-<dom-module id="hash-router">
+<dom-module id="app-router">
   <script>
-    class HashRouter extends Polymer.Element {
+    class AppRouter extends Polymer.Element {
 
       static get is() {
-        return "hash-router";
+        return "app-router";
       }
 
       static get properties() {
@@ -15,6 +15,12 @@
           routeOut: {
             type: Object,
             observer: "_routeOutChanged"
+          },
+          hash: {
+            type: Boolean,
+            value: function() {
+              return location.hostname === "localhost";
+            }
           }
         };
       }
@@ -34,11 +40,11 @@
 
       _locationBarChanged() {
         let hashUrl = location.hash.substr(2);
-        this.set("routeOut", HashRouter.parseUrl(hashUrl));
+        this.set("routeOut", AppRouter.parseUrl(hashUrl));
       }
 
       _routeOutChanged(route){
-        this.urlIn = HashRouter.concatUrlMap(route); //att!! this MUST not trigger the observer for routeIn
+        this.urlIn = AppRouter.concatUrlMap(route); //att!! this MUST not trigger the observer for routeIn
         this._fire("route-changed", route);
       }
 
@@ -69,6 +75,6 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
-    customElements.define(HashRouter.is, HashRouter);
+    customElements.define(AppRouter.is, AppRouter);
   </script>
 </dom-module>

@@ -1,11 +1,11 @@
-<link rel="import" href="hash-router.html">
+<link rel="import" href="app-router.html">
 
 <dom-module id="controller-fluid">
   <template>
     <style>
       :host { display: block; }
     </style>
-    <hash-router id="route" url-in="[[state.now.session.sketchName]]"></hash-router>
+    <app-router id="route" url-in="[[state.now.session.sketchName]]"></app-router>
     <slot></slot>
   </template>
   <script>
@@ -98,7 +98,12 @@
               delete diffSketch[key];
           }
         }
-        this.setProperties({"sketch": diffSketch});
+        let res = {};
+        for(let key in this.state.now.rects) {
+          if (this.state.activeSketch.shapes[key])
+            res[key] = this.state.now.rects[key];
+        }
+        this.setProperties({"sketch": diffSketch, "rects": res});
       }
 
       _newSketch(e) {
@@ -115,7 +120,7 @@
 
       _changeShapesEnd(e) {
         e.stopPropagation();
-        this.set("actionType", "shape-matrix");
+        this.set("actionType", e.detail);
         this.set("sketch", Object.assign({}, this.sketch));
       }
 
