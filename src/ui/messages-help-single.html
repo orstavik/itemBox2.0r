@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 
-<dom-module id="help-message">
+<dom-module id="messages-help-single">
   <template>
     <style>
 			:host {
@@ -48,9 +48,9 @@
 
   </template>
   <script>
-    class HelpMessage extends Polymer.Element {
+    class MessagesHelpSingle extends Polymer.Element {
       static get is() {
-        return "help-message";
+        return "messages-help-single";
       }
 
       static get properties() {
@@ -59,6 +59,6 @@
         }
       }
     }
-    customElements.define(HelpMessage.is, HelpMessage);
+    customElements.define(MessagesHelpSingle.is, MessagesHelpSingle);
   </script>
 </dom-module>

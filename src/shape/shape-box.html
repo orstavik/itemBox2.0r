@@ -135,7 +135,7 @@
         if (this._isEmpty(shapes))
           return undefined;
         if (this._isMulti(shapes)) {
-          if (action === "rotating")
+          if (action === "shape-rotate")
             return Object.assign({}, this.rect);
 
           let shape = ShapeBox._getFirstShape(shapes);
@@ -160,6 +160,7 @@
 
       _doTracking(e) {
         e.preventDefault();
+        // todo: Debouce tracking and handle the xy change
         switch (e.detail.state) {
           case 'start':
             e.currentTarget.setAttribute("active", "");
@@ -169,7 +170,7 @@
           case 'end':
             e.currentTarget.removeAttribute("active");
             this._fire("change-shapes-end", this.action);
-            this.set("action", "");;
+            this.set("action", "");
         }
       }
 

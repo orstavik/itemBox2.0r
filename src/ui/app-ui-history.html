@@ -46,7 +46,6 @@
         height: 40px;
         border-radius: 50%;
         box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.7);
-        /*transition: background-color 0.2s, width 0.1s, height 0.1s;*/
         transition-duration: 0.2s;
         z-index: 1;
         font-size: 0;
@@ -54,8 +53,6 @@
         margin-left: 0;
       }
       .historyPoint[active] {
-        /*border: 3px solid;
-        background-color: white !important;*/
         margin-left: 20px;
         cursor: pointer;
       }
@@ -87,19 +84,15 @@
       }
       .historyPoint.new-shape {
         background-color: var(--paper-green-300);
-        /*border: 3px solid var(--paper-green-800);*/
       }
       .historyPoint.shape-move, .historyPoint.shape-scale, .historyPoint.shape-rotate {
         background-color: var(--paper-blue-300);
-        /*border: 3px solid var(--paper-blue-800);*/
       }
       .historyPoint.delete-shape {
         background-color: var(--paper-red-300);
-        /*border: 3px solid var(--paper-red-800);*/
       }
       .historyPoint.set {
         background-color: var(--paper-yellow-300);
-        /*border: 3px solid var(--paper-grey-800);*/
       }
 
     </style>
@@ -237,21 +230,6 @@
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
-
-//        new MutationObserver(this._parentIsActive.bind(this)).observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
-//
-//      _parentIsActive(mutations) {
-//        for (let mutation of mutations) {
-//          if (mutation.attributeName == "active") {
-//            const value = mutation.target.hasAttribute(mutation.attributeName);
-//            this.set("parentActive", value);
-//            if (value)
-//              this.dispatchEvent(new CustomEvent("help-message", {composed: true, bubbles: true, detail: "Scroll to view old version. Click the expanded historypoint to roll back."}));
-//            else
-//              this._fire("timetravel-off", null);
-//          }
-//        }
-//      }
     }
     customElements.define(AppUiHistory.is, AppUiHistory);
   </script>

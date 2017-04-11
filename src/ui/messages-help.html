@@ -1,6 +1,6 @@
 <link rel="import" href="messages-help-single.html">
 
-<dom-module id="help-messenger">
+<dom-module id="messages-help">
   <template>
     <style>
 			:host {
@@ -34,9 +34,9 @@
 
   </template>
   <script>
-    class HelpMessenger extends Polymer.Element {
+    class MessagesHelp extends Polymer.Element {
       static get is() {
-        return "help-messenger";
+        return "messages-help";
       }
 
       static get properties() {
@@ -54,6 +54,7 @@
 
 			connectedCallback() {
 				super.connectedCallback();
+				this.set("messages", null);
 				this.addEventListener("pointerenter", this._pointerEnter.bind(this));
 				this.addEventListener("pointerleave", this._pointerLeave.bind(this));
 			}
@@ -131,6 +132,6 @@
 				}
 			}
     }
-    customElements.define(HelpMessenger.is, HelpMessenger);
+    customElements.define(MessagesHelp.is, MessagesHelp);
   </script>
 </dom-module>
