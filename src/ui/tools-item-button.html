@@ -1,22 +1,23 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../styles/css-reset.html">
 
-<dom-module id="grow-child-button">
+<dom-module id="tools-item-button">
   <template>
-    <style>
+    <style include="css-reset">
       :host {
         display: inline-block;
         pointer-events: none !important;
       }
       #mainCircle {
         display: flex;
-        width: var(--grow-child-button-size);
-        height: var(--grow-child-button-size);
-        margin: calc(var(--grow-child-button-size) * 0.2);
+        width: var(--tools-item-button-size);
+        height: var(--tools-item-button-size);
+        margin: calc(var(--tools-item-button-size) * 0.2);
         align-items: center;
         justify-content: center;
-        background-color: var(--grow-child-button-color);
+        background-color: var(--tools-item-button-color);
         border-radius: 50%;
         cursor: pointer;
         opacity: 1;
@@ -32,9 +33,9 @@
       }
 */
       #mainCircle > iron-icon {
-        --iron-icon-width: calc(var(--grow-child-button-size) * 0.5);
-        --iron-icon-height: calc(var(--grow-child-button-size) * 0.5);
-        --iron-icon-fill-color: var(--grow-child-button-icon-color);
+        --iron-icon-width: calc(var(--tools-item-button-size) * 0.5);
+        --iron-icon-height: calc(var(--tools-item-button-size) * 0.5);
+        --iron-icon-fill-color: var(--tools-item-button-icon-color);
       }
       #outerBox {
         display: flex;
@@ -63,8 +64,8 @@
         transition-delay: 200ms;
       }
       #shadyCircle {
-        width: var(--grow-child-button-size);
-        height: var(--grow-child-button-size);
+        width: var(--tools-item-button-size);
+        height: var(--tools-item-button-size);
         position: absolute;
         border-radius: 50%;
         background-color: white;
@@ -79,23 +80,24 @@
         transform: translateX(-2px);
       }
       #boxContent .header {
+        display: flex;
+        align-items: center;
+        height: 50px;
         background-color: white;
       }
       #boxContent .header > iron-icon {
-        position: absolute;
         --iron-icon-width: 27px;
         --iron-icon-height: 27px;
-        margin: 10px 20px;
+        margin: 0px 16px;
       }
       .header > h3 {
-        margin: 10px 60px;
+        flex: 1;
         font-size: 18px;
         font-weight: 500;
       }
       #closeButton {
-        position: absolute;
-        top: 4px;
-        right: 6px;
+        position: relative;
+        margin: 0 5px;
         z-index: 10;
       }
     </style>
@@ -118,9 +120,9 @@
 
   </template>
   <script>
-    class GrowChildButton extends Polymer.Element {
+    class ToolsItemButton extends Polymer.Element {
       static get is() {
-        return "grow-child-button";
+        return "tools-item-button";
       }
 
       static get properties() {
@@ -165,7 +167,7 @@
       }
 
       _calcVisualData() {
-        this.visualData = GrowChildButton._calcScaleShift(this.$.outerBox, this.$.shadyCircle);
+        this.visualData = ToolsItemButton._calcScaleShift(this.$.outerBox, this.$.shadyCircle);
         this.set("marginTopOuterBox",16 - this.visualData.bTop);
         this.set("circleTop", this.visualData.cTop - 16);
       }
@@ -236,6 +238,6 @@
        }
        */
     }
-    customElements.define(GrowChildButton.is, GrowChildButton);
+    customElements.define(ToolsItemButton.is, ToolsItemButton);
   </script>
 </dom-module>

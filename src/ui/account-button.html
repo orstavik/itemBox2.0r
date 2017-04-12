@@ -3,7 +3,7 @@
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
-<dom-module id="grow-button">
+<dom-module id="account-button">
   <template>
     <style>
       :host {
@@ -12,12 +12,12 @@
       }
       #mainCircle {
         display: flex;
-        width: var(--grow-button-size);
-        height: var(--grow-button-size);
+        width: var(--account-button-size);
+        height: var(--account-button-size);
         margin: 10px;
         align-items: center;
         justify-content: center;
-        background-color: var(--grow-button-color);
+        background-color: var(--account-button-color);
         border-radius: 50%;
         cursor: pointer;
         opacity: 1;
@@ -29,9 +29,9 @@
         pointer-events: none;
       }
       #mainCircle > iron-icon {
-        --iron-icon-width: calc(var(--grow-button-size) * 0.5);
-        --iron-icon-height: calc(var(--grow-button-size) * 0.5);
-        --iron-icon-fill-color: var(--grow-button-icon-color);
+        --iron-icon-width: calc(var(--account-button-size) * 0.5);
+        --iron-icon-height: calc(var(--account-button-size) * 0.5);
+        --iron-icon-fill-color: var(--account-button-icon-color);
       }
       #outerBox {
         display: flex;
@@ -49,11 +49,11 @@
         z-index: 1000;
       }
       #shadyCircle {
-        width: var(--grow-button-size);
-        height: var(--grow-button-size);
+        width: var(--account-button-size);
+        height: var(--account-button-size);
         position: absolute;
         border-radius: 50%;
-        background-color: var(--grow-button-color);
+        background-color: var(--account-button-color);
         will-change: transform;
         pointer-events: none;
         z-index: -1;
@@ -67,8 +67,8 @@
       }
       #closeButton {
         position: absolute;
-        top: 0;
-        right: 0;
+        top: 5px;
+        right: 5px;
         z-index: 10;
       }
       :host(.left ) #outerBox { left: 10px; }
@@ -96,9 +96,9 @@
 
   </template>
   <script>
-    class GrowButton extends Polymer.Element {
+    class AccountButton extends Polymer.Element {
       static get is() {
-        return "grow-button";
+        return "account-button";
       }
 
       static get properties() {
@@ -123,7 +123,7 @@
         if (this.active)
           return;
         if (!this.scale)
-          this.scale = GrowButton._calcScale(this.$.outerBox, this.$.shadyCircle);
+          this.scale = AccountButton._calcScale(this.$.outerBox, this.$.shadyCircle);
         this._expandCard(300);
         this.set("active", true);
       }
@@ -177,6 +177,6 @@
         });
       }
     }
-    customElements.define(GrowButton.is, GrowButton);
+    customElements.define(AccountButton.is, AccountButton);
   </script>
 </dom-module>

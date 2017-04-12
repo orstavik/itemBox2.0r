@@ -61,7 +61,33 @@
         background-color: var(--paper-indigo-a200);
         color: white;
       }
+      #saveBox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 6px 0 18px;
+      }
+      #saveBox .newSketch {
+        width: 36px;
+        min-width: initial;
+        height: 36px;
+        padding: 0;
+        margin-right: 12px;
+        background-color: var(--paper-green-600);
+        color: white;
+      }
+      #saveBox span {
+        color: #444;
+        font-weight: 500;
+      }
     </style>
+    
+    <div id="saveBox">
+      <paper-button raised class="newSketch" on-click="_newSketch">
+        <iron-icon icon="add"></iron-icon>
+      </paper-button>
+      <span>New sketch</span>
+    </div>
     <template is="dom-repeat" items="[[sketchesArray]]">
       <paper-material elevation="1" class="sketchCard">
         <div class="contentBox">
@@ -112,9 +138,14 @@
         return new Date(num).toLocaleString();
       }
 
+      _newSketch(e) {
+        this._fire("new-sketch-dialog");
+      }
+
       _loadSketch(e) {
         this._fire("load-sketch", e.target.dataset.key);
       }
+
 
       _previewSketch(e) {
         this._fire("show-preview-sketch", e.target.dataset.key);
