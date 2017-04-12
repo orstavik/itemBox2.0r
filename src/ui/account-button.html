@@ -81,7 +81,7 @@
       :host(.bottom) #shadyCircle { bottom: 0; }
     </style>
 
-    <paper-material id="mainCircle" elevation=1 on-click="_toggleState" hidden="[[active]]">
+    <paper-material id="mainCircle" elevation=1 on-tap="_toggleState" hidden="[[active]]">
       <paper-ripple></paper-ripple>
       <iron-icon icon="[[icon]]"></iron-icon>
     </paper-material>
@@ -96,7 +96,7 @@
 
   </template>
   <script>
-    class AccountButton extends Polymer.Element {
+    class AccountButton extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "account-button";
       }

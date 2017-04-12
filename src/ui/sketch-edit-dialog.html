@@ -1,16 +1,12 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../../bower_components/paper-material/paper-input.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-material/paper-button.html">
-<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
 <dom-module id="sketch-edit-dialog">
   <template>
     <style>
 			:host {
-				display: block;
-			}
-			#overlay {
 				display: flex;
 				width: 100vw;
 				height: 100vh;
@@ -19,45 +15,82 @@
 				left: 0;
 				align-items: center;
 				justify-content: center;
-				animation: darken 0.3s forwards;
     		z-index: 1000;
 			}
-			@keyframes darken {
-				from { background-color: rgba(0,0,0,0) }
-				to { background-color: rgba(0,0,0,0.5) }
+			#overlay {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.5);
+				z-index: -1;
 			}
 			#dialogBody {
 				display: flex;
-				flex-direction: column;
+				width: 300px;
+				border-radius: 2px;
 				position: relative;
+				flex-direction: column;
 				background-color: white;
+				animation: Appear 0.3s forwards;
+			}
+			@keyframes Appear {
+				from { 
+					transform: scale(0.9);
+					opacity: 0;
+				}
+				to { 
+					transform: scale(1);
+					opacity: 1;
+				}
 			}
 			.dialog-header {
-
+				display: flex;
+				align-items: center;
 			}
-			.dialog-close {
-				position: absolute;
-				top: 5px;
-        right: 5px;
+			.dialog-title {
+				flex: 1;
+				margin: 16px 20px 0;
+				font-size: 18px;
+				font-weight: 500;
+			}
+			.dialog-content {
+				display: flex;
+				flex-direction: column;
+				margin: 0 20px;
+			}
+			.dialog-actions {
+				display: flex;
+				justify-content: flex-end;
+				margin: 6px
+			}
+			paper-checkbox {
+				margin: 12px 0;
+    		font-size: 14px;
+			}
+			paper-button {
+				font-size: 14px;
 			}
     </style>
 
-		<div id="overlay">
-			<paper-material elevation="5" id="dialogBody">
-				<div class="dialog-header">New Sketch</div>
-				<div class="dialog-content">
-					<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!"></paper-input>
-				</div>
-				<div class="dialog-actions">
-					<paper-button on-click="_createSketch">Create</paper-button>
-				</div>
-        <paper-icon-button class="close-dialog" icon="clear" on-tap="deactivate"></paper-icon-button>
-			</paper-material>
-		</div>
+		<paper-material elevation="5" id="dialogBody">
+			<div class="dialog-header">
+				<span class="dialog-title">New Sketch</span>
+			</div>
+			<div class="dialog-content">
+				<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!" on-input="_validate" value="{{info.name::input}}"></paper-input>
+				<paper-checkbox checked="{{info.clear}}">Clear canvas</paper-checkbox>
+			</div>
+			<div class="dialog-actions">
+				<paper-button on-tap="_createSketch">Create</paper-button>
+				<paper-button on-tap="_closeDialog">Cancel</paper-button>
+			</div>
+		</paper-material>
+
+		<div id="overlay" on-tap="_closeDialog"></div>
 
   </template>
   <script>
-    class SketchEditDialog extends Polymer.Element {
+    class SketchEditDialog extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "sketch-edit-dialog";
       }
@@ -67,7 +100,10 @@
 					info: {
 						type: Object,
 						value: function() {
-							return {};
+							return {
+								clear: false,
+								name: ""
+							};
 						}
 					}
         }
@@ -78,9 +114,17 @@
 				super.ready();
 			}
 
+			_validate(e) {
+				this.$.nameInput.validate();
+			}
+
 			_createSketch() {
-				debugger;
-				this._fire("new-sketch", this.info);
+				if (this.$.nameInput.validate())
+					this._fire("new-sketch", this.info);
+			}
+
+			_closeDialog() {
+				this.remove();
 			}
 
       _fire(name, detail) {
