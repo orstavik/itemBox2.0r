@@ -1,0 +1,92 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-material/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="sketch-edit-dialog">
+  <template>
+    <style>
+			:host {
+				display: block;
+			}
+			#overlay {
+				display: flex;
+				width: 100vw;
+				height: 100vh;
+				position: absolute;
+				top: 0;
+				left: 0;
+				align-items: center;
+				justify-content: center;
+				animation: darken 0.3s forwards;
+    		z-index: 1000;
+			}
+			@keyframes darken {
+				from { background-color: rgba(0,0,0,0) }
+				to { background-color: rgba(0,0,0,0.5) }
+			}
+			#dialogBody {
+				display: flex;
+				flex-direction: column;
+				position: relative;
+				background-color: white;
+			}
+			.dialog-header {
+
+			}
+			.dialog-close {
+				position: absolute;
+				top: 5px;
+        right: 5px;
+			}
+    </style>
+
+		<div id="overlay">
+			<paper-material elevation="5" id="dialogBody">
+				<div class="dialog-header">New Sketch</div>
+				<div class="dialog-content">
+					<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!"></paper-input>
+				</div>
+				<div class="dialog-actions">
+					<paper-button on-click="_createSketch">Create</paper-button>
+				</div>
+        <paper-icon-button class="close-dialog" icon="clear" on-tap="deactivate"></paper-icon-button>
+			</paper-material>
+		</div>
+
+  </template>
+  <script>
+    class SketchEditDialog extends Polymer.Element {
+      static get is() {
+        return "sketch-edit-dialog";
+      }
+
+      static get properties() {
+        return {
+					info: {
+						type: Object,
+						value: function() {
+							return {};
+						}
+					}
+        }
+      }
+
+			constructor() {
+				super();
+				super.ready();
+			}
+
+			_createSketch() {
+				debugger;
+				this._fire("new-sketch", this.info);
+			}
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+    customElements.define(SketchEditDialog.is, SketchEditDialog);
+  </script>
+</dom-module>

@@ -13,6 +13,7 @@
 <link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
 <link rel="import" href="ui/messages-system.html">
+<link rel="import" href="ui/sketch-edit-dialog.html">
 
 <link rel="import" href="shape/shape-plain.html">
 
@@ -170,6 +171,16 @@
             observer: "_notifyScale"
           },
         }
+      }
+
+      constructor() {
+        super();
+        this.addEventListener("new-sketch-dialog", this._createSketchEditDialog.bind(this));
+      }
+
+      _createSketchEditDialog() {
+        const dialog = new SketchEditDialog();
+        this.shadowRoot.appendChild(dialog);
       }
 
       _notifyScale(scale) {
