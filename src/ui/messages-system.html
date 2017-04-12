@@ -104,8 +104,8 @@
 				<div id="scroller">
 					<template is="dom-repeat" items="[[messages]]">
 						<div class="logMessage">
-							<span class="time">[[_getTime(item.timestamp)]]</span>
-							<span class="text">[[item.value]]</span>
+							<span class="time">[[_getTime(item.action.timeStamp)]]</span>
+							<span class="text">[[item.systemMessage]]</span>
 						</div>
 					</template>
 				</div>
@@ -174,7 +174,7 @@
 			}
 
 			_getTime(time) {
-				return time.toLocaleTimeString();
+				return new Date(time).toLocaleTimeString();
 			}
     }
     customElements.define(MessagesSystem.is, MessagesSystem);

@@ -28,7 +28,7 @@
 
 		<div id="listWrapper" on-click="_toggle">
 			<template is="dom-repeat" items="[[_showLess(messages,count)]]" on-dom-change="_animateLastOne">
-				<messages-help-single value="[[item.value]]" style$="[[_calcStyle(item,index,count)]]"></messages-help-single>
+				<messages-help-single value="[[item.helpMessage]]" style$="[[_calcStyle(item,index,count)]]"></messages-help-single>
 			</template>
 		</div>
 
