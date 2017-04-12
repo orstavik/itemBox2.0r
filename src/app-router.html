@@ -18,43 +18,35 @@
           },
           hash: {
             type: Boolean,
-            value: false
-            // value: function() {
-            //   return location.hostname === "localhost";
-            // }
+            value: true
           }
         };
       }
 
       connectedCallback() {
         super.connectedCallback();
-        Polymer.Gestures.addListener(window, "tap", function(e) {
-          if (e.path.find((each) => each.localName === "a"))
-            setTimeout(this._locationBarChanged.bind(this),0);
-        }.bind(this));
-        // window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);   //triggers every time the user clicks a link
+        if (this.hash) {
+          window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);   //triggers every time the user clicks a link
+        } else {
+          Polymer.Gestures.addListener(window, "tap", function(e) {
+            if (e.path.find((each) => each.localName === "a"))
+              setTimeout(this._locationBarChanged.bind(this),0);
+          }.bind(this));
+        }
         this._locationBarChanged();       //must fire to get the initial url
       }
 
       _routeInChanged(routeIn) {
-        if (this.hash) {
-          if (routeIn === location.hash.substr(2))
-            return;
-          window.history.pushState({}, null, '/#/' + routeIn);
-        } else {
-          if (routeIn === location.pathname)
-            return;
-          window.history.pushState({}, null, routeIn);
-        }
+        var currUrl = this.hash ? location.hash.substr(2) : location.pathname;
+        if (routeIn === currUrl)
+          return;
+        routeIn = this.hash ? ('#/' + routeIn) : routeIn;
+        window.history.pushState({}, null, routeIn);
         this._locationBarChanged();       //must fire because history.pushState does not trigger hashchange
       }
 
       _locationBarChanged() {
-        if (this.hash) {
-          var routeUrl = location.hash.substr(2);
-        } else {
-          var routeUrl = location.pathname;
-        }
+        var routeUrl = this.hash ? location.hash.substr(2) : location.pathname;
         this.set("routeOut", AppRouter.parseUrl(routeUrl));
       }
 

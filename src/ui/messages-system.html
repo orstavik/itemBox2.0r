@@ -116,7 +116,7 @@
 				 on-pointerenter="_holdMessage"
 				 on-pointerleave="_leaveMessage"
 				 on-click="_showLog">
-			<span>[[lastMessage.value]]</span>
+			<span>[[lastMessage.systemMessage]]</span>
 		</div>
 
   </template>
@@ -136,12 +136,6 @@
 					count: Number
         }
       }
-
-			// static get observers() {
-      //   return [
-			// 		"_showMessage(messages)"
-			// 	]
-			// }
 
 			connectedCallback() {
 				super.connectedCallback();
