@@ -1,0 +1,165 @@
+<link rel="import" href="../styles/css-reset.html">
+
+<dom-module id="json-key">
+  <template>
+    <style include="css-reset">
+			:host {
+				display: block;
+        box-sizing: border-box;
+        align-items: center;
+        padding-left: 10px;
+        font-size: 14px;
+			}
+      #opener {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        border: 1px solid;
+        cursor: pointer;
+      }
+      #name {
+        font-weight: 600;
+        margin-right: 6px;
+      }
+      #primValue.string {
+        color: green
+      }
+      #primValue.string::before, #primValue.string::after {
+        content: '"';
+      }
+      #primValue.number {
+        color: red
+      }
+      #primValue.boolean {
+        color: blue
+      }
+      #primValue.undefined, #primValue.null {
+        color: lightgrey
+      }
+    </style>
+
+    <div id="opener" class$="[[key.type]]" hidden$="[[!objType]]" on-tap="_toggle"></div>
+    <span id="name">[[key.name]]:</span>
+    <span id="bracket">[[brackets.open]]</span>
+    <span id="primValue" class$="[[key.type]]" hidden$="[[objType]]">[[key.value]]</span>
+    <div id="objValue" hidden$="[[!active]]">
+      <template is="dom-repeat" items="[[_value]]">
+        <json-key key="[[item]]"></json-key>
+      </template>
+    </div>
+    <span id="bracket">[[brackets.close]]</span>
+
+  </template>
+  <script>
+    class JsonKey extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "json-key";
+      }
+
+      static get properties() {
+        return {
+					key: Object,
+          _value: Array,
+          objType: {
+            type: Boolean,
+            computed: "_checkType(key.type)"
+          },
+          active: {
+            type: Boolean,
+            value: false
+          },
+          brackets: {
+            type: Object,
+            computed: "_makeBrackets(key.type)"
+          }
+        }
+      }
+
+      static get observers() {
+        return [
+          "_displayKey(key, active)"
+        ]
+      }
+
+      _displayKey(key, active) {
+        if (!active)
+          return;
+        switch (key.type) {
+          case "undefined":
+            this.set("key.value", "undefined");
+            break;
+
+          case "null":
+            this.set("key.value", "null");
+            break;
+
+          case "array":
+            this.set("_value", key.value.map(function(item, index) {
+              var type = typeof(item);
+              if (item instanceof Array)
+                type = "array";
+              else if (item === null)
+                type = "null";
+              return {
+                name: index,
+                type: type,
+                value: item
+              }
+            }));
+            break;
+            
+          case "object":
+            if (key.name === "user") // SPECIAL CASE!!! INFINITE LOOP :(
+              break;
+
+            this.set("_value", Object.keys(key.value).map(function(name) {
+              var type = typeof(key.value[name]);
+              if (key.value[name] instanceof Array)
+                type = "array";
+              else if (key.value[name] === null)
+                type = "null";
+              return {
+                name: name,
+                type: type,
+                value: key.value[name]
+              }
+            }));
+            break;
+        }
+      }
+
+      _checkType(type) {
+        if (type === "array" || type === "object")
+          return true;
+        return false;
+      }
+
+      _makeBrackets(type) {
+        switch (type) {
+          case "array":
+            return {
+              open: "[",
+              close: "]"
+            }
+          case "object":
+            return {
+              open: "{",
+              close: "}"
+            }
+          default:
+            return {
+              open: "",
+              close: ""
+            }
+        }
+      }
+
+      _toggle() {
+        this.active = !this.active;
+      }
+    }
+    customElements.define(JsonKey.is, JsonKey);
+  </script>
+</dom-module>

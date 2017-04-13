@@ -92,11 +92,10 @@
       <paper-material elevation="1" class="sketchCard">
         <div class="contentBox">
           <div>
-            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" contenteditable="true"
-                on-pointerdown="_stopProp">
+            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" on-pointerdown="_stopProp">
                 [[item.value.name]]
             </h4>
-            <iron-icon icon="create"></iron-icon>
+            <!--<iron-icon icon="create"></iron-icon>-->
             <span>[[_toDate(item.value.created)]]</span>
           </div>
           <div class="buttonRow">

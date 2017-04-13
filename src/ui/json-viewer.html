@@ -1,0 +1,69 @@
+<link rel="import" href="json-key.html">
+
+<dom-module id="json-viewer">
+  <template>
+    <style>
+			:host {
+				display: block;
+				width: 300px;
+				height: 500px;
+				overflow-y: scroll;
+			}
+    </style>
+
+		<template is="dom-repeat" items="[[_keys]]">
+			<json-key key="[[item]]"></json-key>
+		</template>
+
+  </template>
+  <script>
+    class JsonViewer extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "json-viewer";
+      }
+
+      static get properties() {
+        return {
+					json: {
+            type: Object,
+            observer: "_displayJson"
+          },
+					_keys: Array
+        }
+      }
+
+			_displayJson(json) {
+				if (json instanceof Array) {
+					this.set("_keys", json.map(function(item, index) {
+						var type = typeof(item);
+						if (item instanceof Array)
+							type = "array";
+						else if (item === null)
+							type = "null";
+
+						return {
+							name: index,
+							type: type,
+							value: item
+						}
+					}));
+				} else {
+					this.set("_keys", Object.keys(json).map(function(key) {
+						var type = typeof(json[key]);
+						if (json[key] instanceof Array)
+							type = "array";
+						else if (json[key] === null)
+							type = "null";
+
+						return {
+							name: key,
+							type: type,
+							value: json[key]
+						}
+					}));
+				}
+			}
+    }
+    customElements.define(JsonViewer.is, JsonViewer);
+  </script>
+</dom-module>

@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-material/paper-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <dom-module id="sketch-edit-dialog">
   <template>
@@ -27,6 +27,7 @@
 			#dialogBody {
 				display: flex;
 				width: 300px;
+				max-width: 80vw;
 				border-radius: 2px;
 				position: relative;
 				flex-direction: column;
@@ -119,8 +120,10 @@
 			}
 
 			_createSketch() {
-				if (this.$.nameInput.validate())
+				if (this.$.nameInput.validate()) {
 					this._fire("new-sketch", this.info);
+					this._closeDialog();
+				}
 			}
 
 			_closeDialog() {
