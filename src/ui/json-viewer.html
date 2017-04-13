@@ -11,9 +11,7 @@
 			}
     </style>
 
-		<template is="dom-repeat" items="[[_keys]]">
-			<json-key key="[[item]]"></json-key>
-		</template>
+		<json-key key="[[_key]]"></json-key>
 
   </template>
   <script>
@@ -24,43 +22,25 @@
 
       static get properties() {
         return {
-					json: {
-            type: Object,
-            observer: "_displayJson"
-          },
-					_keys: Array
+					json: Object,
+					_key: {
+						type: Object,
+						computed: "_makeKey(json)"
+					}
         }
       }
 
-			_displayJson(json) {
-				if (json instanceof Array) {
-					this.set("_keys", json.map(function(item, index) {
-						var type = typeof(item);
-						if (item instanceof Array)
-							type = "array";
-						else if (item === null)
-							type = "null";
-
-						return {
-							name: index,
-							type: type,
-							value: item
-						}
-					}));
-				} else {
-					this.set("_keys", Object.keys(json).map(function(key) {
-						var type = typeof(json[key]);
-						if (json[key] instanceof Array)
-							type = "array";
-						else if (json[key] === null)
-							type = "null";
-
-						return {
-							name: key,
-							type: type,
-							value: json[key]
-						}
-					}));
+			_makeKey(item) {
+				var type = typeof(item);
+				if (item instanceof Array)
+					type = "array";
+				else if (item === null)
+					type = "null";
+				
+				return {
+					name: "",
+					type: type,
+					value: item
 				}
 			}
     }
