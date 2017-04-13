@@ -1,91 +1,110 @@
 <link rel="import" href="../styles/css-reset.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 
-<dom-module id="json-key">
+<dom-module id="object-key">
   <template>
     <style include="css-reset">
 			:host {
 				display: block;
         box-sizing: border-box;
         align-items: center;
-        padding-left: 10px;
+        padding-left: 14px;
         font-size: 14px;
 			}
       #opener {
+        visibility: hidden;
         display: inline-block;
         box-sizing: border-box;
-        width: 10px;
-        height: 10px;
-        margin-right: 4px;
-        border: 1px solid;
+        width: 16px;
+        height: 16px;
         cursor: pointer;
+      }
+      #opener[visible] {
+        visibility: visible;
+      }
+      iron-icon {
+        --iron-icon-width: 16px;
+        --iron-icon-height: 16px;
+        --iron-icon-fill-color: var(--paper-indigo-a700);
+      }
+      #type {
+        text-transform: capitalize;
+        font-style: italic;
+        color: lightgrey;
       }
       #name {
         font-weight: 600;
         margin-right: 6px;
       }
       #primValue.string {
-        color: green
+        color: var(--paper-green-800);
       }
       #primValue.string::before, #primValue.string::after {
         content: '"';
       }
       #primValue.number {
-        color: red
+        color: var(--paper-red-800);
       }
       #primValue.boolean {
-        color: blue
+        color: var(--paper-blue-800);
       }
       #primValue.undefined, #primValue.null {
-        color: lightgrey
+        color: grey
+      }
+      #objValue:not([hidden]) + #closeBracket {
+        padding-left: 20px;
       }
     </style>
 
-    <div id="opener" class$="[[key.type]]" hidden$="[[!objType]]" on-tap="_toggle"></div>
+    <div id="opener" class$="[[key.type]]" visible$="[[objType]]" on-tap="_toggle">
+      <iron-icon icon="add-circle" hidden$="[[active]]"></iron-icon>
+      <iron-icon icon="remove-circle-outline" hidden$="[[!active]]"></iron-icon>
+    </div>
     <span id="name">[[key.name]]:</span>
-    <span id="bracket">[[brackets.open]]</span>
+    <span id="openBracket" hidden$="[[!objType]]">[[brackets.open]]</span>
+    <span hidden$="[[!objType]]">
+      <span id="type" hidden$="[[active]]">[[key.type]]</span>
+    </span>
     <span id="primValue" class$="[[key.type]]" hidden$="[[objType]]">[[key.value]]</span>
     <div id="objValue" hidden$="[[!active]]">
       <template is="dom-repeat" items="[[_value]]">
-        <json-key key="[[item]]"></json-key>
+        <object-key key="[[item]]"></object-key>
       </template>
     </div>
-    <span id="bracket">[[brackets.close]]</span>
+    <span id="closeBracket" hidden$="[[!objType]]">[[brackets.close]]</span>
 
   </template>
   <script>
-    class JsonKey extends Polymer.GestureEventListeners(Polymer.Element) {
+    class ObjectKey extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "json-key";
+        return "object-key";
       }
 
       static get properties() {
         return {
 					key: Object,
           _value: Array,
-          objType: {
-            type: Boolean,
-            computed: "_checkType(key.type)"
-          },
+          objType: Boolean,
           active: {
             type: Boolean,
             value: false
           },
-          brackets: {
-            type: Object,
-            computed: "_makeBrackets(key.type)"
-          }
+          brackets: Object
         }
       }
 
       static get observers() {
         return [
-          "_displayKey(key, active)"
+          "_displayKey(key, active)",
+          "_useType(key.type)"
         ]
       }
 
       _displayKey(key, active) {
-        if (!active)
+        if (!key)
           return;
+
         switch (key.type) {
           case "undefined":
             this.set("key.value", "undefined");
@@ -94,7 +113,12 @@
           case "null":
             this.set("key.value", "null");
             break;
+        }
 
+        if (!active)
+          return;
+
+        switch (key.type) {
           case "array":
             this.set("_value", key.value.map(function(item, index) {
               var type = typeof(item);
@@ -130,29 +154,35 @@
         }
       }
 
-      _checkType(type) {
-        if (type === "array" || type === "object")
-          return true;
-        return false;
-      }
-
-      _makeBrackets(type) {
+      _useType(type) {
         switch (type) {
           case "array":
-            return {
-              open: "[",
-              close: "]"
-            }
+            this.setProperties({
+              "brackets": {
+                open: "[",
+                close: "]"
+              },
+              "objType": true
+            });
+            break;
           case "object":
-            return {
-              open: "{",
-              close: "}"
-            }
+            this.setProperties({
+              "brackets": {
+                open: "{",
+                close: "}"
+              },
+              "objType": true
+            });
+            break;
           default:
-            return {
-              open: "",
-              close: ""
-            }
+            this.setProperties({
+              "brackets": {
+                open: "",
+                close: ""
+              },
+              "objType": false
+            });
+            break;
         }
       }
 
@@ -160,6 +190,6 @@
         this.active = !this.active;
       }
     }
-    customElements.define(JsonKey.is, JsonKey);
+    customElements.define(ObjectKey.is, ObjectKey);
   </script>
 </dom-module>

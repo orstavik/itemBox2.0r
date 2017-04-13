@@ -8,7 +8,7 @@
 <link rel="import" href="ui/tools-button.html">
 <link rel="import" href="ui/account-button.html">
 <link rel="import" href="ui/tools-item-button.html">
-<link rel="import" href="ui/json-viewer.html">
+<link rel="import" href="ui/object-viewer.html">
 <link rel="import" href="ui/color-palette.html">
 <link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
@@ -135,7 +135,7 @@
 
     <tools-button id="tools" icon="icons:build">
       <tools-item-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
-        <json-viewer json="[[state]]"></json-viewer>
+        <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
         <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"

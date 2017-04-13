@@ -1,28 +1,32 @@
-<link rel="import" href="json-key.html">
+<link rel="import" href="object-key.html">
 
-<dom-module id="json-viewer">
+<dom-module id="object-viewer">
   <template>
     <style>
 			:host {
 				display: block;
-				width: 300px;
+				width: 400px;
 				height: 500px;
 				overflow-y: scroll;
 			}
     </style>
 
-		<json-key key="[[_key]]"></json-key>
+		<object-key key="[[_key]]"></object-key>
 
   </template>
   <script>
-    class JsonViewer extends Polymer.GestureEventListeners(Polymer.Element) {
+    class ObjectViewer extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "json-viewer";
+        return "object-viewer";
       }
 
       static get properties() {
         return {
 					json: Object,
+					name: {
+						type: String,
+						value: ""
+					},
 					_key: {
 						type: Object,
 						computed: "_makeKey(json)"
@@ -38,12 +42,12 @@
 					type = "null";
 				
 				return {
-					name: "",
+					name: this.name,
 					type: type,
 					value: item
 				}
 			}
     }
-    customElements.define(JsonViewer.is, JsonViewer);
+    customElements.define(ObjectViewer.is, ObjectViewer);
   </script>
 </dom-module>
