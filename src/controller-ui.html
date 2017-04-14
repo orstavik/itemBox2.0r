@@ -13,7 +13,10 @@
 <link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
 <link rel="import" href="ui/messages-system.html">
-<link rel="import" href="ui/sketch-edit-dialog.html">
+<link rel="import" href="ui/new-sketch-dialog.html">
+<link rel="import" href="ui/edit-sketch-dialog.html">
+<link rel="import" href="ui/save-sketch-dialog.html">
+<link rel="import" href="ui/delete-sketch-dialog.html">
 
 <link rel="import" href="shape/shape-plain.html">
 
@@ -89,6 +92,7 @@
       }
       #sketchNamePaper {
         display: flex;
+        align-items: center;
         position: absolute;
         bottom: 16px;
         right: 16px;
@@ -100,7 +104,16 @@
         overflow: hidden;
         z-index: 10;
         font-weight: 400;
-        padding: 8px 16px;
+      }
+      #sketchName {
+        margin: 0 16px;
+      }
+      #saveButton {
+        position: relative;
+        padding: 5px;
+        background-color: var(--paper-green-700);
+        color: white;
+        cursor: pointer;
       }
       *[hidden] {
         display: none;
@@ -130,7 +143,11 @@
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.now.session.sketchName]]</div>
+      <div id="sketchName">[[state.activeSketch.name]]</div>
+      <div id="saveButton" on-tap="_saveSketchDialog">
+        <paper-ripple></paper-ripple>
+        <iron-icon icon="add"></iron-icon>
+      </div>
     </paper-material>
 
     <tools-button id="tools" icon="icons:build">
@@ -157,7 +174,7 @@
 
   <script>
 
-    class ControllerUI extends Polymer.Element {
+    class ControllerUI extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "controller-ui";
       }
@@ -175,11 +192,28 @@
 
       constructor() {
         super();
-        this.addEventListener("new-sketch-dialog", this._createSketchEditDialog.bind(this));
+        this.addEventListener("new-sketch-dialog", this._createNewSketchDialog.bind(this));
+        this.addEventListener("edit-sketch-dialog", this._editSketchDialog.bind(this));
+        this.addEventListener("delete-sketch-dialog", this._deleteSketchDialog.bind(this));
       }
 
-      _createSketchEditDialog() {
-        const dialog = new SketchEditDialog();
+      _createNewSketchDialog() {
+        const dialog = new NewSketchDialog();
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _editSketchDialog(e) {
+        const dialog = new EditSketchDialog(e.detail);
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _saveSketchDialog(e) {
+        const dialog = new SaveSketchDialog();
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _deleteSketchDialog(e) {
+        const dialog = new DeleteSketchDialog(e.detail);
         this.shadowRoot.appendChild(dialog);
       }
 

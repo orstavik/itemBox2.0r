@@ -102,7 +102,16 @@
             <a href="#/[[item.key]]">
               <paper-button id="load" raised data-key$="[[item.key]]">Load</paper-button>
             </a>
-            <paper-button id="remove" raised on-tap="_deleteSketch" data-key$="[[item.key]">Delete</paper-button>
+            <paper-button id="edit"
+                          raised
+                          on-tap="_editSketch"
+                          data-key$="[[item.key]]"
+                          data-name$="[[item.value.name]]">Edit</paper-button>
+            <paper-button id="remove"
+                          raised
+                          on-tap="_deleteSketch"
+                          data-key$="[[item.key]]"
+                          data-name$="[[item.value.name]]">Delete</paper-button>
           </div>
         </div>
       </paper-material>
@@ -145,16 +154,12 @@
         this._fire("load-sketch", e.target.dataset.key);
       }
 
-
-      _previewSketch(e) {
-        this._fire("show-preview-sketch", e.target.dataset.key);
+      _editSketch(e) {
+        this._fire("edit-sketch-dialog", e.target.dataset.name);
       }
 
       _deleteSketch(e) {
-        let sketchid = e.target.dataset.key;
-        if (!confirm("do you want to delete sketch #" + sketchid))
-          return;
-        this._fire("delete-sketch", sketchid);
+        this._fire("delete-sketch-dialog", {key: e.target.dataset.key, name: e.target.dataset.name});
       }
 
       _changeSketchName(e) {

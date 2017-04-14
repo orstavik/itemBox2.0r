@@ -3,7 +3,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
-<dom-module id="sketch-edit-dialog">
+<dom-module id="new-sketch-dialog">
   <template>
     <style>
 			:host {
@@ -91,9 +91,9 @@
 
   </template>
   <script>
-    class SketchEditDialog extends Polymer.GestureEventListeners(Polymer.Element) {
+    class NewSketchDialog extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "sketch-edit-dialog";
+        return "new-sketch-dialog";
       }
 
       static get properties() {
@@ -134,6 +134,6 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
-    customElements.define(SketchEditDialog.is, SketchEditDialog);
+    customElements.define(NewSketchDialog.is, NewSketchDialog);
   </script>
 </dom-module>
