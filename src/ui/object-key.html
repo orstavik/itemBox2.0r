@@ -11,6 +11,7 @@
         align-items: center;
         padding-left: 14px;
         font-size: 14px;
+        word-wrap: break-word;
 			}
       #opener {
         visibility: hidden;
@@ -34,20 +35,30 @@
         color: var(--paper-grey-400);
       }
       #name {
-        font-weight: 600;
         margin-right: 6px;
       }
-      #primValue.string {
+      #primValue.String {
+        font-weight: 600;
         color: var(--paper-green-800);
       }
-      #primValue.string::before, #primValue.string::after {
+      #primValue.Date {
+        font-weight: 600;
+        color: var(--paper-yellow-800);
+      }
+      #primValue.String::before, #primValue.String::after {
         content: '"';
       }
-      #primValue.number {
+      #primValue.Number {
+        font-weight: 600;
         color: var(--paper-red-800);
       }
-      #primValue.boolean {
+      #primValue.Boolean {
+        font-weight: 600;
         color: var(--paper-blue-800);
+      }
+      #primValue.Function {
+        font-style: italic;
+        color: var(--paper-brown-400);
       }
       #primValue.undefined, #primValue.null {
         color: var(--paper-grey-700);
@@ -57,14 +68,14 @@
       }
     </style>
 
-    <div id="opener" class$="[[key.type]]" visible$="[[objType]]" on-tap="_toggle">
+    <div id="opener" class$="[[key.type]]" visible$="[[_isOpenable(objType, key.length)]]" on-tap="_toggle">
       <iron-icon icon="add-circle" hidden$="[[active]]"></iron-icon>
       <iron-icon icon="remove-circle-outline" hidden$="[[!active]]"></iron-icon>
     </div>
     <span id="name">[[key.name]]:</span>
     <span id="openBracket" hidden$="[[!objType]]">[[brackets.open]]</span>
     <span hidden$="[[!objType]]">
-      <span id="type" hidden$="[[active]]">[[key.type]]</span>
+      <span id="type" hidden$="[[active]]">[[_compObjType(key.type, key.length)]]</span>
     </span>
     <span id="primValue" class$="[[key.type]]" hidden$="[[objType]]">[[key.value]]</span>
     <div id="objValue" hidden$="[[!active]]">
@@ -97,7 +108,7 @@
       static get observers() {
         return [
           "_displayKey(key, active)",
-          "_useType(key.type)"
+          "_useType(key.type, key.value)"
         ]
       }
 
@@ -113,19 +124,33 @@
           case "null":
             this.set("key.value", "null");
             break;
+
+          case "Object":
+            this.set("key.length", Object.keys(key.value).length);
+            break;
+
+          case "Array":
+            this.set("key.length", key.value.length);
+            break;
+
+          case "Function":
+            this.set("key.value", "function()");
+            break;
         }
 
         if (!active)
           return;
 
         switch (key.type) {
-          case "array":
+          case "Array":
             this.set("_value", key.value.map(function(item, index) {
-              var type = typeof(item);
-              if (item instanceof Array)
-                type = "array";
+              if (item === undefined)
+                var type = "undefined";
               else if (item === null)
-                type = "null";
+                var type = "null";
+              else
+                var type = item.constructor.name;
+
               return {
                 name: index,
                 type: type,
@@ -134,16 +159,14 @@
             }));
             break;
             
-          case "object":
-            if (key.name === "user") // SPECIAL CASE!!! INFINITE LOOP :(
-              break;
-
+          case "Object":
             this.set("_value", Object.keys(key.value).map(function(name) {
-              var type = typeof(key.value[name]);
-              if (key.value[name] instanceof Array)
-                type = "array";
+              if (key.value[name] === undefined)
+                var type = "undefined";
               else if (key.value[name] === null)
-                type = "null";
+                var type = "null";
+              else
+                var type = key.value[name].constructor.name;
               return {
                 name: name,
                 type: type,
@@ -151,12 +174,33 @@
               }
             }));
             break;
+
+          case "Date":
+            break;
+            
+          default:
+            if (key.value instanceof Object) {
+              this.set("_value", Object.keys(key.value).map(function(name) {
+                if (key.value[name] === undefined)
+                  var type = "undefined";
+                else if (key.value[name] === null)
+                  var type = "null";
+                else
+                  var type = key.value[name].constructor.name;
+                return {
+                  name: name,
+                  type: type,
+                  value: key.value[name]
+                }
+              }));
+            }
+            break;
         }
       }
 
-      _useType(type) {
+      _useType(type, value) {
         switch (type) {
-          case "array":
+          case "Array":
             this.setProperties({
               "brackets": {
                 open: "[",
@@ -165,7 +209,7 @@
               "objType": true
             });
             break;
-          case "object":
+          case "Object":
             this.setProperties({
               "brackets": {
                 open: "{",
@@ -174,7 +218,7 @@
               "objType": true
             });
             break;
-          default:
+          case "Date":
             this.setProperties({
               "brackets": {
                 open: "",
@@ -183,7 +227,43 @@
               "objType": false
             });
             break;
+          case "Function":
+            this.setProperties({
+              "brackets": {
+                open: "",
+                close: ""
+              },
+              "objType": false
+            });
+            break;
+          default:
+            if (value instanceof Object) {
+              this.setProperties({
+                "brackets": {
+                  open: "{",
+                  close: "}"
+                },
+                "objType": true
+              });
+            } else {
+              this.setProperties({
+                "brackets": {
+                  open: "",
+                  close: ""
+                },
+                "objType": false
+              });
+            }
+            break;
         }
+      }
+
+      _compObjType(type, length) {
+        return type === "Array" ? type+"("+length+")" : type;
+      }
+
+      _isOpenable(obj, length) {
+        return obj && length !== 0;
       }
 
       _toggle() {
