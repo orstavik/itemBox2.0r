@@ -25,6 +25,10 @@
             type: Array,
             computed: "_makeHelpMessageHistory(now)"
           },
+          activeSketch: {                           //partial now: the active sketch
+            type: Object,
+            computed: "_makeActiveSketch(now.sketches, now.session.sketchName, now.fluidActiveSketch, now.selects, now.rects)"
+          },
           state: {
             type: Object,
             notify: true
@@ -33,7 +37,7 @@
       }
 
       static get observers() {
-        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now,activeSketch)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
       /*
@@ -49,15 +53,17 @@
        *   systemMessageSnaps  partial arrayOfNows[]
        *   helpMessageSnaps    partial arrayOfNows[]
        **/
-      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now) {
+      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now, activeSketch) {
         this.set("state", {
           history: history,
           now: now,
           editSnaps: editHistory,
           systemMessageSnaps: systemMessageHistory,
-          helpMessageSnaps: helpMessageHistory
+          helpMessageSnaps: helpMessageHistory,
+          activeSketch: activeSketch
         });
-        console.log(this.state);
+        this.notifyPath("state.helpMessageSnaps");
+        // console.log(this.state);
       }
 
       _makeHistory(now) {
@@ -66,7 +72,7 @@
 
       _makeEditHistory(now) {
         let t = now.action.type;
-        if (t === "new-shape" || t === "delete-shape" || t === "shape-matrix")
+        if (t === "new-shape" || t === "delete-shape" || t === "shape-move" || t === "shape-scale" || t === "shape-rotate")
           return this.editHistory ? [now].concat(this.editHistory) : [now];
         return this.editHistory;
       }
@@ -81,6 +87,16 @@
         if (now.action.type === "help-message")
           return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
         return this.helpMessageHistory;
+      }
+
+      _makeActiveSketch(sketches, name, fluidActiveSketch, selects, rects) {
+        if (!sketches)
+          return undefined;
+        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+        let mergeableSelects = {};
+        for (let key in selects)
+          mergeableSelects[key] = {selected: true, rect: rects[key]};
+        return Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);

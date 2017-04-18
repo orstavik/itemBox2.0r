@@ -69,9 +69,9 @@
         let snap = Object.assign({}, defaultSnap);
         snap.user = serverUserSnap.user;
         snap.sketches = serverUserSnap.sketches;
-        snap.fluidSketch = fluidSnap.fluidSketch;
-        snap.session = fluidSnap.fluidSketch;
-//        snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
+        // snap.fluidSketch = fluidSnap.fluidSketch;
+        // snap.session = Tools.mergeDeepWithNullToDelete(snap.session, fluidSnap.session);
+        // snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
         snap = Tools.mergeDeepWithNullToDelete(snap, fluidSnap);            //merges viewPort and session onto defaultSnap
         snap = Tools.mergeDeepWithNullToDelete(snap, messagesSnap);         //adds, does not merge
         snap.action = {type: this.actionType, timeStamp: new Date().getTime()};

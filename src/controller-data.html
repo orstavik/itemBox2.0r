@@ -9,6 +9,7 @@
         display: none;
       }
     </style>
+
     <indexed-mirror key="systemSketches"
                     data="[[serverSystemSketches]]"
                     stored-data="{{sketchDataFromServer}}"></indexed-mirror>
@@ -23,7 +24,9 @@
                  path="/users/[[state.now.user.uid]]"
                  result="{{serverUserSnap}}"
                  on-found-no-data="_newUser"></firebase-on>
+
     <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
+    
   </template>
   <script>
 

@@ -1,4 +1,4 @@
-<dom-module id="system-messenger">
+<dom-module id="messages-system">
   <template>
     <style>
       :host {
@@ -104,8 +104,8 @@
 				<div id="scroller">
 					<template is="dom-repeat" items="[[messages]]">
 						<div class="logMessage">
-							<span class="time">[[_getTime(item.timestamp)]]</span>
-							<span class="text">[[item.value]]</span>
+							<span class="time">[[_getTime(item.action.timeStamp)]]</span>
+							<span class="text">[[item.systemMessage]]</span>
 						</div>
 					</template>
 				</div>
@@ -116,33 +116,35 @@
 				 on-pointerenter="_holdMessage"
 				 on-pointerleave="_leaveMessage"
 				 on-click="_showLog">
-			<span>[[lastMessage.value]]</span>
+			<span>[[lastMessage.systemMessage]]</span>
 		</div>
 
   </template>
   <script>
-    class SystemMessenger extends Polymer.Element {
+    class MessagesSystem extends Polymer.Element {
       static get is() {
-        return "system-messenger";
+        return "messages-system";
       }
 
       static get properties() {
         return {
-					messages: Array,
+					messages: {
+						type: Array,
+						observer: "_showMessage"
+					},
 					lastMessage: Object,
 					count: Number
         }
       }
 
-			static get observers() {
-        return [
-					"_showMessage(messages)"
-				]
+			connectedCallback() {
+				super.connectedCallback();
+				this.set("messages", null);
 			}
 
-			_showMessage() {
-				if (this.messages && this.messages.length > 0) {
-					this.set("lastMessage", this.messages[this.messages.length-1]);
+			_showMessage(messages) {
+				if (messages && messages.length > 0) {
+					this.set("lastMessage", messages[messages.length-1]);
 					this.$.message.setAttribute("new", "");
 					this._holdMessage();
 					this._leaveMessage();
@@ -172,9 +174,9 @@
 			}
 
 			_getTime(time) {
-				return time.toLocaleTimeString();
+				return new Date(time).toLocaleTimeString();
 			}
     }
-    customElements.define(SystemMessenger.is, SystemMessenger);
+    customElements.define(MessagesSystem.is, MessagesSystem);
   </script>
 </dom-module>

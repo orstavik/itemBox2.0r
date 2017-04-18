@@ -1,6 +1,3 @@
-<!--<link rel="import" href="../bower_components/paper-material/paper-material.html">-->
-<!--<link rel="import" href="../bower_components/paper-styles/paper-styles.html">-->
-<!--<link rel="import" href="../bower_components/iron-icon/iron-icon.html">-->
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
@@ -9,13 +6,17 @@
 
 <link rel="import" href="ui/app-login.html">
 <link rel="import" href="ui/tools-button.html">
-<link rel="import" href="ui/grow-button.html">
-<link rel="import" href="ui/grow-child-button.html">
-<link rel="import" href="ui/json-wrapper.html">
+<link rel="import" href="ui/account-button.html">
+<link rel="import" href="ui/tools-item-button.html">
+<link rel="import" href="ui/object-viewer.html">
 <link rel="import" href="ui/color-palette.html">
 <link rel="import" href="ui/app-ui-history.html">
 <link rel="import" href="ui/messages-help.html">
 <link rel="import" href="ui/messages-system.html">
+<link rel="import" href="ui/new-sketch-dialog.html">
+<link rel="import" href="ui/edit-sketch-dialog.html">
+<link rel="import" href="ui/save-sketch-dialog.html">
+<link rel="import" href="ui/delete-sketch-dialog.html">
 
 <link rel="import" href="shape/shape-plain.html">
 
@@ -65,32 +66,34 @@
       }
       tools-button {
         --mother-button-size: 50px;
-        --mother-button-color: var(--paper-light-blue-200);
+        --mother-button-color: var(--paper-pink-a100);
         --mother-button-icon-color: black;
         position: absolute;
         top: 6px;
         left: 6px;
         z-index: 100;
       }
-      grow-child-button {
-        --grow-child-button-size: 36px;
-        --grow-child-button-color: white;
-        --grow-child-button-icon-color: black;
+      tools-item-button {
+        --tools-item-button-size: 36px;
+        --tools-item-button-color: white;
+        --tools-item-button-icon-color: black;
       }
-      grow-button#account {
-        --grow-button-size: 50px;
-        --grow-button-color: white;
-        --grow-button-icon-color: black;
+      account-button#account {
+        --account-button-size: 50px;
+        --account-button-color: white;
+        --account-button-icon-color: black;
         position: absolute;
         top: 6px;
         right: 6px;
         z-index: 100;
       }
-      grow-button#account[signed] {
-        --grow-button-color: var(--paper-light-blue-200);
+      account-button#account[signed] {
+        --account-button-color: var(--paper-pink-a100);
       }
       #sketchNamePaper {
         display: flex;
+        height: 34px;
+        align-items: center;
         position: absolute;
         bottom: 16px;
         right: 16px;
@@ -102,7 +105,16 @@
         overflow: hidden;
         z-index: 10;
         font-weight: 400;
-        padding: 8px 16px;
+      }
+      #sketchName {
+        margin: 0 16px;
+      }
+      #saveButton {
+        position: relative;
+        padding: 5px;
+        background-color: var(--paper-green-700);
+        color: white;
+        cursor: pointer;
       }
       *[hidden] {
         display: none;
@@ -133,25 +145,29 @@
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[state.now.session.sketchName]]</div>
+      <div id="saveButton" on-tap="_saveSketchDialog">
+        <paper-ripple></paper-ripple>
+        <iron-icon icon="add"></iron-icon>
+      </div>
     </paper-material>
 
     <tools-button id="tools" icon="icons:build">
-      <grow-child-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
-        <json-wrapper shapes="[[state.now.shapes]]"></json-wrapper>
-      </grow-child-button>
-      <grow-child-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
+      <tools-item-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
+        <object-viewer json="[[firebase]]" name="firebase"></object-viewer>
+      </tools-item-button>
+      <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
         <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"
                        on-color-selected="colorSelected"></color-palette>
-      </grow-child-button>
-      <grow-child-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
+      </tools-item-button>
+      <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
         <app-ui-history history="[[state.editSnaps]]" parent-active="[[historyActive]]"></app-ui-history>
-      </grow-child-button>
+      </tools-item-button>
     </tools-button>
 
-    <grow-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
+    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
       <app-login sketches="[[state.now.sketches]]" user="[[state.now.user]]"></app-login>
-    </grow-button>
+    </account-button>
 
     <messages-help messages="[[state.helpMessageSnaps]]" count=3></messages-help>
     <messages-system messages="[[state.systemMessageSnaps]]" count=5></messages-system>
@@ -159,7 +175,7 @@
 
   <script>
 
-    class ControllerUI extends Polymer.Element {
+    class ControllerUI extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "controller-ui";
       }
@@ -168,11 +184,44 @@
         return {
           state: Object,
           history: Array,
+          firebase: {
+            type: Object,
+            value: function() {
+              return firebase;
+            }
+          },
           scale: {
             type: Object,
             observer: "_notifyScale"
           },
         }
+      }
+
+      constructor() {
+        super();
+        this.addEventListener("new-sketch-dialog", this._createNewSketchDialog.bind(this));
+        this.addEventListener("edit-sketch-dialog", this._editSketchDialog.bind(this));
+        this.addEventListener("delete-sketch-dialog", this._deleteSketchDialog.bind(this));
+      }
+
+      _createNewSketchDialog() {
+        const dialog = new NewSketchDialog();
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _editSketchDialog(e) {
+        const dialog = new EditSketchDialog(e.detail);
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _saveSketchDialog(e) {
+        const dialog = new SaveSketchDialog();
+        this.shadowRoot.appendChild(dialog);
+      }
+
+      _deleteSketchDialog(e) {
+        const dialog = new DeleteSketchDialog(e.detail);
+        this.shadowRoot.appendChild(dialog);
       }
 
       _notifyScale(scale) {

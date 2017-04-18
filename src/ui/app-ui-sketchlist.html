@@ -1,10 +1,11 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../styles/css-reset.html">
 
 <dom-module id="app-ui-sketchlist">
   <template>
-    <style>
+    <style include="css-reset">
       :host {
         display: block;
       }
@@ -56,32 +57,69 @@
         background-color: var(--paper-indigo-a200);
         color: white;
       }
+      paper-button#load {
+        background-color: var(--paper-indigo-a200);
+        color: white;
+      }
+      #saveBox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 6px 0 18px;
+      }
+      #saveBox .newSketch {
+        width: 36px;
+        min-width: initial;
+        height: 36px;
+        padding: 0;
+        margin-right: 12px;
+        background-color: var(--paper-green-600);
+        color: white;
+      }
+      #saveBox span {
+        color: #444;
+        font-weight: 500;
+      }
     </style>
+    
+    <div id="saveBox">
+      <paper-button raised class="newSketch" on-click="_newSketch">
+        <iron-icon icon="add"></iron-icon>
+      </paper-button>
+      <span>New sketch</span>
+    </div>
     <template is="dom-repeat" items="[[sketchesArray]]">
-      <a href="#/[[item.key]]">
-        <!--todo fix the value in the a link -->
-        <paper-material elevation="1" class="sketchCard">
-          <div class="contentBox">
-            <div>
-              <h4 data-key$="[[item.key]]" on-input="_changeSketchName" contenteditable="true"
-                  on-pointerdown="_stopProp">
-                [[item.value.name]]</h4>
-              <iron-icon icon="create"></iron-icon>
-              <span>[[_toDate(item.value.created)]]</span>
-            </div>
-            <div class="buttonRow">
-              <paper-button id="preview" raised on-click="_previewSketch" data-key$="[[item.key]]">Preview</paper-button>
-              <!--<paper-button id="load" raised on-click="_loadSketch" data-key$="[[item.key]]">Load</paper-button>-->
-              <paper-button id="remove" raised on-click="_deleteSketch" data-key$="[[item.key]]">Delete</paper-button>
-            </div>
+      <paper-material elevation="1" class="sketchCard">
+        <div class="contentBox">
+          <div>
+            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" on-pointerdown="_stopProp">
+                [[item.value.name]]
+            </h4>
+            <!--<iron-icon icon="create"></iron-icon>-->
+            <span>[[_toDate(item.value.created)]]</span>
           </div>
-        </paper-material>
-      </a>
+          <div class="buttonRow">
+            <a href="#/[[item.key]]">
+              <paper-button id="load" raised data-key$="[[item.key]]">Load</paper-button>
+            </a>
+            <paper-button id="edit"
+                          raised
+                          on-tap="_editSketch"
+                          data-key$="[[item.key]]"
+                          data-name$="[[item.value.name]]">Edit</paper-button>
+            <paper-button id="remove"
+                          raised
+                          on-tap="_deleteSketch"
+                          data-key$="[[item.key]]"
+                          data-name$="[[item.value.name]]">Delete</paper-button>
+          </div>
+        </div>
+      </paper-material>
     </template>
   </template>
   <script>
 
-    class AppUiSketchlist extends Polymer.Element {
+    class AppUiSketchlist extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "app-ui-sketchlist";
       }
@@ -108,19 +146,20 @@
         return new Date(num).toLocaleString();
       }
 
+      _newSketch(e) {
+        this._fire("new-sketch-dialog");
+      }
+
       _loadSketch(e) {
         this._fire("load-sketch", e.target.dataset.key);
       }
 
-      _previewSketch(e) {
-        this._fire("show-preview-sketch", e.target.dataset.key);
+      _editSketch(e) {
+        this._fire("edit-sketch-dialog", e.target.dataset.name);
       }
 
       _deleteSketch(e) {
-        let sketchid = e.target.dataset.key;
-        if (!confirm("do you want to delete sketch #" + sketchid))
-          return;
-        this._fire("delete-sketch", sketchid);
+        this._fire("delete-sketch-dialog", {key: e.target.dataset.key, name: e.target.dataset.name});
       }
 
       _changeSketchName(e) {

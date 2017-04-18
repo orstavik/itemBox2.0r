@@ -3,7 +3,7 @@
     <style>
       :host {
         display: inline-block;
-        width: 210px;
+        width: 240px;
         height: 250px;
         position: relative;
       }
@@ -18,7 +18,7 @@
         display: none !important;
       }
       .emptyCard {
-        width: 160px;
+        width: 190px;
         text-align: center;
         line-height: 1.2;
         font-size: 22px;
@@ -46,7 +46,6 @@
         height: 40px;
         border-radius: 50%;
         box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.7);
-        /*transition: background-color 0.2s, width 0.1s, height 0.1s;*/
         transition-duration: 0.2s;
         z-index: 1;
         font-size: 0;
@@ -54,8 +53,6 @@
         margin-left: 0;
       }
       .historyPoint[active] {
-        /*border: 3px solid;
-        background-color: white !important;*/
         margin-left: 20px;
         cursor: pointer;
       }
@@ -68,7 +65,7 @@
       #pointDescr {
         display: flex;
         flex-direction: column;
-        max-width: 80px;
+        max-width: 120px;
         left: 100px;
         position: absolute;
       }
@@ -87,19 +84,15 @@
       }
       .historyPoint.new-shape {
         background-color: var(--paper-green-300);
-        /*border: 3px solid var(--paper-green-800);*/
       }
-      .historyPoint.shape-matrix {
+      .historyPoint.shape-move, .historyPoint.shape-scale, .historyPoint.shape-rotate {
         background-color: var(--paper-blue-300);
-        /*border: 3px solid var(--paper-blue-800);*/
       }
       .historyPoint.delete-shape {
         background-color: var(--paper-red-300);
-        /*border: 3px solid var(--paper-red-800);*/
       }
       .historyPoint.set {
         background-color: var(--paper-yellow-300);
-        /*border: 3px solid var(--paper-grey-800);*/
       }
 
     </style>
@@ -111,13 +104,13 @@
                active$="[[_isActive(index, activePoint)]]"
                data-index$="[[index]]"
                style$="[[_calcStyle(activePoint, index)]]"
-               on-click="_click">
+               on-tap="_tap">
             <iron-icon icon="av:repeat" hidden$="[[!_isActive(index, activePoint)]]"></iron-icon>
           </div>
         </template>
       </div>
       <div id="pointDescr" hidden="[[!historyPoint]]">
-        <span class="pointType">[[historyPoint.action]]</span>
+        <span class="pointType">[[historyPoint.action.type]]</span>
         <span class="pointTime">[[_howLongAgo(historyPoint)]]</span>
       </div>
       <span class="emptyCard" hidden$="[[_isEmptyArray(history)]]">You haven't done anything!</span>
@@ -125,7 +118,7 @@
   </template>
 
   <script>
-    class AppUiHistory extends Polymer.Element {
+    class AppUiHistory extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "app-ui-history";
       }
@@ -178,7 +171,7 @@
       }
 
       _isEmptyArray(a) {
-        return !a || a.length === 0;
+        return !!a || a.length !== 0;
       }
 
       _isActive(index) {
@@ -219,11 +212,11 @@
         return historyPoint.date.toGMTString().substr(4, 21);
       }
 
-      _click(e) {
+      _tap(e) {
         if (e.target.hasAttribute("active"))
           this._fire("revert", this.historyPoint.state);
         else
-          this.set("activePoint", e.target.dataset.index);
+          this.set("activePoint", Number(e.target.dataset.index));
       }
 
       _wheel(e) {
@@ -237,21 +230,6 @@
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
-
-//        new MutationObserver(this._parentIsActive.bind(this)).observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
-//
-//      _parentIsActive(mutations) {
-//        for (let mutation of mutations) {
-//          if (mutation.attributeName == "active") {
-//            const value = mutation.target.hasAttribute(mutation.attributeName);
-//            this.set("parentActive", value);
-//            if (value)
-//              this.dispatchEvent(new CustomEvent("help-message", {composed: true, bubbles: true, detail: "Scroll to view old version. Click the expanded historypoint to roll back."}));
-//            else
-//              this._fire("timetravel-off", null);
-//          }
-//        }
-//      }
     }
     customElements.define(AppUiHistory.is, AppUiHistory);
   </script>
