@@ -1,85 +1,62 @@
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+
 <dom-module id="app-router">
+  <template>
+    <iron-location id="ironLocation" on-location-changed="_ironLocationChanged"></iron-location>
+  </template>
   <script>
-    class AppRouter extends Polymer.GestureEventListeners(Polymer.Element) {
+    class AppRouter extends Polymer.Element {
 
       static get is() {
         return "app-router";
       }
 
-      static get properties() {
-        return {
-          urlIn: {
-            type: String,
-            observer: "_routeInChanged"
-          },
-          routeOut: {
-            type: Object,
-            observer: "_routeOutChanged"
-          },
-          hash: {
-            type: Boolean,
-            value: true
-          }
-        };
-      }
-
       connectedCallback() {
         super.connectedCallback();
-        if (this.hash) {
-          window.addEventListener("hashchange", this._locationBarChanged.bind(this), false);   //triggers every time the user clicks a link
-        } else {
-          Polymer.Gestures.addListener(window, "tap", function(e) {
-            if (e.path.find((each) => each.localName === "a"))
-              setTimeout(this._locationBarChanged.bind(this),0);
-          }.bind(this));
+        this.notifyRouteChange();
+      }
+
+      _ironLocationChanged(e) {
+        e.stopPropagation();
+        this.notifyRouteChange();
+      }
+
+      setUrl(url) {
+        if (AppRouter.parseUrl(location).url !== url) {
+          window.history.pushState({}, null, url);
+          this.notifyRouteChange();
         }
-        this._locationBarChanged();       //must fire to get the initial url
       }
 
-      _routeInChanged(routeIn) {
-        var currUrl = this.hash ? location.hash.substr(2) : location.pathname;
-        if (routeIn === currUrl)
-          return;
-        routeIn = this.hash ? ('#/' + routeIn) : routeIn;
-        window.history.pushState({}, null, routeIn);
-        this._locationBarChanged();       //must fire because history.pushState does not trigger hashchange
-      }
-
-      _locationBarChanged() {
-        var routeUrl = this.hash ? location.hash.substr(2) : location.pathname;
-        this.set("routeOut", AppRouter.parseUrl(routeUrl));
-      }
-
-      _routeOutChanged(route){
-        this.urlIn = AppRouter.concatUrlMap(route); //att!! this MUST not trigger the observer for routeIn
-        this._fire("route-changed", route);
-      }
-
-      static parseUrl(urlString) {
-        let ar = urlString.split("?");
-        const path = {};
-        ar[0].split("/").filter(item => item !== "").forEach(function (each, index) {
-          path["s" + index] = each;
-        });
-        if (!ar[1])
-          return {url: urlString, path: path};
-        const query = {};
-        ar[1].split("&").forEach(function (each) {
-          let arr = each.split("=");
-          query[arr[0]] = arr[1];
-        });
-        return {url: urlString, path: path, query: query};
-      }
-
-      static concatUrlMap(urlMap) {
-        let str = Object.values(urlMap.path).join("/");
-        if (urlMap.query)
-          str += "?" + Object.keys(urlMap.query).map(key => key + "=" + urlMap.query[key]).join("&");
-        return str;
+      notifyRouteChange() {
+        this._fire("route-changed", AppRouter.parseUrl(location));
       }
 
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      static parseUrl(location) {
+        let res = {
+          path: location.pathname,
+          search: location.search,
+          hash: location.hash,
+          url: AppRouter.pathSearchHashToURL(location.pathname, location.search, location.hash)
+        };
+        if (res.path)
+          res.segments = res.path.substr(1).split("/").filter(item => item !== "");
+        if (res.search) {
+          res.queries = {};
+          search.substr(1).split("&").map(function (q) {
+            let pair = q.split("&");
+            res.queries[pair[0]] = pair[1];
+          });
+        }
+        return res;
+      }
+
+      static pathSearchHashToURL(path, search, hash) {
+        return (path || "") + (search || "") + (hash || "");
       }
     }
     customElements.define(AppRouter.is, AppRouter);

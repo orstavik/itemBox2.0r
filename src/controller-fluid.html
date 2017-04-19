@@ -5,7 +5,7 @@
     <style>
       :host { display: block; }
     </style>
-    <app-router id="route" url-in="[[state.now.session.sketchName]]"></app-router>
+    <app-router id="location"></app-router>
     <slot></slot>
   </template>
   <script>
@@ -35,6 +35,10 @@
         };
       }
 
+      static get observers() {
+        return ["setUrl(state.now.session.sketchName)"]
+      }
+
       constructor() {
         super();
         this.addEventListener("route-changed", this._routeChanged.bind(this));
@@ -52,22 +56,30 @@
       }
 
       _merge(sketch, viewPort, session, selects, rects) {
-        if (session === undefined)               //don't merge if the route object is not instantiated
+        if (session === undefined)               //don't merge if the route object is not instantiated yet
           return undefined;
-        let now = {session: session};
-        now.viewPort = viewPort;
-        now.selects = selects;
-        now.rects = rects;
-        now.fluidActiveSketch = sketch;
+        let now = {
+          session: session,
+          viewPort: viewPort,
+          selects: selects,
+          rects: rects,
+          fluidActiveSketch: sketch
+        };
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
       }
 
+      setUrl(sketchName) {
+        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
+        this.$.location.setUrl("/" + sketchName);
+      }
+
       _routeChanged(e) {
         e.stopPropagation();
+        //debugger;
         this.set("actionType", "route");
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("session", e.detail && e.detail.path ? {sketchName: e.detail.path.s0} : {});
+        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
       }
 
       _viewChanged(e) {
@@ -99,7 +111,7 @@
           }
         }
         let res = {};
-        for(let key in this.state.now.rects) {
+        for (let key in this.state.now.rects) {
           if (this.state.activeSketch.shapes[key])
             res[key] = this.state.now.rects[key];
         }
