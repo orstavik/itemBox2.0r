@@ -30,13 +30,17 @@
           actionType: String,
           serverSketches: {
             type: Object,
-            observer: "reduceFluidMatrix"
+            computed: "_getServerSketches(state.now.sketches)"
           }
         };
       }
 
       static get observers() {
-        return ["setUrl(state.now.session.sketchName)"]
+        return ["setUrl(state.now.session.sketchName)", "reduceFluidMatrix(serverSketches)"]
+      }
+
+      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
+        return sketches;
       }
 
       constructor() {

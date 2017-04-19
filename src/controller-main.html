@@ -11,8 +11,7 @@
     <controller-history id="history" state="{{state}}" now="[[activeSketch]]"></controller-history>
     <controller-data id="data" state="[[state]]" fluid-active-sketch="[[state.now.fluidActiveSketch]]"
                      on-snap-change="_serverUserSnapChange"></controller-data>
-    <controller-fluid id="fluid" state="[[state]]" server-sketches="[[state.now.sketches]]"
-                      on-snap-change="_fluidSnapChange">
+    <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
       <controller-ui id="ui" state="[[state]]"></controller-ui>
     </controller-fluid>
 
