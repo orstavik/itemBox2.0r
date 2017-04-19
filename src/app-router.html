@@ -11,25 +11,33 @@
         return "app-router";
       }
 
+      static get property() {
+        return {
+          route: Object
+        };
+      }
+
       connectedCallback() {
         super.connectedCallback();
-        this.notifyRouteChange();
+        this._routeChange();
       }
 
       _ironLocationChanged(e) {
         e.stopPropagation();
-        this.notifyRouteChange();
+        this._routeChange();
       }
 
       setUrl(url) {
         if (AppRouter.parseUrl(location).url !== url) {
           window.history.pushState({}, null, url);
-          this.notifyRouteChange();
+          this._routeChange();
         }
       }
 
-      notifyRouteChange() {
-        this._fire("route-changed", AppRouter.parseUrl(location));
+      _routeChange() {
+        var route = AppRouter.parseUrl(location);
+        this.set("route", route);
+        this._fire("route-changed", route);
       }
 
       _fire(name, detail) {
@@ -38,17 +46,17 @@
 
       static parseUrl(location) {
         let res = {
-          path: location.pathname,
-          search: location.search,
-          hash: location.hash,
+          path: location.pathname.substr(1),
+          search: location.search.substr(1),
+          hash: location.hash.substr(1),
           url: AppRouter.pathSearchHashToURL(location.pathname, location.search, location.hash)
         };
         if (res.path)
-          res.segments = res.path.substr(1).split("/").filter(item => item !== "");
+          res.segments = res.path.split("/").filter(item => item !== "");
         if (res.search) {
           res.queries = {};
-          search.substr(1).split("&").map(function (q) {
-            let pair = q.split("&");
+          res.search.split("&").map(function (q) {
+            let pair = q.split("=");
             res.queries[pair[0]] = pair[1];
           });
         }
