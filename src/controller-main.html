@@ -8,7 +8,7 @@
     <style>
       :host { height: 100%; }
     </style>
-    <controller-history id="history" state="{{state}}" now="[[snap]]"></controller-history>
+    <controller-history id="history" state="{{state}}" now="[[activeSketch]]"></controller-history>
     <controller-data id="data" state="[[state]]" fluid-active-sketch="[[state.now.fluidActiveSketch]]"
                      on-snap-change="_serverUserSnapChange"></controller-data>
     <controller-fluid id="fluid" state="[[state]]" server-sketches="[[state.now.sketches]]"
@@ -35,6 +35,10 @@
           snap: {
             type: Object,
             computed: "merge(defaultSnap, serverUserSnap, fluidSnap, messagesSnap)"
+          },
+          activeSketch: {                           //partial now: the active sketch
+            type: Object,
+            computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
           },
           actionType: String
         }
@@ -76,6 +80,19 @@
         snap = Tools.mergeDeepWithNullToDelete(snap, messagesSnap);         //adds, does not merge
         snap.action = {type: this.actionType, timeStamp: new Date().getTime()};
         return snap;
+      }
+
+
+      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
+        if (!sketches)
+          return now;
+        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+        let mergeableSelects = {};
+        for (let key in selects)
+          mergeableSelects[key] = {selected: true, rect: rects[key]};
+        let res = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
+        now.activeSketch = res;
+        return now;
       }
 
       _signIn() {

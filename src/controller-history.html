@@ -25,10 +25,6 @@
             type: Array,
             computed: "_makeHelpMessageHistory(now)"
           },
-          activeSketch: {                           //partial now: the active sketch
-            type: Object,
-            computed: "_makeActiveSketch(now, now.sketches, now.session.sketchName, now.fluidActiveSketch, now.selects, now.rects)"
-          },
           state: {
             type: Object,
             notify: true
@@ -37,7 +33,7 @@
       }
 
       static get observers() {
-        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,activeSketch)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
       /*
@@ -56,7 +52,7 @@
        *    - fluidActiveSketch
        *    - activeSketch
        **/
-      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, activeSketch) {
+      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now) {
 //        now.activeSketch = activeSketch;
         this.set("state", {
           history: {
@@ -65,7 +61,7 @@
             systemMsgs: systemMessageHistory,
             helpMsgs: helpMessageHistory,
           },
-          now: activeSketch,
+          now: now,
         });
       }
 
@@ -90,18 +86,6 @@
         if (now.action.type === "help-message")
           return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
         return this.helpMessageHistory;
-      }
-
-      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
-        if (!sketches)
-          return now;
-        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-        let mergeableSelects = {};
-        for (let key in selects)
-          mergeableSelects[key] = {selected: true, rect: rects[key]};
-        let res = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
-        now.activeSketch = res;
-        return now;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);
