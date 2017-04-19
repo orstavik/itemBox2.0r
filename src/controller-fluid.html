@@ -112,7 +112,7 @@
         }
         let res = {};
         for (let key in this.state.now.rects) {
-          if (this.state.activeSketch.shapes[key])
+          if (this.state.now.activeSketch.shapes[key])
             res[key] = this.state.now.rects[key];
         }
         this.setProperties({"sketch": diffSketch, "rects": res});

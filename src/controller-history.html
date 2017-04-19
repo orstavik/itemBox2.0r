@@ -40,52 +40,63 @@
         return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now,activeSketch)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
+      constructor() {
+        super();
+        this.history = [];
+        this.editHistory = [];
+        this.systemMessageHistory = [];
+        this.helpMessageHistory = [];
+      }
+
       /*
        * state
-       *   history                   arrayOfNows[]
-       *   now                 now === history[0]  / "state.now" equals "state.history.0" in the Polymer binding language.
+       *
+       *   history
+       *    - all                    full arrayOfNows[]
+       *    - edits                  partial arrayOfNows[]
+       *    - helpMsgs               partial arrayOfNows[]
+       *    - systemMsgs             partial arrayOfNows[]
+       *
+       *   now                       now === history[0]  / ("state.now" equals "state.history.0" Polymer binding).
        *    - selects
        *    - rects
        *    - sketches
        *    - fluidActiveSketch
-       ******** (subset views) ***********
-       *   editSnaps           partial arrayOfNows[]
-       *   systemMessageSnaps  partial arrayOfNows[]
-       *   helpMessageSnaps    partial arrayOfNows[]
+       *    - activeSketch
        **/
       _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now, activeSketch) {
+        now.activeSketch = activeSketch;
         this.set("state", {
-          history: history,
+          history: {
+            all: history,
+            edits: editHistory,
+            systemMsgs: systemMessageHistory,
+            helpMsgs: helpMessageHistory,
+          },
           now: now,
-          editSnaps: editHistory,
-          systemMessageSnaps: systemMessageHistory,
-          helpMessageSnaps: helpMessageHistory,
-          activeSketch: activeSketch
         });
-        this.notifyPath("state.helpMessageSnaps");
-        // console.log(this.state);
       }
 
       _makeHistory(now) {
-        return this.history ? [now].concat(this.history) : [now];
+        return [now].concat(this.history);
       }
 
       _makeEditHistory(now) {
         let t = now.action.type;
         if (t === "new-shape" || t === "delete-shape" || t === "shape-move" || t === "shape-scale" || t === "shape-rotate")
-          return this.editHistory ? [now].concat(this.editHistory) : [now];
+          return [now].concat(this.editHistory);
         return this.editHistory;
       }
 
       _makeSystemMessageHistory(now) {
         if (now.action.type === "system-message")
-          return this.systemMessageHistory ? [now].concat(this.systemMessageHistory) : [now];
+          return [now].concat(this.systemMessageHistory);
         return this.systemMessageHistory;
       }
 
       _makeHelpMessageHistory(now) {
         if (now.action.type === "help-message")
-          return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
+          return [now].concat(this.helpMessageHistory);
         return this.helpMessageHistory;
       }
 

@@ -169,8 +169,8 @@
       <app-login sketches="[[state.now.sketches]]" user="[[state.now.user]]"></app-login>
     </account-button>
 
-    <messages-help messages="[[state.helpMessageSnaps]]" count=3></messages-help>
-    <messages-system messages="[[state.systemMessageSnaps]]" count=5></messages-system>
+    <messages-help messages="[[state.history.helpMsgs]]" count=3></messages-help>
+    <messages-system messages="[[state.history.systemMsgs]]" count=5></messages-system>
   </template>
 
   <script>

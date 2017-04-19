@@ -66,11 +66,11 @@
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(state.activeSketch, state.now.selects)"
+            computed: "_makeSelecteds(state.now.activeSketch, state.now.selects)"
           },
           shapesArray: {
             type: Array,
-            computed: "_toArray(state.activeSketch.shapes)"
+            computed: "_toArray(state.now.activeSketch.shapes)"
           }
         }
       }
