@@ -27,7 +27,7 @@
           },
           activeSketch: {                           //partial now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(now.sketches, now.session.sketchName, now.fluidActiveSketch, now.selects, now.rects)"
+            computed: "_makeActiveSketch(now, now.sketches, now.session.sketchName, now.fluidActiveSketch, now.selects, now.rects)"
           },
           state: {
             type: Object,
@@ -37,15 +37,7 @@
       }
 
       static get observers() {
-        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now,activeSketch)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
-      }
-
-      constructor() {
-        super();
-        this.history = [];
-        this.editHistory = [];
-        this.systemMessageHistory = [];
-        this.helpMessageHistory = [];
+        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,activeSketch)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
       }
 
       /*
@@ -64,8 +56,8 @@
        *    - fluidActiveSketch
        *    - activeSketch
        **/
-      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now, activeSketch) {
-        now.activeSketch = activeSketch;
+      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, activeSketch) {
+//        now.activeSketch = activeSketch;
         this.set("state", {
           history: {
             all: history,
@@ -73,41 +65,43 @@
             systemMsgs: systemMessageHistory,
             helpMsgs: helpMessageHistory,
           },
-          now: now,
+          now: activeSketch,
         });
       }
 
       _makeHistory(now) {
-        return [now].concat(this.history);
+        return this.history ? [now].concat(this.history) : [now];
       }
 
       _makeEditHistory(now) {
         let t = now.action.type;
         if (t === "new-shape" || t === "delete-shape" || t === "shape-move" || t === "shape-scale" || t === "shape-rotate")
-          return [now].concat(this.editHistory);
+          return this.editHistory ? [now].concat(this.editHistory) : [now];
         return this.editHistory;
       }
 
       _makeSystemMessageHistory(now) {
         if (now.action.type === "system-message")
-          return [now].concat(this.systemMessageHistory);
+          return this.systemMessageHistory ? [now].concat(this.systemMessageHistory) : [now];
         return this.systemMessageHistory;
       }
 
       _makeHelpMessageHistory(now) {
         if (now.action.type === "help-message")
-          return [now].concat(this.helpMessageHistory);
+          return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
         return this.helpMessageHistory;
       }
 
-      _makeActiveSketch(sketches, name, fluidActiveSketch, selects, rects) {
+      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
         if (!sketches)
-          return undefined;
+          return now;
         let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
         let mergeableSelects = {};
         for (let key in selects)
           mergeableSelects[key] = {selected: true, rect: rects[key]};
-        return Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
+        let res = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
+        now.activeSketch = res;
+        return now;
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);
