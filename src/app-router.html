@@ -35,7 +35,7 @@
       }
 
       _routeChange() {
-        var route = AppRouter.parseUrl(location);
+        let route = AppRouter.parseUrl(location);
         this.set("route", route);
         this._fire("route-changed", route);
       }
