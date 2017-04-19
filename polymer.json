@@ -1,4 +1,19 @@
 {
+  "entrypoint": "index.html",
+  "shell": "src/controller-main.html",
+  "fragments": [],
+  "sources": [
+   "src/**/*",
+   "bower.json"
+  ],
+  "extraDependencies": [
+    "404.html",
+    "manifest.json",
+    ".firebaserc",
+    "firebase.json",
+    "database.rules.json",
+    "bower_components/webcomponentsjs/webcomponents-loader.js"
+  ],
   "lint": {
     "rules": [
       "polymer-2"

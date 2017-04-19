@@ -187,7 +187,8 @@
       }
 
       _setUserImage(user) {
-        return user ? user.photoURL : "./images/anonymous.png";
+        if(user)
+          return user.photoURL;
       }
 
       _BOOL(obj) {
