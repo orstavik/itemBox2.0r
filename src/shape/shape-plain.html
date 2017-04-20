@@ -78,7 +78,9 @@
       }
 
       _newShape(e) {
-        this.fire("new-shape", {x: e.x, y: e.y});
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.x || e.detail.x, e.y || e.detail.y);
+        let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
+        this.fire("new-shape", matrix);
       }
 
       _makeSelecteds(activeSketch, selects) {

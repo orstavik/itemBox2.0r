@@ -19,13 +19,13 @@
         return {
           state: Object,
           session: Object,
-          sketch: Object,
+          fluidActiveSketch: Object,
           selects: Object,
           rects: Object,
           viewPort: Object,
           fluidNow: {
             type: Object,
-            computed: "_merge(sketch, viewPort, session, selects, rects)"
+            computed: "_merge(fluidActiveSketch, viewPort, session, selects, rects)"
           },
           actionType: String,
           serverSketches: {
@@ -57,7 +57,7 @@
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(sketch, viewPort, session, selects, rects) {
+      _merge(fluidActiveSketch, viewPort, session, selects, rects) {
         if (session === undefined)               //don't merge if the route object is not instantiated yet
           return undefined;
         let now = {
@@ -65,7 +65,7 @@
           viewPort: viewPort,
           selects: selects,
           rects: rects,
-          fluidActiveSketch: sketch
+          fluidActiveSketch: fluidActiveSketch
         };
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
@@ -93,7 +93,7 @@
       reset() {
         this.setProperties({
           "session": {},
-          "sketch": undefined,
+          "fluidActiveSketch": undefined,
           "viewPort": undefined,
           "selects": undefined
         });
@@ -102,11 +102,11 @@
       reduceFluidMatrix(serverSketches) {
         //todo here, we can also reduce the rects if we want, and yes, this we want to do!
         let diffSketch = undefined;
-        if (!this.sketch)
+        if (!this.state.now.fluidActiveSketch)
           return;
         if (serverSketches && this.state.now.session.sketchName) {
           let serverSketch = serverSketches[this.state.now.session.sketchName];
-          diffSketch = Tools.filterDeep(this.sketch, serverSketch);
+          diffSketch = Tools.filterDeep(this.state.now.fluidActiveSketch, serverSketch);
           for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
@@ -117,7 +117,7 @@
           if (this.state.now.activeSketch.shapes[key])
             res[key] = this.state.now.rects[key];
         }
-        this.setProperties({"sketch": diffSketch, "rects": res});
+        this.setProperties({"fluidActiveSketch": diffSketch, "rects": res});
       }
 
       _newSketch(e) {
@@ -128,28 +128,26 @@
           "session": {sketchName: e.detail.url},
           "viewPort": undefined,
           "selects": undefined,
-          "sketch": undefined
+          "fluidActiveSketch": undefined
         });
       }
 
       _changeShapesEnd(e) {
         e.stopPropagation();
         this.set("actionType", e.detail);
-        this.set("sketch", Object.assign({}, this.sketch));
+        this.set("fluidActiveSketch", Object.assign({}, this.state.now.fluidActiveSketch));
       }
 
       _changeShapes(e) {
         e.stopPropagation();
         this.set("actionType", "shape-matrix-fluid");
-        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
+        this.set("fluidActiveSketch", Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: e.detail}));
       }
 
       _newShape(e) {
         e.stopPropagation();
         this.set("actionType", "new-shape");
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.detail.x, e.detail.y);
-        let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        this.set("sketch", Tools.setIn(this.sketch, ["shapes", Tools.genKey(), "matrix"], matrix));
+        this.set("fluidActiveSketch", Tools.setIn(this.state.now.fluidActiveSketch, ["shapes", Tools.genKey(), "matrix"], e.detail));
       }
 
       _deleteSelected(e) {
@@ -160,7 +158,7 @@
           deletes[key] = null;
         this.setProperties({
           "selects": {},
-          "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: deletes})
+          "fluidActiveSketch": Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes})
         });
       }
 
@@ -173,9 +171,10 @@
       _registerUIshape(e) {
         e.stopPropagation();
         this.set("actionType", "shape-rect");
-        let rects = Object.assign({}, this.state.now.rects);
-        rects[e.detail.key] = e.detail.value;
-        this.set("rects", rects);
+        this.set("rects", Tools.setIn(this.state.now.rects, [e.detail.key], e.detail.value));
+//        let rects = Object.assign({}, this.state.now.rects);
+//        rects[e.detail.key] = e.detail.value;
+//        this.set("rects", rects);
         //todo need to filter rects so that if matrices are removed, so will the rects be
       }
 
