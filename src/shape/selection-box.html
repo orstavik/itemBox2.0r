@@ -47,7 +47,8 @@
             type: Boolean,
             value: false,
             reflectToAttribute: true
-          }
+          },
+          activate: Boolean
         }
       }
 
@@ -59,6 +60,8 @@
       }
 
       _down(e) {
+        if (!this.activate)
+          return;
         //todo 1 remove selects when shift is down and we are pressing on an already selected
         //todo 2 make shift down and select work with the box selection
         for (let target of e.composedPath()) {
@@ -75,6 +78,8 @@
       }
 
       _up(e) {
+        if (!this.activate)
+          return;
         for (let target of e.composedPath()) {
           if (target instanceof ShapeObject){
             this._upOnShapeObject(e);
@@ -88,6 +93,8 @@
       }
 
       _track(e) {
+        if (!this.activate)
+          return;
         e.preventDefault();
         if (e.detail.state === "end")
           return this.set("active", false);

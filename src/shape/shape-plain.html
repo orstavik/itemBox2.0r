@@ -14,24 +14,15 @@
         position: absolute;
         background-color: var(--paper-green-50);
       }
-      :host([moveable]) #moveBox {
-        display: block;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        pointer-events: auto;
+      :host([moveable]) {
         cursor: -webkit-grab;
-        z-index: 100;
-      }
-      :host(:not([moveable])) #moveBox {
-        display: none;
       }
     </style>
-
+  
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]">
-      <space-camera id="camera" view-port="[[state.now.viewPort]]">
+    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
+      <space-camera id="camera" view-port="[[state.now.viewPort]]" moveable$="[[moveable]]">
         <template is="dom-repeat" items="[[shapesArray]]">
           <shape-object id$="[[item.key]]"
                         selectable
@@ -41,14 +32,11 @@
         </template>
       </space-camera>
     </selection-box>
-
-    <div id="moveBox"></div>
-
   </template>
 
   <script>
 
-    class ShapePlain extends Polymer.GestureEventListeners(Polymer.Element) {
+    class ShapePlain extends Polymer.Element {
       static get is() {
         return "shape-plain";
       }
@@ -59,8 +47,8 @@
           heldKeys: Object,
           moveable: {
             type: Boolean,
-            computed: "_checkIfMoveable(heldKeys)",
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            computed: "_checkIfMoveable(heldKeys)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
@@ -101,21 +89,6 @@
 
       connectedCallback() {
         super.connectedCallback();
-        Polymer.Gestures.addListener(this.$.moveBox, 'track', function (e) {
-          if (e.detail.state !== "track")
-            return;
-          this.$.camera.moveViewport(e);
-        }.bind(this));
-        this.addEventListener('wheel', function (e) {
-          this.$.camera.checkScroll(e);
-        }.bind(this));
-        this.$.moveBox.addEventListener('touchmove', function (e) {
-          this.$.camera.pinch(e);
-        }.bind(this));
-        this.$.moveBox.addEventListener('touchend', function (e) {
-          this.$.camera.endPinch(e);
-        }.bind(this));
-
         const styleChangedObserver = new MutationObserver(function (mutations) {
           for (let mutation of mutations) {
             if (mutation.attributeName === "style")
