@@ -84,7 +84,7 @@
             break;
         }
         if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.start.timeStamp) > 600)
-          this.fire("new-shape", {x: e.detail.x, y: e.detail.y});//todo here I do a new-shape .. this should be done in shapeplain
+          this.fire("long-press", {x: e.detail.x, y: e.detail.y});//todo here I do a new-shape .. this should be done in shapeplain
       }
 
       _track(e) {

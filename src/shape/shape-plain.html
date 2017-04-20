@@ -77,10 +77,11 @@
 
       constructor() {
         super();
-        this.addEventListener("dblclick", this._dblclick.bind(this));
+        this.addEventListener("dblclick", this._newShape.bind(this));
+        this.addEventListener("long-press", this._newShape.bind(this));
       }
 
-      _dblclick(e) {
+      _newShape(e) {
         this.fire("new-shape", {x: e.x, y: e.y});
       }
 
