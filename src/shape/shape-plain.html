@@ -18,7 +18,7 @@
         cursor: -webkit-grab;
       }
     </style>
-  
+
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
     <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
@@ -80,7 +80,7 @@
       _newShape(e) {
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.x || e.detail.x, e.y || e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        this.fire("new-shape", matrix);
+        this.fire("new-shape", Tools.setIn(this.state.now.fluidActiveSketch, ["shapes", Tools.genKey(), "matrix"], matrix));
       }
 
       _makeSelecteds(activeSketch, selects) {

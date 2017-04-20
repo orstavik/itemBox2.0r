@@ -31,17 +31,10 @@
           state: Object,
           defaultSnap: Object,
           snap: Object,
-//          serverUserSnap: Object,
-//          fluidSnap: Object,
-//          snap: {
-//            type: Object,
-////            computed: "merge(defaultSnap, serverUserSnap, fluidSnap, snap)"
-//          },
           activeSketch: {                           //partial now: the active sketch
             type: Object,
             computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
           },
-          actionType: String,
           serverSketches: {
             type: Object,
             computed: "_getServerSketches(state.now.sketches)"
@@ -49,8 +42,14 @@
         }
       }
 
+      static get observers() {
+        return ["setUrl(state.now.session.sketchName)"];
+      }
+
       constructor() {
         super();
+        this.addEventListener("new-shape", this._newShape.bind(this));
+
         this.addEventListener("select", this._select.bind(this));
         this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
@@ -70,20 +69,12 @@
         this.set("state", {now: startSnap});
       }
 
-//      merge(defaultSnap, serverUserSnap, fluidSnap, snap) {
-//        if (!fluidSnap || !defaultSnap || !snap || !serverUserSnap) //we must wait for the initialization of all the snaps
-//          return this.snap;
-//        let snap = Object.assign({}, defaultSnap);
-//        snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);
-//        // snap.fluidSketch = fluidSnap.fluidSketch;
-//        // snap.session = Tools.mergeDeepWithNullToDelete(snap.session, fluidSnap.session);
-//        // snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
-//        snap = Tools.mergeDeepWithNullToDelete(snap, fluidSnap);            //merges viewPort and session onto defaultSnap
-//        snap = Tools.mergeDeepWithNullToDelete(snap, snap);         //adds, does not merge
-//        this.addAction(snap, this.actionType);
-//        return snap;
-//      }
-//
+      _newShape(e) {
+        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail);
+        newSnap.action = this.getAction("new-shape");
+        this.set("snap", newSnap);
+      }
+
       getAction(action) {
         return {type: action, timeStamp: new Date().getTime()};
       }
@@ -125,7 +116,7 @@
       }
 
       _fluidSnapChange(e) {
-        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail.snap);
+        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail.fluidActiveSketch);
         newSnap.action = this.getAction(e.detail.type);
         this.set("snap", newSnap);
       }
@@ -163,22 +154,15 @@
         const newSnap = Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
         newSnap.action = this.getAction("route");
         this.set("snap", newSnap);
-        //debugger;
-//        this.set("actionType", "route");
-//        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-//        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
+        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
       }
 
       setUrl(sketchName) {
-        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
         this.$.location.setUrl("/" + sketchName);
       }
 
-      static get observers() {
-        return ["setUrl(state.now.session.sketchName)"];
-      }
-
       _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
+        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
         return sketches;
       }
 

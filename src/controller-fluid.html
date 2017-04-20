@@ -1,4 +1,3 @@
-
 <dom-module id="controller-fluid">
   <template>
     <style>
@@ -16,70 +15,22 @@
       static get properties() {
         return {
           state: Object,
-//          session: Object,
-          fluidActiveSketch: Object,
-//          selects: Object,
-//          rects: Object,
-//          viewPort: Object,
-          fluidNow: {
-            type: Object,
-            computed: "_merge(fluidActiveSketch)"
-          },
-          actionType: String,
-//          serverSketches: {
-//            type: Object,
-//            computed: "_getServerSketches(state.now.sketches)"
-//          }
         };
       }
 
       static get observers() {
-        return [/*"setUrl(state.now.session.sketchName)", */"reduceFluidMatrix(serverSketches)"]
+        return ["reduceFluidMatrix(serverSketches)"]
       }
 
-//      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
-//        return sketches;
-//      }
-//
       constructor() {
         super();
-//        this.addEventListener("new-sketch", this._newSketch.bind(this));
-        this.addEventListener("new-scale", this._newScale.bind(this));
-        this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
       }
 
-      _merge(fluidActiveSketch) {
-//        if (session === undefined)               //don't merge if the route object is not instantiated yet
-//          return undefined;
-        let now = {
-//          session: session,
-//          viewPort: viewPort,
-//          selects: selects,
-//          rects: rects,
-          fluidActiveSketch: fluidActiveSketch
-        };
-        this._fire("snap-change", {type: this.actionType, snap: now});
-        return now;
-      }
-
-//      _routeChanged(e) {
-//        e.stopPropagation();
-//        //debugger;
-//        this.set("actionType", "route");
-//        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-//        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
-//      }
-//
       reset() {
-        this.setProperties({
-//          "session": {},
-          "fluidActiveSketch": undefined,
-//          "viewPort": undefined,
-//          "selects": undefined
-        });
+        this._fire("snap-change", {type: "reset", fluidActiveSketch: undefined});
       }
 
       reduceFluidMatrix(serverSketches) {
@@ -103,54 +54,36 @@
         this.setProperties({"fluidActiveSketch": diffSketch/*, "rects": res*/});
       }
 
-/*
-todo not implemented now
-      _newSketch(e) {
-        e.stopPropagation();
-        this.set("actionType", e.type);
-        console.log("The preservation of the previous state is not supported yet.");
-        this.setProperties({
-          "session": {sketchName: e.detail.url},
-//          "viewPort": undefined,
-//          "selects": undefined,
-          "fluidActiveSketch": undefined
-        });
-      }
-*/
+      /*
+       todo not implemented now
+       _newSketch(e) {
+       e.stopPropagation();
+       this.set("actionType", e.type);
+       console.log("The preservation of the previous state is not supported yet.");
+       this.setProperties({
+       "session": {sketchName: e.detail.url},
+       //          "viewPort": undefined,
+       //          "selects": undefined,
+       "fluidActiveSketch": undefined
+       });
+       }
+       */
       _changeShapesEnd(e) {
         e.stopPropagation();
-        this.set("actionType", e.detail);
-        this.set("fluidActiveSketch", Object.assign({}, this.state.now.fluidActiveSketch));
+        this._fire("snap-change", {type: e.detail, fluidActiveSketch: Object.assign({}, this.state.now.fluidActiveSketch)});
       }
 
       _changeShapes(e) {
         e.stopPropagation();
-        this.set("actionType", "shape-matrix-fluid");
-        this.set("fluidActiveSketch", Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: e.detail}));
-      }
-
-      _newShape(e) {
-        e.stopPropagation();
-        this.set("actionType", "new-shape");
-        this.set("fluidActiveSketch", Tools.setIn(this.state.now.fluidActiveSketch, ["shapes", Tools.genKey(), "matrix"], e.detail));
+        this._fire("snap-change", {type: "shape-matrix-fluid", fluidActiveSketch: Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: e.detail})});
       }
 
       _deleteSelected(e) {
         e.stopPropagation();
-        this.set("actionType", "delete-shape");
         let deletes = {};
         for (let key in this.state.now.selects)
           deletes[key] = null;
-        this.setProperties({
-//          "selects": {},
-          "fluidActiveSketch": Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes})
-        });
-      }
-
-      _newScale(e) {
-        e.stopPropagation();
-        this.set("actionType", "scale");
-        console.log(e);
+        this._fire("snap-change", {type: "delete-shape", fluidActiveSketch: Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes})});
       }
 
       _fire(name, detail) {
