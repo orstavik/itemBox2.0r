@@ -2,12 +2,14 @@
 <link rel="import" href="controller-data.html">
 <link rel="import" href="controller-fluid.html">
 <link rel="import" href="controller-history.html">
+<link rel="import" href="app-router.html">
 
 <dom-module id="controller-main">
   <template>
     <style>
       :host { height: 100%; }
     </style>
+    <app-router id="location"></app-router>
     <controller-history id="history" state="{{state}}" now="[[activeSketch]]"></controller-history>
     <controller-data id="data" state="[[state]]" fluid-active-sketch="[[state.now.fluidActiveSketch]]"
                      on-snap-change="_serverUserSnapChange"></controller-data>
@@ -28,59 +30,63 @@
         return {
           state: Object,
           defaultSnap: Object,
-          messagesSnap: Object,
-          serverUserSnap: Object,
-          fluidSnap: Object,
-          snap: {
-            type: Object,
-            computed: "merge(defaultSnap, serverUserSnap, fluidSnap, messagesSnap)"
-          },
+          snap: Object,
+//          serverUserSnap: Object,
+//          fluidSnap: Object,
+//          snap: {
+//            type: Object,
+////            computed: "merge(defaultSnap, serverUserSnap, fluidSnap, snap)"
+//          },
           activeSketch: {                           //partial now: the active sketch
             type: Object,
             computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
           },
-          actionType: String
+          actionType: String,
+          serverSketches: {
+            type: Object,
+            computed: "_getServerSketches(state.now.sketches)"
+          }
         }
       }
 
       constructor() {
         super();
+        this.addEventListener("select", this._select.bind(this));
+        this.addEventListener("shape-location", this._registerUIshape.bind(this));
+        this.addEventListener("view-changed", this._viewChanged.bind(this));
+        this.addEventListener("route-changed", this._routeChanged.bind(this));
+
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("system-error", this._systemMessage.bind(this));
         this.addEventListener("help-message", this._helpMessage.bind(this));
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
         this.setProperties({
-          messagesSnap: {},
+          snap: {},
           defaultSnap: {viewPort: {x: 0, y: 0, s: 1}, session: {sketchName: "unsaved"}}
         });
+        let startSnap = Object.assign({}, this.defaultSnap);
+        startSnap.action = this.getAction("startup");
+        this.set("state", {now: startSnap});
       }
 
-      _fluidSnapChange(e) {
-        this.set("actionType", e.detail.type);
-        this.set("fluidSnap", e.detail.snap);
+//      merge(defaultSnap, serverUserSnap, fluidSnap, snap) {
+//        if (!fluidSnap || !defaultSnap || !snap || !serverUserSnap) //we must wait for the initialization of all the snaps
+//          return this.snap;
+//        let snap = Object.assign({}, defaultSnap);
+//        snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);
+//        // snap.fluidSketch = fluidSnap.fluidSketch;
+//        // snap.session = Tools.mergeDeepWithNullToDelete(snap.session, fluidSnap.session);
+//        // snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
+//        snap = Tools.mergeDeepWithNullToDelete(snap, fluidSnap);            //merges viewPort and session onto defaultSnap
+//        snap = Tools.mergeDeepWithNullToDelete(snap, snap);         //adds, does not merge
+//        this.addAction(snap, this.actionType);
+//        return snap;
+//      }
+//
+      getAction(action) {
+        return {type: action, timeStamp: new Date().getTime()};
       }
-
-      _serverUserSnapChange(e) {
-        this.set("actionType", e.detail.type);
-        this.set("serverUserSnap", e.detail.snap);  //2. set the serverUserSnap
-      }
-
-      merge(defaultSnap, serverUserSnap, fluidSnap, messagesSnap) {
-        if (!fluidSnap || !defaultSnap || !messagesSnap || !serverUserSnap) //we must wait for the initialization of all the snaps
-          return this.snap;
-        let snap = Object.assign({}, defaultSnap);
-        snap.user = serverUserSnap.user;
-        snap.sketches = serverUserSnap.sketches;
-        // snap.fluidSketch = fluidSnap.fluidSketch;
-        // snap.session = Tools.mergeDeepWithNullToDelete(snap.session, fluidSnap.session);
-        // snap = Tools.mergeDeepWithNullToDelete(snap, serverUserSnap);       //adds, does not merge
-        snap = Tools.mergeDeepWithNullToDelete(snap, fluidSnap);            //merges viewPort and session onto defaultSnap
-        snap = Tools.mergeDeepWithNullToDelete(snap, messagesSnap);         //adds, does not merge
-        snap.action = {type: this.actionType, timeStamp: new Date().getTime()};
-        return snap;
-      }
-
 
       _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
         if (!sketches)
@@ -107,14 +113,75 @@
       }
 
       _systemMessage(e) {
-        this.set("actionType", "system-message");
-        this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["systemMessage"], e.detail));
+        const newSnap = Tools.setIn(this.state.now, ["systemMessage"], e.detail);
+        newSnap.action = this.getAction("system-message");
+        this.set("snap", newSnap);
       }
 
       _helpMessage(e) {
-        this.set("actionType", "help-message");
-        this.set("messagesSnap", Tools.setIn(this.messagesSnap, ["helpMessage"], e.detail));
+        const newSnap = Tools.setIn(this.state.now, ["helpMessage"], e.detail);
+        newSnap.action = this.getAction("help-message");
+        this.set("snap", newSnap);
       }
+
+      _fluidSnapChange(e) {
+        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail.snap);
+        newSnap.action = this.getAction(e.detail.type);
+        this.set("snap", newSnap);
+      }
+
+      _serverUserSnapChange(e) {
+        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail.snap);
+        newSnap.action = this.getAction(e.detail.type);
+        this.set("snap", newSnap);
+      }
+
+      _select(e) {
+        e.stopPropagation();
+        const newSnap = Tools.setIn(this.state.now, ["selects"], e.detail);
+        newSnap.action = this.getAction("select");
+        this.set("snap", newSnap);
+      }
+
+      _registerUIshape(e) {
+        e.stopPropagation();
+        const newSnap = Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value);
+        newSnap.action = this.getAction("shape-rect");
+        this.set("snap", newSnap);
+        //todo need to filter rects so that if matrices are removed, so will the rects be
+      }
+
+      _viewChanged(e) {
+        e.stopPropagation();
+        const newSnap = Tools.setIn(this.state.now, ["viewPort"], e.detail);
+        newSnap.action = this.getAction("zoom");
+        this.set("snap", newSnap);
+      }
+
+      _routeChanged(e) {
+        e.stopPropagation();
+        const newSnap = Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
+        newSnap.action = this.getAction("route");
+        this.set("snap", newSnap);
+        //debugger;
+//        this.set("actionType", "route");
+//        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
+//        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
+      }
+
+      setUrl(sketchName) {
+        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
+        this.$.location.setUrl("/" + sketchName);
+      }
+
+      static get observers() {
+        return ["setUrl(state.now.session.sketchName)"];
+      }
+
+      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
+        return sketches;
+      }
+
     }
     customElements.define(ControllerMain.is, ControllerMain);
   </script>

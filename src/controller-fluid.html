@@ -1,11 +1,9 @@
-<link rel="import" href="app-router.html">
 
 <dom-module id="controller-fluid">
   <template>
     <style>
       :host { display: block; }
     </style>
-    <app-router id="location"></app-router>
     <slot></slot>
   </template>
   <script>
@@ -18,84 +16,69 @@
       static get properties() {
         return {
           state: Object,
-          session: Object,
+//          session: Object,
           fluidActiveSketch: Object,
-          selects: Object,
-          rects: Object,
-          viewPort: Object,
+//          selects: Object,
+//          rects: Object,
+//          viewPort: Object,
           fluidNow: {
             type: Object,
-            computed: "_merge(fluidActiveSketch, viewPort, session, selects, rects)"
+            computed: "_merge(fluidActiveSketch)"
           },
           actionType: String,
-          serverSketches: {
-            type: Object,
-            computed: "_getServerSketches(state.now.sketches)"
-          }
+//          serverSketches: {
+//            type: Object,
+//            computed: "_getServerSketches(state.now.sketches)"
+//          }
         };
       }
 
       static get observers() {
-        return ["setUrl(state.now.session.sketchName)", "reduceFluidMatrix(serverSketches)"]
+        return [/*"setUrl(state.now.session.sketchName)", */"reduceFluidMatrix(serverSketches)"]
       }
 
-      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
-        return sketches;
-      }
-
+//      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
+//        return sketches;
+//      }
+//
       constructor() {
         super();
-        this.addEventListener("route-changed", this._routeChanged.bind(this));
-        this.addEventListener("new-sketch", this._newSketch.bind(this));
+//        this.addEventListener("new-sketch", this._newSketch.bind(this));
         this.addEventListener("new-scale", this._newScale.bind(this));
         this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
-        this.addEventListener("select", this._select.bind(this));
-        this.addEventListener("shape-location", this._registerUIshape.bind(this));
-        this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
 
-      _merge(fluidActiveSketch, viewPort, session, selects, rects) {
-        if (session === undefined)               //don't merge if the route object is not instantiated yet
-          return undefined;
+      _merge(fluidActiveSketch) {
+//        if (session === undefined)               //don't merge if the route object is not instantiated yet
+//          return undefined;
         let now = {
-          session: session,
-          viewPort: viewPort,
-          selects: selects,
-          rects: rects,
+//          session: session,
+//          viewPort: viewPort,
+//          selects: selects,
+//          rects: rects,
           fluidActiveSketch: fluidActiveSketch
         };
         this._fire("snap-change", {type: this.actionType, snap: now});
         return now;
       }
 
-      setUrl(sketchName) {
-        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
-        this.$.location.setUrl("/" + sketchName);
-      }
-
-      _routeChanged(e) {
-        e.stopPropagation();
-        //debugger;
-        this.set("actionType", "route");
-        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
-      }
-
-      _viewChanged(e) {
-        e.stopPropagation();
-        this.set("actionType", "view");
-        this.set("viewPort", e.detail);
-      }
-
+//      _routeChanged(e) {
+//        e.stopPropagation();
+//        //debugger;
+//        this.set("actionType", "route");
+//        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
+//        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
+//      }
+//
       reset() {
         this.setProperties({
-          "session": {},
+//          "session": {},
           "fluidActiveSketch": undefined,
-          "viewPort": undefined,
-          "selects": undefined
+//          "viewPort": undefined,
+//          "selects": undefined
         });
       }
 
@@ -117,21 +100,23 @@
           if (this.state.now.activeSketch.shapes[key])
             res[key] = this.state.now.rects[key];
         }
-        this.setProperties({"fluidActiveSketch": diffSketch, "rects": res});
+        this.setProperties({"fluidActiveSketch": diffSketch/*, "rects": res*/});
       }
 
+/*
+todo not implemented now
       _newSketch(e) {
         e.stopPropagation();
         this.set("actionType", e.type);
         console.log("The preservation of the previous state is not supported yet.");
         this.setProperties({
           "session": {sketchName: e.detail.url},
-          "viewPort": undefined,
-          "selects": undefined,
+//          "viewPort": undefined,
+//          "selects": undefined,
           "fluidActiveSketch": undefined
         });
       }
-
+*/
       _changeShapesEnd(e) {
         e.stopPropagation();
         this.set("actionType", e.detail);
@@ -157,7 +142,7 @@
         for (let key in this.state.now.selects)
           deletes[key] = null;
         this.setProperties({
-          "selects": {},
+//          "selects": {},
           "fluidActiveSketch": Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes})
         });
       }
@@ -166,22 +151,6 @@
         e.stopPropagation();
         this.set("actionType", "scale");
         console.log(e);
-      }
-
-      _registerUIshape(e) {
-        e.stopPropagation();
-        this.set("actionType", "shape-rect");
-        this.set("rects", Tools.setIn(this.state.now.rects, [e.detail.key], e.detail.value));
-//        let rects = Object.assign({}, this.state.now.rects);
-//        rects[e.detail.key] = e.detail.value;
-//        this.set("rects", rects);
-        //todo need to filter rects so that if matrices are removed, so will the rects be
-      }
-
-      _select(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        this.set("selects", e.detail);
       }
 
       _fire(name, detail) {
