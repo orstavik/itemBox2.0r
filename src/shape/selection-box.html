@@ -59,6 +59,8 @@
       }
 
       _down(e) {
+        //todo 1 remove selects when shift is down and we are pressing on an already selected
+        //todo 2 make shift down and select work with the box selection
         for (let target of e.composedPath()) {
           if (target instanceof ShapeObject){
             this._downOnShapeObject(e);
