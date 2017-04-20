@@ -48,7 +48,7 @@
           moveable: {
             type: Boolean,
             reflectToAttribute: true,
-            computed: "_checkIfMoveable(heldKeys)"
+            computed: "_makeMoveable(heldKeys)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
@@ -61,10 +61,20 @@
         }
       }
 
-      constructor() {
-        super();
+      connectedCallback() {
+        super.connectedCallback();
         this.addEventListener("dblclick", this._newShape.bind(this));
         this.addEventListener("long-press", this._newShape.bind(this));
+
+        const styleChangedObserver = new MutationObserver(function (mutations) {
+          for (let mutation of mutations) {
+            if (mutation.attributeName === "style")
+              for (let node of this.shadowRoot.querySelectorAll("shape-object"))
+                node.alertLocation();
+          }
+        }.bind(this));
+        //todo do we always have access to this.$.camera at this point? ...
+        styleChangedObserver.observe(this.$.camera, {attributes: true});
       }
 
       _newShape(e) {
@@ -87,19 +97,7 @@
         return res;
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        const styleChangedObserver = new MutationObserver(function (mutations) {
-          for (let mutation of mutations) {
-            if (mutation.attributeName === "style")
-              for (let node of this.shadowRoot.querySelectorAll("shape-object"))
-                node.alertLocation();
-          }
-        }.bind(this));
-        styleChangedObserver.observe(this.$.camera, {attributes: true});
-      }
-
-      _checkIfMoveable(heldKeys) {
+      _makeMoveable(heldKeys) {
         return heldKeys ? heldKeys.isDown("Space") : false;
       }
 
