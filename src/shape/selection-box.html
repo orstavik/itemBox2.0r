@@ -33,7 +33,7 @@
 
       static get properties() {
         return {
-          rects: Object,
+          state: Object,
           rect: {
             type: Object,
             observer: "_rectChanged"
@@ -47,10 +47,6 @@
             value: false,
             reflectToAttribute: true
           },
-          selectsOut: {
-            type: Object,
-            observer: "_alertNewSelecteds"
-          }
         }
       }
 
@@ -60,7 +56,6 @@
         Polymer.Gestures.addListener(this, "up", this._up.bind(this));
         Polymer.Gestures.addListener(this, "track", this._track.bind(this));
         this.addEventListener("dblclick", this._dblclick.bind(this));
-        this.selectsOut = {};
       }
 
       _dblclick(e) {
@@ -97,22 +92,18 @@
 
       _rectChanged() {
         let mutated = false;
-        for (let key in this.rects) {
-          let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, this.rects[key].center);
-          if (pointIsWithinBorders === !this.selectsOut[key]) {
+        let newSelects = {};
+        let currentSelection = this.state.now.selects || {};
+        let rects = this.state.now.rects || {};
+        for (let key in rects) {
+          let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, rects[key].center);
+          if (pointIsWithinBorders)
+            newSelects[key] = true;
+          if (pointIsWithinBorders != currentSelection[key])
             mutated = true;
-            if (pointIsWithinBorders)
-              this.selectsOut[key] = true;
-            else
-              delete this.selectsOut[key];
-          }
         }
         if (mutated)
-          this.set("selectsOut", Object.assign({}, this.selectsOut));
-      }
-
-      _alertNewSelecteds(selectsOut) {
-        this._fire("new-box-selection", selectsOut);
+          this._fire("new-box-selection", newSelects);
       }
 
       _fire(name, detail) {
