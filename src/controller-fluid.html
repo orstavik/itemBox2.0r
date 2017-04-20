@@ -22,17 +22,6 @@
         return ["reduceFluidMatrix(serverSketches)"]
       }
 
-      constructor() {
-        super();
-        this.addEventListener("change-shapes", this._changeShapes.bind(this));
-        this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
-        this.addEventListener("delete-selected", this._deleteSelected.bind(this));
-      }
-
-      reset() {
-        this._fire("snap-change", {type: "reset", fluidActiveSketch: undefined});
-      }
-
       reduceFluidMatrix(serverSketches) {
         //todo here, we can also reduce the rects if we want, and yes, this we want to do!
         let diffSketch = undefined;
@@ -41,7 +30,7 @@
         if (serverSketches && this.state.now.session.sketchName) {
           let serverSketch = serverSketches[this.state.now.session.sketchName];
           diffSketch = Tools.filterDeep(this.state.now.fluidActiveSketch, serverSketch);
-          for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
+          for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
           }
@@ -52,38 +41,6 @@
             res[key] = this.state.now.rects[key];
         }
         this.setProperties({"fluidActiveSketch": diffSketch/*, "rects": res*/});
-      }
-
-      /*
-       todo not implemented now
-       _newSketch(e) {
-       e.stopPropagation();
-       this.set("actionType", e.type);
-       console.log("The preservation of the previous state is not supported yet.");
-       this.setProperties({
-       "session": {sketchName: e.detail.url},
-       //          "viewPort": undefined,
-       //          "selects": undefined,
-       "fluidActiveSketch": undefined
-       });
-       }
-       */
-      _changeShapesEnd(e) {
-        e.stopPropagation();
-        this._fire("snap-change", {type: e.detail, fluidActiveSketch: Object.assign({}, this.state.now.fluidActiveSketch)});
-      }
-
-      _changeShapes(e) {
-        e.stopPropagation();
-        this._fire("snap-change", {type: "shape-matrix-fluid", fluidActiveSketch: Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: e.detail})});
-      }
-
-      _deleteSelected(e) {
-        e.stopPropagation();
-        let deletes = {};
-        for (let key in this.state.now.selects)
-          deletes[key] = null;
-        this._fire("snap-change", {type: "delete-shape", fluidActiveSketch: Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes})});
       }
 
       _fire(name, detail) {

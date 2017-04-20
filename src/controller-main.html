@@ -49,6 +49,9 @@
       constructor() {
         super();
         this.addEventListener("new-shape", this._newShape.bind(this));
+        this.addEventListener("shape-matrix-fluid", this._shapeMatrixFluid.bind(this));
+        this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
+        this.addEventListener("delete-selected", this._deleteSelected.bind(this));
 
         this.addEventListener("select", this._select.bind(this));
         this.addEventListener("shape-location", this._registerUIshape.bind(this));
@@ -75,6 +78,38 @@
         this.set("snap", newSnap);
       }
 
+      _shapeMatrixFluid(e) {
+        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail);
+        newSnap.action = this.getAction("shape-matrix-fluid");
+        this.set("snap", newSnap);
+      }
+
+      _changeShapesEnd(e) {
+        const newSnap = Object.assign({}, this.state.now);
+        newSnap.action = this.getAction(e.detail);
+        this.set("snap", newSnap);
+      }
+
+      _deleteSelected(e) {
+        e.stopPropagation();
+        let deletes = {};
+        for (let key in this.state.now.selects)
+          deletes[key] = null;
+        const newSnap = Object.assign({}, this.state.now);
+        newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes});
+        newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
+        newSnap.selects = undefined;
+        newSnap.action = this.getAction("delete-shape");
+        this.set("snap", newSnap);
+      }
+
+      _newSketch(e) {
+        //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we ssee on the screen, maybe keep the viewPort etc.
+        let newSnap = Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}});
+        newSnap.action = this.getAction("new-sketch");
+        this.set("snap", newSnap);
+      }
+
       getAction(action) {
         return {type: action, timeStamp: new Date().getTime()};
       }
@@ -96,11 +131,15 @@
       }
 
       _signOut() {
-        let defaultSnapCache = this.defaultSnap;
-        this.set("defaultSnap", undefined);          //synchronic state action start
         this.$.data.signOut();
-        this.$.fluid.reset();
-        this.set("defaultSnap", defaultSnapCache);   //synchronic state action stop
+        let newSnap = Object.assign({}, this.defaultSnap);
+        newSnap.action = this.getAction("sign-out");
+        this.set("snap", newSnap);
+//        let defaultSnapCache = this.defaultSnap;
+//        this.set("defaultSnap", undefined);          //synchronic state action start
+//        this.$.data.signOut();
+//        this.$.fluid.reset();
+//        this.set("defaultSnap", defaultSnapCache);   //synchronic state action stop
       }
 
       _systemMessage(e) {

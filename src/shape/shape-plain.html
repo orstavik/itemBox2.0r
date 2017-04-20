@@ -63,6 +63,8 @@
 
       connectedCallback() {
         super.connectedCallback();
+        this.addEventListener("change-shapes", this._changeShapes.bind(this));
+
         this.addEventListener("dblclick", this._newShape.bind(this));
         this.addEventListener("long-press", this._newShape.bind(this));
 
@@ -81,6 +83,11 @@
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.x || e.detail.x, e.y || e.detail.y);
         let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
         this.fire("new-shape", Tools.setIn(this.state.now.fluidActiveSketch, ["shapes", Tools.genKey(), "matrix"], matrix));
+      }
+
+      _changeShapes(e) {
+        e.stopPropagation();
+        this.fire("shape-matrix-fluid", Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: e.detail}));
       }
 
       _makeSelecteds(activeSketch, selects) {
