@@ -29,7 +29,7 @@
     </style>
 
     <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" on-new-box-selection="_boxSelection"></selection-box>
+    <selection-box id="selection" state="[[state]]"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.now.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
@@ -121,11 +121,6 @@
         this.moveable = heldKeys.isDown("Space");
       }
 
-      _boxSelection(e) {
-        e.stopPropagation();
-        this.fire("select-group", e.detail);
-      }
-
       _select(e) {
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
@@ -141,7 +136,7 @@
       selectWithId(id, keepOldSelected) {
         let selects = keepOldSelected ? Object.assign({}, this.state.now.selects) : {};
         selects[id] = true;
-        this.fire("select-group", selects);
+        this.fire("select", selects);
       }
 
       _up(e) {

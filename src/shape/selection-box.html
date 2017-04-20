@@ -46,7 +46,7 @@
             type: Boolean,
             value: false,
             reflectToAttribute: true
-          },
+          }
         }
       }
 
@@ -64,7 +64,7 @@
 
       _down(e) {
         e.preventDefault();
-        this._fire("new-box-selection", {});
+        this._fire("select", {});
         this.start = e;
       }
 
@@ -103,7 +103,7 @@
             mutated = true;
         }
         if (mutated)
-          this._fire("new-box-selection", newSelects);
+          this._fire("select", newSelects);
       }
 
       _fire(name, detail) {
