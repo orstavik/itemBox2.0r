@@ -52,9 +52,7 @@
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
-        this.addEventListener("deselect-all", this._deselect.bind(this));
-        this.addEventListener("select", this._selectSingle.bind(this));
-        this.addEventListener("new-box-selection", this._select.bind(this));
+        this.addEventListener("select-group", this._select.bind(this));
         this.addEventListener("shape-location", this._registerUIshape.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
       }
@@ -179,20 +177,6 @@
         rects[e.detail.key] = e.detail.value;
         this.set("rects", rects);
         //todo need to filter rects so that if matrices are removed, so will the rects be
-      }
-
-      _deselect(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        this.set("selects", {});
-      }
-
-      _selectSingle(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        let selects = Object.assign({}, this.state.now.selects);
-        selects[e.detail] = true;
-        this.set("selects", selects);
       }
 
       _select(e) {

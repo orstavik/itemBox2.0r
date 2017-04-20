@@ -69,7 +69,7 @@
 
       _down(e) {
         e.preventDefault();
-        this._fire("deselect-all");
+        this._fire("new-box-selection", {});
         this.start = e;
       }
 

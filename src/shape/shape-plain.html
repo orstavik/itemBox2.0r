@@ -29,7 +29,7 @@
     </style>
 
     <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" rects="[[state.now.rects]]"></selection-box>
+    <selection-box id="selection" rects="[[state.now.rects]]" on-new-box-selection="_boxSelection"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
     <space-camera id="camera" view-port="[[state.now.viewPort]]">
       <template is="dom-repeat" items="[[shapesArray]]">
@@ -37,8 +37,7 @@
                       selected$="[[item.value.selected]]"
                       matrix-data="[[item.value.matrix]]"
                       on-down="_select"
-                      on-up="_up"
-                      on-new-selection="_select"></shape-object>
+                      on-up="_up"></shape-object>
       </template>
     </space-camera>
 
@@ -122,29 +121,38 @@
         this.moveable = heldKeys.isDown("Space");
       }
 
+      _boxSelection(e) {
+        e.stopPropagation();
+        this.fire("select-group", e.detail);
+      }
+
       _select(e) {
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
           this.selectionTimer = setTimeout(function () {
-            this._fire("select", e.detail.sourceEvent.target.id);
+            this.selectWithId(e.target.id, true);
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else {
-          if (!this.heldKeys.shift())
-            this._fire("deselect-all");
-          this._fire("select", e.target.id);
+          this.selectWithId(e.target.id, this.heldKeys.shift());
         }
+      }
+
+      selectWithId(id, keepOldSelected) {
+        let selects = keepOldSelected ? Object.assign({}, this.state.now.selects) : {};
+        selects[id] = true;
+        this.fire("select-group", selects);
       }
 
       _up(e) {
         e.stopPropagation();
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
-          this._fire("select", e.target.id);
+          this.selectWithId(e.target.id, false);
         }
       }
 
-      _fire(name, detail) {
+      fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
