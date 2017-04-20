@@ -56,12 +56,10 @@
       static get properties() {
         return {
           state: Object,
-          heldKeys: {
-            type: Object,
-            observer: "_checkIfMoveable"
-          },
+          heldKeys: Object,
           moveable: {
             type: Boolean,
+            computed: "_checkIfMoveable(heldKeys)",
             reflectToAttribute: true
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
@@ -129,7 +127,7 @@
       }
 
       _checkIfMoveable(heldKeys) {
-        this.moveable = heldKeys.isDown("Space");
+        return heldKeys ? heldKeys.isDown("Space") : false;
       }
 
       fire(name, detail) {
