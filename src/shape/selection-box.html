@@ -21,7 +21,7 @@
     </style>
 
     <div id="body" style$="[[_style]]"></div>
-
+    <slot></slot>
   </template>
 
   <script>
@@ -34,6 +34,7 @@
       static get properties() {
         return {
           state: Object,
+          heldKeys: Object,
           rect: {
             type: Object,
             observer: "_rectChanged"
@@ -58,14 +59,30 @@
       }
 
       _down(e) {
+        for (let target of e.composedPath()) {
+          if (target instanceof ShapeObject){
+            this._downOnShapeObject(e);
+            return;
+          }
+          if (target === this)
+            break;
+        }
         e.preventDefault();
-        this._fire("select", {});
+        this.fire("select", {});
         this.start = e;
       }
 
       _up(e) {
+        for (let target of e.composedPath()) {
+          if (target instanceof ShapeObject){
+            this._upOnShapeObject(e);
+            return;
+          }
+          if (target === this)
+            break;
+        }
         if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.start.timeStamp) > 600)
-          this._fire("new-shape", {x: e.detail.x, y: e.detail.y});
+          this.fire("new-shape", {x: e.detail.x, y: e.detail.y});//todo here I do a new-shape .. this should be done in shapeplain
       }
 
       _track(e) {
@@ -98,11 +115,37 @@
             mutated = true;
         }
         if (mutated)
-          this._fire("select", newSelects);
+          this.fire("select", newSelects);
       }
 
-      _fire(name, detail) {
+      _downOnShapeObject(e) {
+        e.stopPropagation();
+        if (e.detail.sourceEvent instanceof Touch)
+          this.selectionTimer = setTimeout(function () {
+            this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, true));
+            this.selectionTimer = undefined;
+          }.bind(this), 600);
+        else {
+          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, this.heldKeys.shift()));
+        }
+      }
+
+      _upOnShapeObject(e) {
+        e.stopPropagation();
+        if (this.selectionTimer) {
+          clearTimeout(this.selectionTimer);
+          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, false));
+        }
+      }
+
+      fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      static makeSelectsObject(id, oldSelected, shift) {
+        let selects = shift ? Object.assign({}, oldSelected) : {};
+        selects[id] = true;
+        return selects;
       }
     }
     customElements.define(SelectionBox.is, SelectionBox);

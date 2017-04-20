@@ -28,18 +28,19 @@
       }
     </style>
 
-    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
-    <space-camera id="camera" view-port="[[state.now.viewPort]]">
-      <template is="dom-repeat" items="[[shapesArray]]">
-        <shape-object id$="[[item.key]]"
-                      selected$="[[item.value.selected]]"
-                      matrix-data="[[item.value.matrix]]"
-                      on-down="_select"
-                      on-up="_up"></shape-object>
-      </template>
-    </space-camera>
+    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
+    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]">
+      <space-camera id="camera" view-port="[[state.now.viewPort]]">
+        <template is="dom-repeat" items="[[shapesArray]]">
+          <shape-object id$="[[item.key]]"
+                        selectable
+                        selected$="[[item.value.selected]]"
+                        matrix-data="[[item.value.matrix]]"
+          ></shape-object>
+        </template>
+      </space-camera>
+    </selection-box>
 
     <div id="moveBox"></div>
 
@@ -74,7 +75,7 @@
         }
       }
 
-      constructor(){
+      constructor() {
         super();
         this.addEventListener("dblclick", this._dblclick.bind(this));
       }
@@ -128,32 +129,6 @@
 
       _checkIfMoveable(heldKeys) {
         this.moveable = heldKeys.isDown("Space");
-      }
-
-      _select(e) {
-        e.stopPropagation();
-        if (e.detail.sourceEvent instanceof Touch)
-          this.selectionTimer = setTimeout(function () {
-            this.selectWithId(e.target.id, true);
-            this.selectionTimer = undefined;
-          }.bind(this), 600);
-        else {
-          this.selectWithId(e.target.id, this.heldKeys.shift());
-        }
-      }
-
-      selectWithId(id, keepOldSelected) {
-        let selects = keepOldSelected ? Object.assign({}, this.state.now.selects) : {};
-        selects[id] = true;
-        this.fire("select", selects);
-      }
-
-      _up(e) {
-        e.stopPropagation();
-        if (this.selectionTimer) {
-          clearTimeout(this.selectionTimer);
-          this.selectWithId(e.target.id, false);
-        }
       }
 
       fire(name, detail) {
