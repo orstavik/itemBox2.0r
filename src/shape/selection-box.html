@@ -55,11 +55,6 @@
         Polymer.Gestures.addListener(this, "down", this._down.bind(this));
         Polymer.Gestures.addListener(this, "up", this._up.bind(this));
         Polymer.Gestures.addListener(this, "track", this._track.bind(this));
-        this.addEventListener("dblclick", this._dblclick.bind(this));
-      }
-
-      _dblclick(e) {
-        this._fire("new-shape", {x: e.x, y: e.y});
       }
 
       _down(e) {

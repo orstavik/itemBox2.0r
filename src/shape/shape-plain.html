@@ -74,6 +74,15 @@
         }
       }
 
+      constructor(){
+        super();
+        this.addEventListener("dblclick", this._dblclick.bind(this));
+      }
+
+      _dblclick(e) {
+        this.fire("new-shape", {x: e.x, y: e.y});
+      }
+
       _makeSelecteds(activeSketch, selects) {
         if (!activeSketch || !selects)
           return undefined;
