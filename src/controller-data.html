@@ -26,7 +26,7 @@
                  on-found-no-data="_newUser"></firebase-on>
 
     <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
-    
+
   </template>
   <script>
 
@@ -37,21 +37,22 @@
 
       static get properties() {
         return {
-          serverUser: Object,
-          sketchDataFromServer: Object,
-          serverUserSnap: Object,
-          mergedServerUserSnap: {
+          serverUser: {
             type: Object,
-            computed: "_makeMergedServerUserSnap(serverUserSnap, serverUser)"
+            observer: "_serverUserChanged"
           },
-          serverSnap: {
+          sketchDataFromServer: {
             type: Object,
-            computed: "_makeSnap(mergedServerUserSnap, sketchDataFromServer)",
-            observer: "_newServerSnap"
+            observer: "_sketchDataFromServerChanged"
+          },
+          serverUserSnap: {
+            type: Object,
+            observer: "_serverUserSnapChanged"
           },
           state: Object,
           fluidActiveSketch: {
             type: Object,
+            computed: "_getFluidActiveSketch(state.now.fluidActiveSketch)",
             observer: "saveChangesDebounced"
           },
           actionType: String
@@ -63,20 +64,20 @@
         this._ref = firebase.database().ref();
       }
 
-      _newServerSnap(C) {
-        this._fire("snap-change", {type: this.actionType, snap: C});
+      _getFluidActiveSketch(fluidActiveSketch) {
+        return fluidActiveSketch;
       }
 
-      _makeMergedServerUserSnap(serverUserSnap, serverUser) {
-        this.set("actionType", "user-loaded");
-        return Tools.mergeDeepWithNullToDelete(serverUserSnap, {user: serverUser});
+      _serverUserSnapChanged(userData) {
+        this._fire("new-user-data", userData);
       }
 
-      _makeSnap(mergedServerUserSnap, sketchDataFromServer) {
-        let sketchSnap = sketchDataFromServer ? Tools.setInNoCheck({}, sketchDataFromServer.path, sketchDataFromServer.result) : undefined;
-        if (sketchSnap)
-          this.set("actionType", "sketch-updated");
-        return Tools.mergeDeepWithNullToDelete(mergedServerUserSnap, sketchSnap);
+      _serverUserChanged(user) {
+        this._fire("new-user", user);
+      }
+
+      _sketchDataFromServerChanged(sketch) {
+        this._fire("new-sketch-data", sketch ? Tools.setInNoCheck({}, sketch.path, sketch.result) : undefined);
       }
 
       signIn() {

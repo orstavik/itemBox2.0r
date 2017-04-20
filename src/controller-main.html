@@ -1,6 +1,6 @@
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
-<link rel="import" href="controller-fluid.html">
+<!--<link rel="import" href="controller-fluid.html">-->
 <link rel="import" href="controller-history.html">
 <link rel="import" href="app-router.html">
 
@@ -11,16 +11,10 @@
     </style>
     <app-router id="location"></app-router>
     <controller-history id="history" state="{{state}}" now="[[activeSketch]]"></controller-history>
-    <controller-data id="data" state="[[state]]" fluid-active-sketch="[[state.now.fluidActiveSketch]]"
-                     on-snap-change="_serverUserSnapChange"></controller-data>
-    <controller-fluid id="fluid" state="[[state]]" on-snap-change="_fluidSnapChange">
-      <controller-ui id="ui" state="[[state]]"></controller-ui>
-    </controller-fluid>
-
+    <controller-data id="data" state="[[state]]"></controller-data>
+    <controller-ui id="ui" state="[[state]]"></controller-ui>
   </template>
-
   <script>
-
     class ControllerMain extends Polymer.Element {
       static get is() {
         return "controller-main";
@@ -34,10 +28,6 @@
           activeSketch: {                           //partial now: the active sketch
             type: Object,
             computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
-          },
-          serverSketches: {
-            type: Object,
-            computed: "_getServerSketches(state.now.sketches)"
           }
         }
       }
@@ -48,6 +38,10 @@
 
       constructor() {
         super();
+        this.addEventListener("new-user", this._newUser.bind(this));
+        this.addEventListener("new-user-data", this._newUserData.bind(this));
+        this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
+
         this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("shape-matrix-fluid", this._shapeMatrixFluid.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
@@ -70,6 +64,29 @@
         let startSnap = Object.assign({}, this.defaultSnap);
         startSnap.action = this.getAction("startup");
         this.set("state", {now: startSnap});
+      }
+
+      _newUser(e) {
+        const newSnap = Tools.setIn(this.state.now, ["user"], e.detail);
+        newSnap.action = this.getAction("new-user");
+        this.set("snap", newSnap);
+      }
+
+      _newUserData(e) {                                //todo don't really remember what this is in this app
+        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail);
+        newSnap.action = this.getAction("new-user-data");
+        this.set("snap", newSnap);
+      }
+
+      _newSketchData(e) {
+        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail);
+        let reduced = ControllerMain.reduceFluidMatrix(this.state, e.detail);
+        if (reduced) {
+          newSnap.fluidActiveSketch = reduced.fluidActiveSketch;
+          newSnap.rects = reduced.rects;
+        }
+        newSnap.action = this.getAction("new-sketch-data");
+        this.set("snap", newSnap);
       }
 
       _newShape(e) {
@@ -135,11 +152,6 @@
         let newSnap = Object.assign({}, this.defaultSnap);
         newSnap.action = this.getAction("sign-out");
         this.set("snap", newSnap);
-//        let defaultSnapCache = this.defaultSnap;
-//        this.set("defaultSnap", undefined);          //synchronic state action start
-//        this.$.data.signOut();
-//        this.$.fluid.reset();
-//        this.set("defaultSnap", defaultSnapCache);   //synchronic state action stop
       }
 
       _systemMessage(e) {
@@ -151,18 +163,6 @@
       _helpMessage(e) {
         const newSnap = Tools.setIn(this.state.now, ["helpMessage"], e.detail);
         newSnap.action = this.getAction("help-message");
-        this.set("snap", newSnap);
-      }
-
-      _fluidSnapChange(e) {
-        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail.fluidActiveSketch);
-        newSnap.action = this.getAction(e.detail.type);
-        this.set("snap", newSnap);
-      }
-
-      _serverUserSnapChange(e) {
-        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail.snap);
-        newSnap.action = this.getAction(e.detail.type);
         this.set("snap", newSnap);
       }
 
@@ -200,10 +200,30 @@
         this.$.location.setUrl("/" + sketchName);
       }
 
-      _getServerSketches(sketches) { //todo this only filters this method to be called once for every change, not all the time..
-        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
-        return sketches;
+      static reduceFluidMatrix(state, serverSketches) {
+        //todo here, we can also reduce the rects if we want, and yes, this we want to do!
+        let diffSketch = undefined;
+        if (!state.now.fluidActiveSketch)
+          return undefined;
+        //filter the matrices
+        if (serverSketches && state.now.session.sketchName) {
+          let serverSketch = serverSketches.sketches[state.now.session.sketchName];
+          diffSketch = Tools.filterDeep(state.now.fluidActiveSketch, serverSketch);
+          for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
+            if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
+              delete diffSketch[key];
+          }
+        }
+        //filter rects
+        let res = {};
+        for (let key in state.now.rects) {
+          if (state.now.activeSketch.shapes[key])
+            res[key] = state.now.rects[key];
+        }
+        //todo filter selects not implemented here
+        return {"fluidActiveSketch": diffSketch, "rects": res};
       }
+
 
     }
     customElements.define(ControllerMain.is, ControllerMain);

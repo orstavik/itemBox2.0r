@@ -22,27 +22,6 @@
         return ["reduceFluidMatrix(serverSketches)"]
       }
 
-      reduceFluidMatrix(serverSketches) {
-        //todo here, we can also reduce the rects if we want, and yes, this we want to do!
-        let diffSketch = undefined;
-        if (!this.state.now.fluidActiveSketch)
-          return;
-        if (serverSketches && this.state.now.session.sketchName) {
-          let serverSketch = serverSketches[this.state.now.session.sketchName];
-          diffSketch = Tools.filterDeep(this.state.now.fluidActiveSketch, serverSketch);
-          for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
-            if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
-              delete diffSketch[key];
-          }
-        }
-        let res = {};
-        for (let key in this.state.now.rects) {
-          if (this.state.now.activeSketch.shapes[key])
-            res[key] = this.state.now.rects[key];
-        }
-        this.setProperties({"fluidActiveSketch": diffSketch/*, "rects": res*/});
-      }
-
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
