@@ -1,6 +1,5 @@
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
-<!--<link rel="import" href="controller-fluid.html">-->
 <link rel="import" href="controller-history.html">
 <link rel="import" href="app-router.html">
 
@@ -74,19 +73,18 @@
         this.setSnap("new-user", Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
-      _newUserData(e) {                                //todo don't really remember what this is in this app
+      _newUserData(e) {                     //todo don't really remember what this is in this app
         this.setSnap("new-user-data", Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
       }
 
       _newSketchData(e) {
-        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail);
+        const newSnap = Tools.setIn(this.state.now, ["sketches"], e.detail.sketches);
         let reduced = ControllerMain.reduceFluidMatrix(this.state, e.detail);
         if (reduced) {
           newSnap.fluidActiveSketch = reduced.fluidActiveSketch;
           newSnap.rects = reduced.rects;
         }
-        newSnap.action = this.getAction("new-sketch-data");
-        this.set("snap", newSnap);
+        this.setSnap("new-sketch-data", newSnap);
       }
 
       _newShape(e) {
@@ -114,12 +112,8 @@
       }
 
       _newSketch(e) {
-        //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we ssee on the screen, maybe keep the viewPort etc.
+        //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we see on the screen, maybe keep the viewPort etc.
         this.setSnap("new-sketch", Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
-      }
-
-      getAction(action) {
-        return {type: action, timeStamp: new Date().getTime()};
       }
 
       _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
@@ -178,7 +172,8 @@
       }
 
       setSnap(action, newSnap) {
-        newSnap.action = this.getAction(action);
+        newSnap.action = {type: action, timeStamp: new Date().getTime()};
+//        newSnap.activeSketch = undefined;
         this.set("snap", newSnap);
       }
 
