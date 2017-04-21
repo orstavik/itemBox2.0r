@@ -38,8 +38,8 @@
       .knob {
         background: white;
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-                    0 1px 5px 0 rgba(0, 0, 0, 0.12),
-                    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
       #slider1Knob, #slider2Knob {
         width: 22px;
@@ -129,80 +129,80 @@
         ]
       }
 
-      _drawColorBox(h,a) {
-        var c = this.$.colorBox.getContext("2d");
-        c.clearRect(0,0,c.canvas.width,c.canvas.height);
-        var sx = c.canvas.width / 50;
-        var sy = c.canvas.height / 50;
-        for (var l = 0; l < 50; l++) {
-          for (var s = 0; s < 50; s++) {
-            c.fillStyle = "hsla("+h+", "+s*2+"%, "+l*2+"%, "+a+")";
-            c.fillRect(sx*l, sy*(49-s), sx, sy);
+      _drawColorBox(h, a) {
+        const c = this.$.colorBox.getContext("2d");
+        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const sx = c.canvas.width / 50;
+        const sy = c.canvas.height / 50;
+        for (let l = 0; l < 50; l++) {
+          for (let s = 0; s < 50; s++) {
+            c.fillStyle = this._makeColor(h, s * 2, l * 2, a);
+            c.fillRect(sx * l, sy * (49 - s), sx, sy);
           }
         }
       }
 
       _drawColorSlider1(a) {
-        var c = this.$.colorSlider1.getContext("2d");
-        c.clearRect(0,0,c.canvas.width,c.canvas.height);
-        var sx = c.canvas.width;
-        var sy = c.canvas.height / 360;
-        for (var h = 0; h < c.canvas.height; h++) {
-          c.fillStyle = "hsla("+h/sy+", 100%, 50%, "+a+")";
+        const c = this.$.colorSlider1.getContext("2d");
+        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const sx = c.canvas.width;
+        const sy = c.canvas.height / 360;
+        for (let h = 0; h < c.canvas.height; h++) {
+          c.fillStyle = this._makeColor(h / sy, 100, 50, a);
           c.fillRect(0, h, sx, sy);
         }
       }
 
-      _drawColorSlider2(h,s,l) {
-        var c = this.$.colorSlider2.getContext("2d");
-        c.clearRect(0,0,c.canvas.width,c.canvas.height);
-        var sx = c.canvas.width;
-        var sy = c.canvas.height;
-        for (var a = 0; a < 1; a += 0.01) {
-          c.fillStyle = "hsla("+h+", "+s+"%, "+l+"%, "+a+")";
-          c.fillRect(0, sy*(0.99-a), sx, sy*0.01);
+      _drawColorSlider2(h, s, l) {
+        const c = this.$.colorSlider2.getContext("2d");
+        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const sx = c.canvas.width;
+        const sy = c.canvas.height;
+        for (let a = 0; a < 1; a += 0.01) {
+          c.fillStyle = this._makeColor(h, s, l, a);
+          c.fillRect(0, sy * (0.99 - a), sx, sy * 0.01);
         }
       }
 
-      _makeColor(h,s,l,a) {
-        return "hsla("+h+", "+s+"%, "+l+"%, "+a+")";
+      _makeColor(h, s, l, a) {
+        return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
       }
 
       _hueChange(e) {
-        this.hue = this._roundTo(e.detail/this.$.colorSlider1.height*360,1);
+        this.hue = ColorPalette._roundTo(e.detail / this.$.colorSlider1.height * 360, 1);
       }
 
       _saturationChange(e) {
-        this.saturation = this._roundTo((1-(e.detail/this.$.colorBox.height))*100, 1);
+        this.saturation = ColorPalette._roundTo((1 - (e.detail / this.$.colorBox.height)) * 100, 1);
       }
 
       _lightnessChange(e) {
-        this.lightness = this._roundTo(e.detail/this.$.colorBox.width*100, 1);
+        this.lightness = ColorPalette._roundTo(e.detail / this.$.colorBox.width * 100, 1);
       }
 
       _alphaChange(e) {
-        this.alpha = this._roundTo(1-(e.detail/this.$.colorSlider2.height), 4);
+        this.alpha = ColorPalette._roundTo(1 - (e.detail / this.$.colorSlider2.height), 4);
       }
 
       _calcFromHue(h) {
-        return h/360*this.$.colorSlider1.height;
+        return h / 360 * this.$.colorSlider1.height;
       }
 
       _calcFromSaturation(s) {
-        return (1-s/100)*this.$.colorBox.height;
+        return (1 - s / 100) * this.$.colorBox.height;
       }
 
       _calcFromLightness(l) {
-        return l/100*this.$.colorBox.width;
+        return l / 100 * this.$.colorBox.width;
       }
 
       _calcFromAlpha(a) {
-        return (1-a)*this.$.colorSlider2.height;
+        return (1 - a) * this.$.colorSlider2.height;
       }
 
-      _roundTo(x,n) {
-        var e = Math.pow(10,n);
-        return Math.round(x*e)/e;
+      static _roundTo(x, n) {
+        const e = Math.pow(10, n);
+        return Math.round(x * e) / e;
       }
 
       // _drawColorWheel(c) {
