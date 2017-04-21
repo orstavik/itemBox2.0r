@@ -12,6 +12,20 @@
         justify-content: space-around;
         padding: 10px 16px 10px;
       }
+      #firstRow {
+        display: flex;
+        height: 100px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #colorPreview {
+        display: flex;
+        flex: 1;
+        height: 100px;
+        width: 260px;
+        align-items: center;
+        justify-content: center;
+      }
       #colorWrapper {
         display: flex;
         width: 260px;
@@ -37,15 +51,16 @@
         height: 16px;
         border-radius: 8px;
       }
-      #colorPreview {
-        display: flex;
-        height: 100px;
-        width: 260px;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-      }
     </style>
+
+    <div id="firstRow">
+      <div id="colorPreview" style="background-color: [[color]]">
+        [[color]]
+      </div>
+      <div id="codeWrapper">
+
+      </div>
+    </div>
 
     <div id="colorWrapper">
       <div class="canvas-box">
@@ -71,10 +86,6 @@
           <div id="slider2Knob" class="knob"></div>
         </color-knob>
       </div>
-    </div>
-
-    <div id="colorPreview" style="background-color: [[color]]">
-      [[color]]
     </div>
 
   </template>
@@ -136,9 +147,9 @@
         c.clearRect(0,0,c.canvas.width,c.canvas.height);
         var sx = c.canvas.width;
         var sy = c.canvas.height / 360;
-        for (var h = 0; h < 360; h++) {
-          c.fillStyle = "hsla("+h+", 100%, 50%, "+a+")";
-          c.fillRect(0, sy*h, sx, sy);
+        for (var h = 0; h < c.canvas.height; h++) {
+          c.fillStyle = "hsla("+h/sy+", 100%, 50%, "+a+")";
+          c.fillRect(0, h, sx, sy);
         }
       }
 
