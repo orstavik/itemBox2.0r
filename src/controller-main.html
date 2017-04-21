@@ -23,7 +23,15 @@
       static get properties() {
         return {
           state: Object,
-          defaultSnap: Object,
+          defaultSnap: {
+            type: Object,
+            value: function () {
+              return {
+                viewPort: {x: 0, y: 0, s: 1},
+                session: {sketchName: "unsaved"}
+              };
+            }
+          },
           snap: Object,
           activeSketch: {                           //partial now: the active sketch
             type: Object,
@@ -57,25 +65,17 @@
         this.addEventListener("help-message", this._helpMessage.bind(this));
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
-        this.setProperties({
-          snap: {},
-          defaultSnap: {viewPort: {x: 0, y: 0, s: 1}, session: {sketchName: "unsaved"}}
-        });
-        let startSnap = Object.assign({}, this.defaultSnap);
-        startSnap.action = this.getAction("startup");
-        this.set("state", {now: startSnap});
+
+        this.setSnap("startup", Object.assign({}, this.defaultSnap));
+        this.set("state", Object.assign({}, {now: this.snap}));   //this is needed for the first route operations
       }
 
       _newUser(e) {
-        const newSnap = Tools.setIn(this.state.now, ["user"], e.detail);
-        newSnap.action = this.getAction("new-user");
-        this.set("snap", newSnap);
+        this.setSnap("new-user", Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
       _newUserData(e) {                                //todo don't really remember what this is in this app
-        const newSnap = Tools.mergeDeepWithNullToDelete(this.state.now, e.detail);
-        newSnap.action = this.getAction("new-user-data");
-        this.set("snap", newSnap);
+        this.setSnap("new-user-data", Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
       }
 
       _newSketchData(e) {
@@ -90,25 +90,19 @@
       }
 
       _newShape(e) {
-        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail);
-        newSnap.action = this.getAction("new-shape");
-        this.set("snap", newSnap);
+        this.setSnap("new-shape", Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail));
       }
 
+      //todo should I reduce the rects going up or going down 
       _shapeMatrixFluid(e) {
-        const newSnap = Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail);
-        newSnap.action = this.getAction("shape-matrix-fluid");
-        this.set("snap", newSnap);
+        this.setSnap("shape-matrix-fluid", Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail));
       }
 
       _changeShapesEnd(e) {
-        const newSnap = Object.assign({}, this.state.now);
-        newSnap.action = this.getAction(e.detail);
-        this.set("snap", newSnap);
+        this.setSnap(e.detail, Object.assign({}, this.state.now));
       }
 
       _deleteSelected(e) {
-        e.stopPropagation();
         let deletes = {};
         for (let key in this.state.now.selects)
           deletes[key] = null;
@@ -116,15 +110,12 @@
         newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes});
         newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
         newSnap.selects = undefined;
-        newSnap.action = this.getAction("delete-shape");
-        this.set("snap", newSnap);
+        this.setSnap("delete-shape", newSnap);
       }
 
       _newSketch(e) {
         //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we ssee on the screen, maybe keep the viewPort etc.
-        let newSnap = Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}});
-        newSnap.action = this.getAction("new-sketch");
-        this.set("snap", newSnap);
+        this.setSnap("new-sketch", Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
       }
 
       getAction(action) {
@@ -149,55 +140,46 @@
 
       _signOut() {
         this.$.data.signOut();
-        let newSnap = Object.assign({}, this.defaultSnap);
-        newSnap.action = this.getAction("sign-out");
-        this.set("snap", newSnap);
+        this.setSnap("sign-out", Object.assign({}, this.defaultSnap));
       }
 
       _systemMessage(e) {
-        const newSnap = Tools.setIn(this.state.now, ["systemMessage"], e.detail);
-        newSnap.action = this.getAction("system-message");
-        this.set("snap", newSnap);
+        this.setSnap("system-message", Tools.setIn(this.state.now, ["systemMessage"], e.detail));
       }
 
       _helpMessage(e) {
-        const newSnap = Tools.setIn(this.state.now, ["helpMessage"], e.detail);
-        newSnap.action = this.getAction("help-message");
-        this.set("snap", newSnap);
+        this.setSnap("help-message", Tools.setIn(this.state.now, ["helpMessage"], e.detail));
       }
 
       _select(e) {
         e.stopPropagation();
-        const newSnap = Tools.setIn(this.state.now, ["selects"], e.detail);
-        newSnap.action = this.getAction("select");
-        this.set("snap", newSnap);
+        this.setSnap("select", Tools.setIn(this.state.now, ["selects"], e.detail));
       }
 
       _registerUIshape(e) {
         e.stopPropagation();
-        const newSnap = Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value);
-        newSnap.action = this.getAction("shape-rect");
-        this.set("snap", newSnap);
+        this.setSnap("shape-rect", Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
         //todo need to filter rects so that if matrices are removed, so will the rects be
       }
 
       _viewChanged(e) {
         e.stopPropagation();
-        const newSnap = Tools.setIn(this.state.now, ["viewPort"], e.detail);
-        newSnap.action = this.getAction("zoom");
-        this.set("snap", newSnap);
+        this.setSnap("zoom", Tools.setIn(this.state.now, ["viewPort"], e.detail));
       }
 
       _routeChanged(e) {
         e.stopPropagation();
-        const newSnap = Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
-        newSnap.action = this.getAction("route");
-        this.set("snap", newSnap);
+        this.setSnap("route", Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
       }
 
       setUrl(sketchName) {
         this.$.location.setUrl("/" + sketchName);
+      }
+
+      setSnap(action, newSnap) {
+        newSnap.action = this.getAction(action);
+        this.set("snap", newSnap);
       }
 
       static reduceFluidMatrix(state, serverSketches) {
@@ -223,8 +205,6 @@
         //todo filter selects not implemented here
         return {"fluidActiveSketch": diffSketch, "rects": res};
       }
-
-
     }
     customElements.define(ControllerMain.is, ControllerMain);
   </script>
