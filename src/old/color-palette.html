@@ -1,0 +1,153 @@
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../lib/key-flower.html">
+
+<dom-module id="color-palette">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        box-sizing: border-box;
+        flex-direction: row;
+        justify-content: space-around;
+        width: 320px;
+        height: 270px;
+        padding: 0 15px 15px;
+      }
+      .firstColumn, .secondColumn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+      }
+      .secondColumn {
+        width: 90px;
+      }
+      .color {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        margin: 0 1px;
+        border-radius: 3px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        transition-duration: 0.5s;
+      }
+      .sliderBox {
+        display: inline-block;
+        width: 150px;
+      }
+      .sliderTitle {
+        font-size: 16px;
+        font-weight: 300;
+        line-height: 1;
+        padding: 0 15px;
+      }
+      paper-slider {
+        display: inline-block;
+        width: 120px;
+        --paper-slider-knob-start-border-color: var(--google-blue-700);
+        --paper-slider-knob-start-color: var(--google-blue-700);
+        --paper-slider-pin-start-color: var(--google-blue-700);
+      }
+    </style>
+
+    <div class="firstColumn">
+      <div class="flowerBox">
+        <key-flower id="keyflower" scale="[[scale]]" palette="[[colors]]"></key-flower>
+      </div>
+      <div class="sliderBox">
+        <span class="sliderTitle">Saturation</span>
+        <paper-slider pin value="{{s}}" min="-4" step="1" max="4" id="s"></paper-slider>
+      </div>
+    </div>
+
+    <div class="secondColumn">
+      <div>
+        <template is="dom-repeat" items="[[colors]]">
+          <div id="color[[index]]" class="color" style$="background: [[item]]" on-click="_selectColor"></div>
+        </template>
+      </div>
+      <div>
+        <div id="grey0" class="color" style="background-color: var(--tone-grey-0)" on-click="_selectColor"></div>
+        <div id="grey1" class="color" style="background-color: var(--tone-grey-1)" on-click="_selectColor"></div>
+        <div id="grey2" class="color" style="background-color: var(--tone-grey-2)" on-click="_selectColor"></div>
+        <div id="grey3" class="color" style="background-color: var(--tone-grey-3)" on-click="_selectColor"></div>
+        <div id="grey4" class="color" style="background-color: var(--tone-grey-4)" on-click="_selectColor"></div>
+        <div id="grey5" class="color" style="background-color: var(--tone-grey-5)" on-click="_selectColor"></div>
+        <div id="grey6" class="color" style="background-color: var(--tone-grey-6)" on-click="_selectColor"></div>
+        <div id="grey7" class="color" style="background-color: var(--tone-grey-7)" on-click="_selectColor"></div>
+        <div id="grey8" class="color" style="background-color: var(--tone-grey-8)" on-click="_selectColor"></div>
+      </div>
+    </div>
+      <!--<div>-->
+      <!--<span class="sliderTitle">Lightness</span>-->
+      <!--<paper-slider pin min="-90" max="90" id="l" on-change="setL"></paper-slider>-->
+      <!--</div>-->
+      <!--H <input type="range" min="-90" max="90" value="0" id="h" on-input="setSunset"/> <br>-->
+
+  </template>
+
+  <!--<script src="js/StaticColorMaker.js"></script>-->
+  <script>
+    class ColorPalette extends Polymer.Element {
+      static get is() {
+        return "color-palette";
+      }
+
+      static get properties() {
+        return {
+          colors: {
+            type: Array,
+            computed: "_computeColorName(s)",
+            observer: "_notifyColorChange"
+          },
+          s: Number
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.set("colors", this._computeColorName(0));
+      }
+
+      _selectColor(e) {
+        this.dispatchEvent(new CustomEvent("select-style", {composed: true, bubbles: true, detail: e.target.id}));
+      }
+
+      _computeColorName(s) {
+        return ColorPalette.materialColorNames().map(cName => "var(--paper-" + cName + "-" + (5 + s) + "00)");
+      }
+
+      _notifyColorChange() {
+        this.dispatchEvent(new CustomEvent("new-colors", {composed: true, bubbles: true, detail: this.colors}));
+      }
+
+      static materialColorNames() {
+        return [
+//          "blue-grey",
+//          "grey",
+          "red",
+//          "deep-orange",
+          "orange",
+//          "amber",
+          "yellow",
+          "lime",
+          "light-green",
+          "green",
+          "teal",
+          "cyan",
+//          "light-blue",
+          "blue",
+          "indigo",
+//          "deep-purple",
+          "purple",
+//          "pink"
+          "brown",
+        ];
+      }
+    }
+    customElements.define(ColorPalette.is, ColorPalette);
+  </script>
+</dom-module>

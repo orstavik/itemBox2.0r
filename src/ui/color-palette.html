@@ -1,6 +1,4 @@
-<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
-
-<link rel="import" href="../lib/key-flower.html">
+<link rel="import" href="color-knob.html">
 
 <dom-module id="color-palette">
   <template>
@@ -8,88 +6,90 @@
       :host {
         display: flex;
         box-sizing: border-box;
-        flex-direction: row;
-        justify-content: space-around;
-        width: 320px;
-        height: 270px;
-        padding: 0 15px 15px;
-      }
-      .firstColumn, .secondColumn {
-        display: flex;
         flex-direction: column;
+        height: 360px;
         align-items: center;
         justify-content: space-around;
+        padding: 10px 16px 10px;
       }
-      .secondColumn {
-        width: 90px;
+      #firstRow {
+        display: flex;
+        height: 100px;
+        align-items: center;
+        justify-content: space-between;
       }
-      .color {
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        margin: 0 1px;
-        border-radius: 3px;
+      #colorPreview {
+        display: flex;
+        flex: 1;
+        height: 100px;
+        width: 260px;
+        align-items: center;
+        justify-content: center;
+      }
+      #colorWrapper {
+        display: flex;
+        width: 260px;
+        justify-content: space-between;
+      }
+      .canvas-box {
+        display: inline-flex;
+        position: relative;
+      }
+      .knob {
+        background: white;
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-        0 1px 5px 0 rgba(0, 0, 0, 0.12),
-        0 3px 1px -2px rgba(0, 0, 0, 0.2);
-        transition-duration: 0.5s;
+                    0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                    0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
-      .sliderBox {
-        display: inline-block;
-        width: 150px;
+      #slider1Knob, #slider2Knob {
+        width: 22px;
+        height: 8px;
+        border-radius: 4px;
       }
-      .sliderTitle {
-        font-size: 16px;
-        font-weight: 300;
-        line-height: 1;
-        padding: 0 15px;
-      }
-      paper-slider {
-        display: inline-block;
-        width: 120px;
-        --paper-slider-knob-start-border-color: var(--google-blue-700);
-        --paper-slider-knob-start-color: var(--google-blue-700);
-        --paper-slider-pin-start-color: var(--google-blue-700);
+      #boxKnob {
+        width: 16px;
+        height: 16px;
+        border-radius: 8px;
       }
     </style>
 
-    <div class="firstColumn">
-      <div class="flowerBox">
-        <key-flower id="keyflower" scale="[[scale]]" palette="[[colors]]"></key-flower>
+    <div id="firstRow">
+      <div id="colorPreview" style="background-color: [[color]]">
+        [[color]]
       </div>
-      <div class="sliderBox">
-        <span class="sliderTitle">Saturation</span>
-        <paper-slider pin value="{{s}}" min="-4" step="1" max="4" id="s"></paper-slider>
+      <div id="codeWrapper">
+
       </div>
     </div>
 
-    <div class="secondColumn">
-      <div>
-        <template is="dom-repeat" items="[[colors]]">
-          <div id="color[[index]]" class="color" style$="background: [[item]]" on-click="_selectColor"></div>
-        </template>
+    <div id="colorWrapper">
+      <div class="canvas-box">
+        <canvas id="colorSlider1" width="20" height="200"></canvas>
+        <color-knob only-y
+                    on-y-change="_hueChange"
+                    y="[[_calcFromHue(hue)]]">
+          <div id="slider1Knob" class="knob"></div>
+        </color-knob>
       </div>
-      <div>
-        <div id="grey0" class="color" style="background-color: var(--tone-grey-0)" on-click="_selectColor"></div>
-        <div id="grey1" class="color" style="background-color: var(--tone-grey-1)" on-click="_selectColor"></div>
-        <div id="grey2" class="color" style="background-color: var(--tone-grey-2)" on-click="_selectColor"></div>
-        <div id="grey3" class="color" style="background-color: var(--tone-grey-3)" on-click="_selectColor"></div>
-        <div id="grey4" class="color" style="background-color: var(--tone-grey-4)" on-click="_selectColor"></div>
-        <div id="grey5" class="color" style="background-color: var(--tone-grey-5)" on-click="_selectColor"></div>
-        <div id="grey6" class="color" style="background-color: var(--tone-grey-6)" on-click="_selectColor"></div>
-        <div id="grey7" class="color" style="background-color: var(--tone-grey-7)" on-click="_selectColor"></div>
-        <div id="grey8" class="color" style="background-color: var(--tone-grey-8)" on-click="_selectColor"></div>
+      <div class="canvas-box" on-x-change="_lightnessChange" on-y-change="_saturationChange">
+        <canvas id="colorBox" width="200" height="200"></canvas>
+        <color-knob x="[[_calcFromLightness(lightness)]]"
+                    y="[[_calcFromSaturation(saturation)]]">
+          <div id="boxKnob" class="knob"></div>
+        </color-knob>
+      </div>
+      <div class="canvas-box">
+        <canvas id="colorSlider2" width="20" height="200"></canvas>
+        <color-knob only-y
+                    on-y-change="_alphaChange"
+                    y="[[_calcFromAlpha(alpha)]]">
+          <div id="slider2Knob" class="knob"></div>
+        </color-knob>
       </div>
     </div>
-      <!--<div>-->
-      <!--<span class="sliderTitle">Lightness</span>-->
-      <!--<paper-slider pin min="-90" max="90" id="l" on-change="setL"></paper-slider>-->
-      <!--</div>-->
-      <!--H <input type="range" min="-90" max="90" value="0" id="h" on-input="setSunset"/> <br>-->
 
   </template>
 
-  <!--<script src="js/StaticColorMaker.js"></script>-->
   <script>
     class ColorPalette extends Polymer.Element {
       static get is() {
@@ -98,55 +98,135 @@
 
       static get properties() {
         return {
-          colors: {
-            type: Array,
-            computed: "_computeColorName(s)",
-            observer: "_notifyColorChange"
+          hue: {
+            type: Number,
+            value: 300
           },
-          s: Number
+          saturation: {
+            type: Number,
+            value: 100
+          },
+          lightness: {
+            type: Number,
+            value: 50
+          },
+          alpha: {
+            type: Number,
+            value: 1
+          },
+          color: {
+            type: String,
+            computed: "_makeColor(hue,saturation,lightness,alpha)"
+          }
         }
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.set("colors", this._computeColorName(0));
-      }
-
-      _selectColor(e) {
-        this.dispatchEvent(new CustomEvent("select-style", {composed: true, bubbles: true, detail: e.target.id}));
-      }
-
-      _computeColorName(s) {
-        return ColorPalette.materialColorNames().map(cName => "var(--paper-" + cName + "-" + (5 + s) + "00)");
-      }
-
-      _notifyColorChange() {
-        this.dispatchEvent(new CustomEvent("new-colors", {composed: true, bubbles: true, detail: this.colors}));
-      }
-
-      static materialColorNames() {
+      static get observers() {
         return [
-//          "blue-grey",
-//          "grey",
-          "red",
-//          "deep-orange",
-          "orange",
-//          "amber",
-          "yellow",
-          "lime",
-          "light-green",
-          "green",
-          "teal",
-          "cyan",
-//          "light-blue",
-          "blue",
-          "indigo",
-//          "deep-purple",
-          "purple",
-//          "pink"
-          "brown",
-        ];
+          "_drawColorBox(hue,alpha)",
+          "_drawColorSlider1(alpha)",
+          "_drawColorSlider2(hue,saturation,lightness)"
+        ]
       }
+
+      _drawColorBox(h,a) {
+        var c = this.$.colorBox.getContext("2d");
+        c.clearRect(0,0,c.canvas.width,c.canvas.height);
+        var sx = c.canvas.width / 50;
+        var sy = c.canvas.height / 50;
+        for (var l = 0; l < 50; l++) {
+          for (var s = 0; s < 50; s++) {
+            c.fillStyle = "hsla("+h+", "+s*2+"%, "+l*2+"%, "+a+")";
+            c.fillRect(sx*l, sy*(49-s), sx, sy);
+          }
+        }
+      }
+
+      _drawColorSlider1(a) {
+        var c = this.$.colorSlider1.getContext("2d");
+        c.clearRect(0,0,c.canvas.width,c.canvas.height);
+        var sx = c.canvas.width;
+        var sy = c.canvas.height / 360;
+        for (var h = 0; h < c.canvas.height; h++) {
+          c.fillStyle = "hsla("+h/sy+", 100%, 50%, "+a+")";
+          c.fillRect(0, h, sx, sy);
+        }
+      }
+
+      _drawColorSlider2(h,s,l) {
+        var c = this.$.colorSlider2.getContext("2d");
+        c.clearRect(0,0,c.canvas.width,c.canvas.height);
+        var sx = c.canvas.width;
+        var sy = c.canvas.height;
+        for (var a = 0; a < 1; a += 0.01) {
+          c.fillStyle = "hsla("+h+", "+s+"%, "+l+"%, "+a+")";
+          c.fillRect(0, sy*(0.99-a), sx, sy*0.01);
+        }
+      }
+
+      _makeColor(h,s,l,a) {
+        return "hsla("+h+", "+s+"%, "+l+"%, "+a+")";
+      }
+
+      _hueChange(e) {
+        this.hue = this._roundTo(e.detail/this.$.colorSlider1.height*360,1);
+      }
+
+      _saturationChange(e) {
+        this.saturation = this._roundTo((1-(e.detail/this.$.colorBox.height))*100, 1);
+      }
+
+      _lightnessChange(e) {
+        this.lightness = this._roundTo(e.detail/this.$.colorBox.width*100, 1);
+      }
+
+      _alphaChange(e) {
+        this.alpha = this._roundTo(1-(e.detail/this.$.colorSlider2.height), 4);
+      }
+
+      _calcFromHue(h) {
+        return h/360*this.$.colorSlider1.height;
+      }
+
+      _calcFromSaturation(s) {
+        return (1-s/100)*this.$.colorBox.height;
+      }
+
+      _calcFromLightness(l) {
+        return l/100*this.$.colorBox.width;
+      }
+
+      _calcFromAlpha(a) {
+        return (1-a)*this.$.colorSlider2.height;
+      }
+
+      _roundTo(x,n) {
+        var e = Math.pow(10,n);
+        return Math.round(x*e)/e;
+      }
+
+      // _drawColorWheel(c) {
+      //   var sx = c.canvas.width / 202;
+      //   var sy = c.canvas.height / 202;
+      //   var cx = c.canvas.width / 2;
+      //   var cy = c.canvas.height / 2;
+      //   var k = 50;
+      //   for (var i = 0; i < 360; i++) {
+      //     var rad = i/180*Math.PI;
+      //     var cos = Math.cos(rad);
+      //     var sin = Math.sin(rad);
+      //     var x = 0;
+      //     var y = 1;
+      //     var nx = (cos * x) + (sin * y);
+      //     var ny = (cos * y) - (sin * x);
+      //     for (var j = 0; j < 100; j++) {
+      //       c.fillStyle = "hsl("+i+", "+j+"%, "+k+"%)";
+      //       var s = j/100*Math.PI;
+      //       s = s<1 ? 1 : s;
+      //       c.fillRect(cx-sx*1.5+(nx*sx*j), cy-sy*1.5+(ny*sy*j), s*sx, s*sy);
+      //     }
+      //   }
+      // }
     }
     customElements.define(ColorPalette.is, ColorPalette);
   </script>
