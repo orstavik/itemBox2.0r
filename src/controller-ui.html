@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
-
 <link rel="import" href="../bower_components/paper-styles/color.html">
 
 <link rel="import" href="ui/app-login.html">
@@ -123,7 +122,7 @@
         <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
-        <color-palette id="palette" color="hsla(330,100%,50%,0.8)"></color-palette>
+        <color-palette id="palette" color="[[color]]"></color-palette>
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
@@ -160,6 +159,10 @@
             type: Object,
             observer: "_notifyScale"
           },
+          color: {
+            type: String,
+            value: "hsla(330,100%,50%,0.8)"
+          }
         }
       }
 

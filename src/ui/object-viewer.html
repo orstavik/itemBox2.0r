@@ -56,8 +56,11 @@
 				else
 					type = item.constructor.name;
 
-				if (type === "Array")
+				if (type === "Array") 
 					length = item.length;
+
+				if (type === "Map")
+					length = item.size;
 
 				return {
 					name: this.name,

@@ -129,6 +129,10 @@
             this.set("key.length", Object.keys(key.value).length);
             break;
 
+          case "Map":
+            this.set("key.length", key.value.size);
+            break;
+
           case "Array":
             this.set("key.length", key.value.length);
             break;
@@ -140,6 +144,8 @@
 
         if (!active)
           return;
+        
+        let arr = [];
 
         switch (key.type) {
           case "Array":
@@ -158,21 +164,39 @@
               }
             }));
             break;
-            
-          case "Object":
-            this.set("_value", Object.keys(key.value).map(function(name) {
-              if (key.value[name] === undefined)
+
+          case "Map":
+            key.value.forEach(function(value,name){
+              if (value === undefined)
                 var type = "undefined";
-              else if (key.value[name] === null)
+              else if (value === null)
                 var type = "null";
               else
-                var type = key.value[name].constructor.name;
-              return {
+                var type = value.constructor.name;
+              arr.push({
                 name: name,
                 type: type,
-                value: key.value[name]
-              }
-            }));
+                value: value
+              })
+            });
+            this.set("_value", arr);
+            break;
+            
+          case "Object":
+            for (let k in key.value) {
+              if (key.value[k] === undefined)
+                var type = "undefined";
+              else if (key.value[k] === null)
+                var type = "null";
+              else
+                var type = key.value[k].constructor.name;
+              arr.push({
+                name: k,
+                type: type,
+                value: key.value[k]
+              })
+            };
+            this.set("_value", arr);
             break;
 
           case "Date":
@@ -180,19 +204,20 @@
             
           default:
             if (key.value instanceof Object) {
-              this.set("_value", Object.keys(key.value).map(function(name) {
-                if (key.value[name] === undefined)
+              for (let k in key.value) {
+                if (key.value[k] === undefined)
                   var type = "undefined";
-                else if (key.value[name] === null)
+                else if (key.value[k] === null)
                   var type = "null";
                 else
-                  var type = key.value[name].constructor.name;
-                return {
-                  name: name,
+                  var type = key.value[k].constructor.name;
+                arr.push({
+                  name: k,
                   type: type,
-                  value: key.value[name]
-                }
-              }));
+                  value: key.value[k]
+                })
+              };
+              this.set("_value", arr);
             }
             break;
         }
@@ -201,6 +226,15 @@
       _useType(type, value) {
         switch (type) {
           case "Array":
+            this.setProperties({
+              "brackets": {
+                open: "[",
+                close: "]"
+              },
+              "objType": true
+            });
+            break;
+          case "Map":
             this.setProperties({
               "brackets": {
                 open: "[",
@@ -259,7 +293,12 @@
       }
 
       _compObjType(type, length) {
-        return type === "Array" ? type+"("+length+")" : type;
+        if (type === "Array")
+          return type+"("+length+")";
+        else if (type === "Map")
+          return type+"("+length+")";
+        else
+          return type;
       }
 
       _isOpenable(obj, length) {
