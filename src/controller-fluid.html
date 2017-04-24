@@ -1,11 +1,8 @@
-<link rel="import" href="app-router.html">
-
 <dom-module id="controller-fluid">
   <template>
     <style>
       :host { display: block; }
     </style>
-    <app-router id="location"></app-router>
     <slot></slot>
   </template>
   <script>
@@ -18,183 +15,11 @@
       static get properties() {
         return {
           state: Object,
-          session: Object,
-          sketch: Object,
-          selects: Object,
-          rects: Object,
-          viewPort: Object,
-          fluidNow: {
-            type: Object,
-            computed: "_merge(sketch, viewPort, session, selects, rects)"
-          },
-          actionType: String,
-          serverSketches: {
-            type: Object,
-            observer: "reduceFluidMatrix"
-          }
         };
       }
 
       static get observers() {
-        return ["setUrl(state.now.session.sketchName)"]
-      }
-
-      constructor() {
-        super();
-        this.addEventListener("route-changed", this._routeChanged.bind(this));
-        this.addEventListener("new-sketch", this._newSketch.bind(this));
-        this.addEventListener("new-scale", this._newScale.bind(this));
-        this.addEventListener("new-shape", this._newShape.bind(this));
-        this.addEventListener("change-shapes", this._changeShapes.bind(this));
-        this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
-        this.addEventListener("delete-selected", this._deleteSelected.bind(this));
-        this.addEventListener("deselect-all", this._deselect.bind(this));
-        this.addEventListener("select", this._selectSingle.bind(this));
-        this.addEventListener("new-box-selection", this._select.bind(this));
-        this.addEventListener("shape-location", this._registerUIshape.bind(this));
-        this.addEventListener("view-changed", this._viewChanged.bind(this));
-      }
-
-      _merge(sketch, viewPort, session, selects, rects) {
-        if (session === undefined)               //don't merge if the route object is not instantiated yet
-          return undefined;
-        let now = {
-          session: session,
-          viewPort: viewPort,
-          selects: selects,
-          rects: rects,
-          fluidActiveSketch: sketch
-        };
-        this._fire("snap-change", {type: this.actionType, snap: now});
-        return now;
-      }
-
-      setUrl(sketchName) {
-        //debugger; //todo since polymer always runs this test even if only the parent object has changed, this will run much more often than it should..
-        this.$.location.setUrl("/" + sketchName);
-      }
-
-      _routeChanged(e) {
-        e.stopPropagation();
-        //debugger;
-        this.set("actionType", "route");
-        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        this.set("session", e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {});
-      }
-
-      _viewChanged(e) {
-        e.stopPropagation();
-        this.set("actionType", "view");
-        this.set("viewPort", e.detail);
-      }
-
-      reset() {
-        this.setProperties({
-          "session": {},
-          "sketch": undefined,
-          "viewPort": undefined,
-          "selects": undefined
-        });
-      }
-
-      reduceFluidMatrix(serverSketches) {
-        //todo here, we can also reduce the rects if we want, and yes, this we want to do!
-        let diffSketch = undefined;
-        if (!this.sketch)
-          return;
-        if (serverSketches && this.state.now.session.sketchName) {
-          let serverSketch = serverSketches[this.state.now.session.sketchName];
-          diffSketch = Tools.filterDeep(this.sketch, serverSketch);
-          for (let key in diffSketch) {                   //custom algorithm for removing shapes deleted FROM server first.
-            if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
-              delete diffSketch[key];
-          }
-        }
-        let res = {};
-        for (let key in this.state.now.rects) {
-          if (this.state.now.activeSketch.shapes[key])
-            res[key] = this.state.now.rects[key];
-        }
-        this.setProperties({"sketch": diffSketch, "rects": res});
-      }
-
-      _newSketch(e) {
-        e.stopPropagation();
-        this.set("actionType", e.type);
-        console.log("The preservation of the previous state is not supported yet.");
-        this.setProperties({
-          "session": {sketchName: e.detail.url},
-          "viewPort": undefined,
-          "selects": undefined,
-          "sketch": undefined
-        });
-      }
-
-      _changeShapesEnd(e) {
-        e.stopPropagation();
-        this.set("actionType", e.detail);
-        this.set("sketch", Object.assign({}, this.sketch));
-      }
-
-      _changeShapes(e) {
-        e.stopPropagation();
-        this.set("actionType", "shape-matrix-fluid");
-        this.set("sketch", Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: e.detail}));
-      }
-
-      _newShape(e) {
-        e.stopPropagation();
-        this.set("actionType", "new-shape");
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.detail.x, e.detail.y);
-        let matrix = {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0};
-        this.set("sketch", Tools.setIn(this.sketch, ["shapes", Tools.genKey(), "matrix"], matrix));
-      }
-
-      _deleteSelected(e) {
-        e.stopPropagation();
-        this.set("actionType", "delete-shape");
-        let deletes = {};
-        for (let key in this.state.now.selects)
-          deletes[key] = null;
-        this.setProperties({
-          "selects": {},
-          "sketch": Tools.mergeDeepWithNullToDelete(this.sketch, {shapes: deletes})
-        });
-      }
-
-      _newScale(e) {
-        e.stopPropagation();
-        this.set("actionType", "scale");
-        // console.log(e);
-      }
-
-      _registerUIshape(e) {
-        e.stopPropagation();
-        this.set("actionType", "shape-rect");
-        let rects = Object.assign({}, this.state.now.rects);
-        rects[e.detail.key] = e.detail.value;
-        this.set("rects", rects);
-        //todo need to filter rects so that if matrices are removed, so will the rects be
-      }
-
-      _deselect(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        this.set("selects", {});
-      }
-
-      _selectSingle(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        let selects = Object.assign({}, this.state.now.selects);
-        selects[e.detail] = true;
-        this.set("selects", selects);
-      }
-
-      _select(e) {
-        e.stopPropagation();
-        this.set("actionType", "select");
-        this.set("selects", e.detail);
+        return ["reduceFluidMatrix(serverSketches)"]
       }
 
       _fire(name, detail) {

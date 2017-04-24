@@ -31,7 +31,28 @@
       }
     }
 
-    class SpaceCamera extends Polymer.Element {
+    class SpaceCamera extends Polymer.GestureEventListeners(Polymer.Element) {
+
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.Gestures.addListener(this.parentNode, 'track', function (e) {
+          if (!this.moveable || e.detail.state !== "track")
+            return;
+          e.stopPropagation();
+          this.moveViewport(e);
+        }.bind(this));
+        this.parentNode.addEventListener('wheel', function (e) {
+          this.checkScroll(e);
+        }.bind(this));
+        this.parentNode.addEventListener('touchmove', function (e) {
+          e.stopPropagation();
+          this.pinch(e);
+        }.bind(this));
+        this.parentNode.addEventListener('touchend', function (e) {
+          e.stopPropagation();
+          this.endPinch(e);
+        }.bind(this));
+      }
 
       static get is() {
         return 'space-camera';
@@ -42,7 +63,8 @@
           viewPort: {
             type: Object,
             observer: "_updateView"
-          }
+          },
+          moveable: Boolean
         };
       }
 

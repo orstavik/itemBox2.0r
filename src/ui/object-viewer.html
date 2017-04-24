@@ -28,7 +28,7 @@
 
   </template>
   <script>
-    class ObjectViewer extends Polymer.GestureEventListeners(Polymer.Element) {
+    class ObjectViewer extends Polymer.Element {
       static get is() {
         return "object-viewer";
       }
@@ -48,16 +48,17 @@
       }
 
 			_makeKey(item) {
+        let type, length;
 				if (item === undefined)
-					var type = "undefined";
+					type = "undefined";
 				else if (item === null)
-					var type = "null";
+					type = "null";
 				else
-					var type = item.constructor.name;
+					type = item.constructor.name;
 
 				if (type === "Array")
-					var length = item.length;
-				
+					length = item.length;
+
 				return {
 					name: this.name,
 					type: type,

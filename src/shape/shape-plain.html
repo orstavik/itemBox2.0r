@@ -14,41 +14,29 @@
         position: absolute;
         background-color: var(--paper-green-50);
       }
-      :host([moveable]) #moveBox {
-        display: block;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        pointer-events: auto;
+      :host([moveable]) {
         cursor: -webkit-grab;
-        z-index: 100;
-      }
-      :host(:not([moveable])) #moveBox {
-        display: none;
       }
     </style>
 
-    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" rects="[[state.now.rects]]"></selection-box>
     <coordinate-lines view-port="[[state.now.viewPort]]"></coordinate-lines>
-    <space-camera id="camera" view-port="[[state.now.viewPort]]">
-      <template is="dom-repeat" items="[[shapesArray]]">
-        <shape-object id$="[[item.key]]"
-                      selected$="[[item.value.selected]]"
-                      matrix-data="[[item.value.matrix]]"
-                      on-down="_select"
-                      on-up="_up"
-                      on-new-selection="_select"></shape-object>
-      </template>
-    </space-camera>
-
-    <div id="moveBox"></div>
-
+    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
+    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
+      <space-camera id="camera" view-port="[[state.now.viewPort]]" moveable$="[[moveable]]">
+        <template is="dom-repeat" items="[[shapesArray]]">
+          <shape-object id$="[[item.key]]"
+                        selectable
+                        selected$="[[item.value.selected]]"
+                        matrix-data="[[item.value.matrix]]"
+          ></shape-object>
+        </template>
+      </space-camera>
+    </selection-box>
   </template>
 
   <script>
 
-    class ShapePlain extends Polymer.GestureEventListeners(Polymer.Element) {
+    class ShapePlain extends Polymer.Element {
       static get is() {
         return "shape-plain";
       }
@@ -56,13 +44,11 @@
       static get properties() {
         return {
           state: Object,
-          heldKeys: {
-            type: Object,
-            observer: "_checkIfMoveable"
-          },
+          heldKeys: Object,
           moveable: {
             type: Boolean,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            computed: "_makeMoveable(heldKeys)"
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
@@ -73,6 +59,27 @@
             computed: "_toArray(state.now.activeSketch.shapes)"
           }
         }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("dblclick", this._newShape.bind(this));
+        this.addEventListener("long-press", this._newShape.bind(this));
+
+        const styleChangedObserver = new MutationObserver(function (mutations) {
+          for (let mutation of mutations) {
+            if (mutation.attributeName === "style")
+              for (let node of this.shadowRoot.querySelectorAll("shape-object"))
+                node.alertLocation();
+          }
+        }.bind(this));
+        //todo do we always have access to this.$.camera at this point? ...
+        styleChangedObserver.observe(this.$.camera, {attributes: true});
+      }
+
+      _newShape(e) {
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.x || e.detail.x, e.y || e.detail.y);
+        this.fire("new-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 
       _makeSelecteds(activeSketch, selects) {
@@ -91,60 +98,11 @@
         return res;
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        Polymer.Gestures.addListener(this.$.moveBox, 'track', function (e) {
-          if (e.detail.state !== "track")
-            return;
-          this.$.camera.moveViewport(e);
-        }.bind(this));
-        this.addEventListener('wheel', function (e) {
-          this.$.camera.checkScroll(e);
-        }.bind(this));
-        this.$.moveBox.addEventListener('touchmove', function (e) {
-          this.$.camera.pinch(e);
-        }.bind(this));
-        this.$.moveBox.addEventListener('touchend', function (e) {
-          this.$.camera.endPinch(e);
-        }.bind(this));
-
-        const styleChangedObserver = new MutationObserver(function (mutations) {
-          for (let mutation of mutations) {
-            if (mutation.attributeName === "style")
-              for (let node of this.shadowRoot.querySelectorAll("shape-object"))
-                node.alertLocation();
-          }
-        }.bind(this));
-        styleChangedObserver.observe(this.$.camera, {attributes: true});
+      _makeMoveable(heldKeys) {
+        return heldKeys ? heldKeys.isDown("Space") : false;
       }
 
-      _checkIfMoveable(heldKeys) {
-        this.moveable = heldKeys.isDown("Space");
-      }
-
-      _select(e) {
-        e.stopPropagation();
-        if (e.detail.sourceEvent instanceof Touch)
-          this.selectionTimer = setTimeout(function () {
-            this._fire("select", e.detail.sourceEvent.target.id);
-            this.selectionTimer = undefined;
-          }.bind(this), 600);
-        else {
-          if (!this.heldKeys.shift())
-            this._fire("deselect-all");
-          this._fire("select", e.target.id);
-        }
-      }
-
-      _up(e) {
-        e.stopPropagation();
-        if (this.selectionTimer) {
-          clearTimeout(this.selectionTimer);
-          this._fire("select", e.target.id);
-        }
-      }
-
-      _fire(name, detail) {
+      fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
