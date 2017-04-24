@@ -9,7 +9,7 @@
       :host { height: 100%; }
     </style>
     <app-router id="location"></app-router>
-    <controller-history id="history" state="{{state}}" now="[[activeSketch]]"></controller-history>
+    <controller-history id="history" state="{{state}}" now="[[elaborateSnap]]"></controller-history>
     <controller-data id="data" state="[[state]]"></controller-data>
     <controller-ui id="ui" state="[[state]]"></controller-ui>
   </template>
@@ -36,17 +36,19 @@
             type: Object,
             computed: "_getServerSketch(snap.sketches, snap.session.sketchName)"
           },
-          activeS: {
+          activeSketch: {
             type: Object,
-            computed: "_makeActiveS(serverSketch, snap.fluidActiveSketch)"
+            computed: "_makeActiveSketch(serverSketch, snap.fluidActiveSketch)"
           },
-          activeSketch: Object      //elaboration on now: the active sketch
+          elaborateSnap: Object      //elaboration on now: the active sketch
         }
       }
 
       static get observers() {
-        return ["setUrl(state.now.session.sketchName)",
-          "_makeActiveSketch(snap, serverSketch, snap.fluidActiveSketch)"];
+        return [
+          "setUrl(state.now.session.sketchName)",
+          "_makeElaborateSnap(snap, serverSketch, activeSketch)"
+        ];
       }
 
       constructor() {
@@ -79,7 +81,7 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
-      _newUserData(e) {                     //todo don't really remember what this is in this app
+      _newUserData(e) {
         this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
       }
 
@@ -97,7 +99,6 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey(), "matrix"], e.detail));
       }
 
-      //todo now I am reducing going into controller-history. This is correct, because I want controller history to be the last and simple thing that is done to the state.
       _changeShapes(e) {
         this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {fluidActiveSketch: {shapes: e.detail}}));
       }
@@ -118,7 +119,6 @@
       }
 
       _newSketch(e) {
-        //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we see on the screen, maybe keep the viewPort etc.
         this.setSnap(e, Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
       }
 
@@ -141,7 +141,6 @@
 
       _select(e) {
         this.setSnap(e, Tools.setIn(this.state.now, ["selects"], e.detail));
-        //iterate all shapes in activeSketch, set selects = false on all of them, and select = true on the ones that are set to true in e.detail.
       }
 
       _shapeLocation(e) {
@@ -188,23 +187,23 @@
         return {"fluidActiveSketch": diffSketch, "rects": res};
       }
 
-      _makeActiveSketch(now, serverSketch, fluidActiveSketch) {
-        now.activeSketch = Tools.mergeDeepWithNullToDelete(serverSketch, fluidActiveSketch);
-        this.set("activeSketch", now);
+      _makeElaborateSnap(now, serverSketch, activeSketch) {
+        now.activeSketch = activeSketch;
+        now.serverSketch = serverSketch;
+        this.set("elaborateSnap", now);
       }
 
       _getServerSketch(sketches, sketchName) {
         return sketches && sketchName ? sketches[sketchName] : undefined;
       }
 
-      _makeActiveS(serverSketch, fluidActiveSketch) {
+      _makeActiveSketch(serverSketch, fluidActiveSketch) {
         return Tools.mergeDeepWithNullToDelete(serverSketch, fluidActiveSketch);
       }
 
       _routeChanged(e) {
         this.setSnap(e, Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
-        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        //todo NO, this we want to do before we pass this event, down in the UI. So that we at this point know from the route wether or not to copy the current active sketch or just delete it.
+        //todo we want this event to contain already processed data about whether or not the user wants us to make a copy of the sketch or start from scratch when making the new sketch.
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);
