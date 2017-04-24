@@ -32,7 +32,7 @@
             }
           },
           snap: Object,
-          activeSketch: {                           //partial now: the active sketch
+          activeSketch: {                           //elaboration on now: the active sketch
             type: Object,
             computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
           }
@@ -65,16 +65,16 @@
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
 
-        this.setSnap("startup", Object.assign({}, this.defaultSnap));
+        this.setSnap({type: "startup", timeStamp: new Date().getTime()}, Object.assign({}, this.defaultSnap));
         this.set("state", Object.assign({}, {now: this.snap}));   //this is needed for the first route operations
       }
 
       _newUser(e) {
-        this.setSnap("new-user", Tools.setIn(this.state.now, ["user"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
       _newUserData(e) {                     //todo don't really remember what this is in this app
-        this.setSnap("new-user-data", Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
+        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
       }
 
       _newSketchData(e) {
@@ -84,20 +84,20 @@
           newSnap.fluidActiveSketch = reduced.fluidActiveSketch;
           newSnap.rects = reduced.rects;
         }
-        this.setSnap("new-sketch-data", newSnap);
+        this.setSnap(e, newSnap);
       }
 
       _newShape(e) {
-        this.setSnap("new-shape", Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey(), "matrix"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey(), "matrix"], e.detail));
       }
 
       //todo now I am reducing going into controller-history. This is correct, because I want controller history to be the last and simple thing that is done to the state.
       _changeShapes(e) {
-        this.setSnap("shape-matrix-fluid", Tools.mergeDeepWithNullToDelete(this.state.now, {fluidActiveSketch: {shapes: e.detail}}));
+        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {fluidActiveSketch: {shapes: e.detail}}));
       }
 
       _changeShapesEnd(e) {
-        this.setSnap(e.detail, Object.assign({}, this.state.now));
+        this.setSnap(e, Object.assign({}, this.state.now));
       }
 
       _deleteSelected(e) {
@@ -108,72 +108,55 @@
         newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes});
         newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
         newSnap.selects = undefined;
-        this.setSnap("delete-shape", newSnap);
+        this.setSnap(e, newSnap);
       }
 
       _newSketch(e) {
         //todo not tested in any way and we need to check whether or not we are to make a copy of the shapes we see on the screen, maybe keep the viewPort etc.
-        this.setSnap("new-sketch", Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
-      }
-
-      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
-        if (!sketches)
-          return now;
-        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-        let mergeableSelects = {};
-        for (let key in selects)
-          mergeableSelects[key] = {selected: true, rect: rects[key]};
-        let res = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
-        now.activeSketch = res;
-        return now;
+        this.setSnap(e, Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
       }
 
       _signIn() {
         this.$.data.signIn();
       }
 
-      _signOut() {
+      _signOut(e) {
         this.$.data.signOut();
-        this.setSnap("sign-out", Object.assign({}, this.defaultSnap));
+        this.setSnap(e, Object.assign({}, this.defaultSnap));
       }
 
       _systemMessage(e) {
-        this.setSnap("system-message", Tools.setIn(this.state.now, ["systemMessage"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["systemMessage"], e.detail));
       }
 
       _helpMessage(e) {
-        this.setSnap("help-message", Tools.setIn(this.state.now, ["helpMessage"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["helpMessage"], e.detail));
       }
 
       _select(e) {
-        e.stopPropagation();
-        this.setSnap("select", Tools.setIn(this.state.now, ["selects"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["selects"], e.detail));
+        //iterate all shapes in activeSketch, set selects = false on all of them, and select = true on the ones that are set to true in e.detail.
       }
 
       _shapeLocation(e) {
-        e.stopPropagation();
-        this.setSnap("shape-rect", Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
+        this.setSnap(e, Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
         //todo need to filter rects so that if matrices are removed, so will the rects be
+        //todo #icecream-season! and should we make the actions redundant..
+//        this.setSnap(e, Tools.setIn(this.state.now, ["activeSketch", "shapes", e.detail.key], e.detail.value));
       }
 
       _viewChanged(e) {
-        e.stopPropagation();
-        this.setSnap("zoom", Tools.setIn(this.state.now, ["viewPort"], e.detail));
-      }
-
-      _routeChanged(e) {
-        e.stopPropagation();
-        this.setSnap("route", Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
-        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
-        //todo NO, this we want to do before we pass this event, down in the UI. So that we at this point know from the route wether or not to copy the current active sketch or just delete it.
+        this.setSnap(e, Tools.setIn(this.state.now, ["viewPort"], e.detail));
       }
 
       setUrl(sketchName) {
         this.$.location.setUrl("/" + sketchName);
       }
 
-      setSnap(action, newSnap) {
-        newSnap.action = {type: action, timeStamp: new Date().getTime()};
+      setSnap(e, newSnap) {
+        if (e instanceof Event)
+          e.stopPropagation();
+        newSnap.action = e;
         this.set("snap", newSnap);
       }
 
@@ -199,6 +182,26 @@
         }
         //todo filter selects not implemented here
         return {"fluidActiveSketch": diffSketch, "rects": res};
+      }
+
+//      snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects
+//      todo this is heavy.. it is much lighter to do the change differently for different changes coming in.
+      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
+        if (!sketches)
+          return now;
+        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
+        let mergeableSelects = {};
+        for (let key in selects)
+          mergeableSelects[key] = {selected: true, rect: rects[key]};
+        //todo #icecream-season!
+        now.activeSketch = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
+        return now;
+      }
+
+      _routeChanged(e) {
+        this.setSnap(e, Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
+        //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
+        //todo NO, this we want to do before we pass this event, down in the UI. So that we at this point know from the route wether or not to copy the current active sketch or just delete it.
       }
     }
     customElements.define(ControllerMain.is, ControllerMain);

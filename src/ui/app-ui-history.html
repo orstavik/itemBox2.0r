@@ -209,7 +209,7 @@
         const differenceInDays = differenceInHour / 24;
         if (differenceInDays < 30)
           return Math.floor(differenceInDays) + " days ago";
-        return historyPoint.date.toGMTString().substr(4, 21);
+        return new Date(then).toGMTString().substr(4, 21);
       }
 
       _tap(e) {

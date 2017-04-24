@@ -71,7 +71,7 @@
 
       _makeEditHistory(now) {
         let t = now.action.type;
-        if (t === "new-shape" || t === "delete-shape" || t === "shape-move" || t === "shape-scale" || t === "shape-rotate")
+        if (t === "change-shapes-end" || t === "new-shape" || t === "delete-selected")// || t === "shape-scale" || t === "shape-rotate")
           return this.editHistory ? [now].concat(this.editHistory) : [now];
         return this.editHistory;
       }
