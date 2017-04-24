@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
 
 <link rel="import" href="../bower_components/paper-styles/color.html">
 
@@ -28,41 +30,6 @@
     <style>
       :host {
         height: 100%;
-        /*--tone-color-0: blue;
-        --tone-color-1: red;
-        --tone-color-2: yellow;
-        --tone-color-3: grey;
-        --tone-color-4: orange;
-        --tone-color-5: green;
-        --tone-color-6: purple;
-        --tone-color-7: darkgreen;
-        --tone-color-8: brown;
-        --tone-color-9: pink;
-        --tone-color-10: teal;
-        --tone-color-11: magenta;
-        --tone-tone-0: blue;
-        --tone-tone-1: red;
-        --tone-tone-2: yellow;
-        --tone-tone-3: grey;
-        --tone-tone-4: orange;
-        --tone-tone-5: green;
-        --tone-tone-6: purple;
-        --tone-rotation-0: rotate(0deg);
-        --tone-rotation-1: rotate(0deg);
-        --tone-rotation-2: rotate(0deg);
-        --tone-rotation-3: rotate(0deg);
-        --tone-rotation-4: rotate(0deg);
-        --tone-rotation-5: rotate(0deg);
-        --tone-rotation-6: rotate(0deg);
-        --tone-grey-0: var(--paper-grey-100);
-        --tone-grey-1: var(--paper-grey-200);
-        --tone-grey-2: var(--paper-grey-300);
-        --tone-grey-3: var(--paper-grey-400);
-        --tone-grey-4: var(--paper-grey-500);
-        --tone-grey-5: var(--paper-grey-600);
-        --tone-grey-6: var(--paper-grey-700);
-        --tone-grey-7: var(--paper-grey-800);
-        --tone-grey-8: var(--paper-grey-900);*/
       }
       tools-button {
         --mother-button-size: 50px;
@@ -156,8 +123,7 @@
         <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
-        <color-palette id="palette" css-colors="{{colors}}" scale="[[scale]]"
-                       on-color-selected="colorSelected"></color-palette>
+        <color-palette id="palette" color="hsla(330,100%,50%,0.8)"></color-palette>
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">

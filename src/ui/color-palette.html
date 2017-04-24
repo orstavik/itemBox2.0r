@@ -1,3 +1,4 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="color-knob.html">
 
 <dom-module id="color-palette">
@@ -7,33 +8,35 @@
         display: flex;
         box-sizing: border-box;
         flex-direction: column;
-        height: 360px;
         align-items: center;
         justify-content: space-around;
-        padding: 10px 16px 10px;
-      }
-      #firstRow {
-        display: flex;
-        height: 100px;
-        align-items: center;
-        justify-content: space-between;
+        padding: 16px;
       }
       #colorPreview {
-        display: flex;
-        flex: 1;
         height: 100px;
         width: 260px;
-        align-items: center;
-        justify-content: center;
+        position: relative;
+        background-image: url("../../img/transparent.jpg");
+      }
+      #colorPreview>div {
+        height: 100%;
       }
       #colorWrapper {
         display: flex;
         width: 260px;
         justify-content: space-between;
       }
+      #codeWrapper {
+        display: flex;
+        width: 260px;
+        justify-content: space-between;
+        margin: 12px 0;
+      }
       .canvas-box {
         display: inline-flex;
         position: relative;
+        background-image: url("../../img/transparent.jpg");
+        user-select: none;
       }
       .knob {
         background: white;
@@ -51,15 +54,46 @@
         height: 16px;
         border-radius: 8px;
       }
+      paper-input {
+        width: 60px;
+      }
     </style>
 
-    <div id="firstRow">
-      <div id="colorPreview" style="background-color: [[color]]">
-        [[color]]
-      </div>
-      <div id="codeWrapper">
+    <div id="colorPreview">
+      <div style$="background-color: [[_makeColor(hue,saturation,lightness,alpha)]]"></div> <!-- needs to be [[color]] -->
+    </div>
 
-      </div>
+    <div id="codeWrapper">
+      <paper-input data-type="hue" label="Hue"
+                   error-message="0-360!"
+                   on-input="_validate"
+                   pattern="(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[hue]]">
+      </paper-input>
+      <paper-input data-type="saturation" label="Saturation" 
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[saturation]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="lightness" label="Lightness" 
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[lightness]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="alpha" label="Alpha" 
+                   error-message="0-1!"
+                   on-input="_validate"
+                   pattern="(0(\.\d+)?|1)"
+                   maxlength="3"
+                   value="[[alpha]]">
+      </paper-input>
     </div>
 
     <div id="colorWrapper">
@@ -116,7 +150,7 @@
           },
           color: {
             type: String,
-            computed: "_makeColor(hue,saturation,lightness,alpha)"
+            observer: "_parseColors"
           }
         }
       }
@@ -124,8 +158,9 @@
       static get observers() {
         return [
           "_drawColorBox(hue,alpha)",
-          "_drawColorSlider1(alpha)",
-          "_drawColorSlider2(hue,saturation,lightness)"
+          "_drawColorSlider1(saturation,lightness,alpha)",
+          "_drawColorSlider2(hue,saturation,lightness)",
+          "_newColor(hue,saturation,lightness,alpha)"
         ]
       }
 
@@ -142,14 +177,14 @@
         }
       }
 
-      _drawColorSlider1(a) {
-        const c = this.$.colorSlider1.getContext("2d");
-        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
-        const sx = c.canvas.width;
-        const sy = c.canvas.height / 360;
-        for (let h = 0; h < c.canvas.height; h++) {
-          c.fillStyle = this._makeColor(h / sy, 100, 50, a);
-          c.fillRect(0, h, sx, sy);
+      _drawColorSlider1(s,l,a) {
+        var c = this.$.colorSlider1.getContext("2d");
+        c.clearRect(0,0,c.canvas.width,c.canvas.height);
+        var sx = c.canvas.width;
+        for (var y = 0; y < c.canvas.height; y++) {
+          let h = y/c.canvas.height*360;
+          c.fillStyle = this._makeColor(h, s, l, a);
+          c.fillRect(0, y, sx, 1);
         }
       }
 
@@ -168,20 +203,34 @@
         return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
       }
 
+      _parseColors(hsla) {
+        let arr = hsla.slice(5,-1).split(",").map( i => i.replace("%", "") );
+        this.setProperties({
+          "hue": arr[0],
+          "saturation": arr[1],
+          "lightness": arr[2],
+          "alpha": arr[3]
+        });
+      }
+
+      _newColor(h,s,l,a) {
+        this._fire("new-color", this._makeColor(h,s,l,a));
+      }
+
       _hueChange(e) {
-        this.hue = ColorPalette._roundTo(e.detail / this.$.colorSlider1.height * 360, 1);
+        this.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
       }
 
       _saturationChange(e) {
-        this.saturation = ColorPalette._roundTo((1 - (e.detail / this.$.colorBox.height)) * 100, 1);
+        this.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
       }
 
       _lightnessChange(e) {
-        this.lightness = ColorPalette._roundTo(e.detail / this.$.colorBox.width * 100, 1);
+        this.lightness = Math.round(e.detail/this.$.colorBox.width*100);
       }
 
       _alphaChange(e) {
-        this.alpha = ColorPalette._roundTo(1 - (e.detail / this.$.colorSlider2.height), 4);
+        this.alpha = ColorPalette._roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
       }
 
       _calcFromHue(h) {
@@ -200,33 +249,19 @@
         return (1 - a) * this.$.colorSlider2.height;
       }
 
+      _validate(e) {
+        if (e.target.validate())
+          this[e.target.dataset.type] = e.target.value;
+      }
+
       static _roundTo(x, n) {
         const e = Math.pow(10, n);
         return Math.round(x * e) / e;
       }
 
-      // _drawColorWheel(c) {
-      //   var sx = c.canvas.width / 202;
-      //   var sy = c.canvas.height / 202;
-      //   var cx = c.canvas.width / 2;
-      //   var cy = c.canvas.height / 2;
-      //   var k = 50;
-      //   for (var i = 0; i < 360; i++) {
-      //     var rad = i/180*Math.PI;
-      //     var cos = Math.cos(rad);
-      //     var sin = Math.sin(rad);
-      //     var x = 0;
-      //     var y = 1;
-      //     var nx = (cos * x) + (sin * y);
-      //     var ny = (cos * y) - (sin * x);
-      //     for (var j = 0; j < 100; j++) {
-      //       c.fillStyle = "hsl("+i+", "+j+"%, "+k+"%)";
-      //       var s = j/100*Math.PI;
-      //       s = s<1 ? 1 : s;
-      //       c.fillRect(cx-sx*1.5+(nx*sx*j), cy-sy*1.5+(ny*sy*j), s*sx, s*sy);
-      //     }
-      //   }
-      // }
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
     }
     customElements.define(ColorPalette.is, ColorPalette);
   </script>
