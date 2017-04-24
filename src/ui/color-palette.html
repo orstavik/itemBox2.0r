@@ -1,3 +1,4 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="color-knob.html">
 
 <dom-module id="color-palette">
@@ -7,29 +8,25 @@
         display: flex;
         box-sizing: border-box;
         flex-direction: column;
-        height: 360px;
         align-items: center;
         justify-content: space-around;
         padding: 10px 16px 10px;
       }
-      #firstRow {
-        display: flex;
-        height: 100px;
-        align-items: center;
-        justify-content: space-between;
-      }
       #colorPreview {
         display: flex;
-        flex: 1;
         height: 100px;
         width: 260px;
-        align-items: center;
-        justify-content: center;
       }
       #colorWrapper {
         display: flex;
         width: 260px;
+        margin: 12px 0;
         justify-content: space-between;
+      }
+      #codeWrapper {
+        display: flex;
+        justify-content: space-between;
+        width: 260px;
       }
       .canvas-box {
         display: inline-flex;
@@ -51,15 +48,44 @@
         height: 16px;
         border-radius: 8px;
       }
+      paper-input {
+        width: 60px;
+      }
     </style>
 
-    <div id="firstRow">
-      <div id="colorPreview" style="background-color: [[color]]">
-        [[color]]
-      </div>
-      <div id="codeWrapper">
+    <div id="colorPreview" style$="background-color: [[color]]"></div>
 
-      </div>
+    <div id="codeWrapper">
+      <paper-input data-type="hue" label="Hue"
+                   error-message="0-360!"
+                   on-input="_validate"
+                   pattern="(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[hue]]">
+      </paper-input>
+      <paper-input data-type="saturation" label="Saturation" 
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[saturation]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="lightness" label="Lightness" 
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[lightness]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="alpha" label="Alpha" 
+                   error-message="0-1!"
+                   on-input="_validate"
+                   pattern="(0(\.\d+)?|1)"
+                   maxlength="4"
+                   value="[[alpha]]">
+      </paper-input>
     </div>
 
     <div id="colorWrapper">
@@ -147,9 +173,10 @@
         c.clearRect(0,0,c.canvas.width,c.canvas.height);
         var sx = c.canvas.width;
         var sy = c.canvas.height / 360;
-        for (var h = 0; h < c.canvas.height; h++) {
-          c.fillStyle = "hsla("+h/sy+", 100%, 50%, "+a+")";
-          c.fillRect(0, h, sx, sy);
+        for (var h = 0; h < 360; h++) {
+          c.fillStyle = "hsla("+h+", 100%, 50%, "+a+")";
+          console.log(h);
+          c.fillRect(0, h*sy, sx, sy);
         }
       }
 
@@ -169,15 +196,15 @@
       }
 
       _hueChange(e) {
-        this.hue = this._roundTo(e.detail/this.$.colorSlider1.height*360,1);
+        this.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
       }
 
       _saturationChange(e) {
-        this.saturation = this._roundTo((1-(e.detail/this.$.colorBox.height))*100, 1);
+        this.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
       }
 
       _lightnessChange(e) {
-        this.lightness = this._roundTo(e.detail/this.$.colorBox.width*100, 1);
+        this.lightness = Math.round(e.detail/this.$.colorBox.width*100);
       }
 
       _alphaChange(e) {
@@ -198,6 +225,11 @@
 
       _calcFromAlpha(a) {
         return (1-a)*this.$.colorSlider2.height;
+      }
+
+      _validate(e) {
+        if (e.target.validate())
+          this[e.target.dataset.type] = e.target.value;
       }
 
       _roundTo(x,n) {
