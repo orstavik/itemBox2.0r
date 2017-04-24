@@ -52,7 +52,7 @@
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(state.now.activeSketch, state.now.selects)"
+            computed: "_makeSelecteds(state.now.activeSketch, state.now.selects, state.now.rects)"
           },
           shapesArray: {
             type: Array,
@@ -82,12 +82,12 @@
         this.fire("new-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 
-      _makeSelecteds(activeSketch, selects) {
+      _makeSelecteds(activeSketch, selects, rects) {
         if (!activeSketch || !selects)
           return undefined;
         let selectsShapes = {};
         for (let key in selects)
-          selectsShapes[key] = activeSketch.shapes[key];
+          selectsShapes[key] = {matrix: activeSketch.shapes[key].matrix, rect: rects[key]};
         return selectsShapes;
       }
 
