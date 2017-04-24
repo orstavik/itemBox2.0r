@@ -32,15 +32,21 @@
             }
           },
           snap: Object,
-          activeSketch: {                           //elaboration on now: the active sketch
+          serverSketch: {
             type: Object,
-            computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch)"
-          }
+            computed: "_getServerSketch(snap.sketches, snap.session.sketchName)"
+          },
+          activeS: {
+            type: Object,
+            computed: "_makeActiveS(serverSketch, snap.fluidActiveSketch)"
+          },
+          activeSketch: Object      //elaboration on now: the active sketch
         }
       }
 
       static get observers() {
-        return ["setUrl(state.now.session.sketchName)"];
+        return ["setUrl(state.now.session.sketchName)",
+          "_makeActiveSketch(snap, serverSketch, snap.fluidActiveSketch)"];
       }
 
       constructor() {
@@ -182,13 +188,17 @@
         return {"fluidActiveSketch": diffSketch, "rects": res};
       }
 
-//      snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects
-//      todo this is heavy.. it is much lighter to do the change differently for different changes coming in.
-      _makeActiveSketch(now, sketches, name, fluidActiveSketch) {
-        if (!sketches)
-          return now;
-        now.activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-        return now;
+      _makeActiveSketch(now, serverSketch, fluidActiveSketch) {
+        now.activeSketch = Tools.mergeDeepWithNullToDelete(serverSketch, fluidActiveSketch);
+        this.set("activeSketch", now);
+      }
+
+      _getServerSketch(sketches, sketchName) {
+        return sketches && sketchName ? sketches[sketchName] : undefined;
+      }
+
+      _makeActiveS(serverSketch, fluidActiveSketch) {
+        return Tools.mergeDeepWithNullToDelete(serverSketch, fluidActiveSketch);
       }
 
       _routeChanged(e) {
