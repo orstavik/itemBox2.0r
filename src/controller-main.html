@@ -34,7 +34,7 @@
           snap: Object,
           activeSketch: {                           //elaboration on now: the active sketch
             type: Object,
-            computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects)"
+            computed: "_makeActiveSketch(snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch)"
           }
         }
       }
@@ -141,8 +141,6 @@
       _shapeLocation(e) {
         this.setSnap(e, Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
         //todo need to filter rects so that if matrices are removed, so will the rects be
-        //todo #icecream-season! and should we make the actions redundant..
-//        this.setSnap(e, Tools.setIn(this.state.now, ["activeSketch", "shapes", e.detail.key], e.detail.value));
       }
 
       _viewChanged(e) {
@@ -186,15 +184,10 @@
 
 //      snap, snap.sketches, snap.session.sketchName, snap.fluidActiveSketch, snap.selects, snap.rects
 //      todo this is heavy.. it is much lighter to do the change differently for different changes coming in.
-      _makeActiveSketch(now, sketches, name, fluidActiveSketch, selects, rects) {
+      _makeActiveSketch(now, sketches, name, fluidActiveSketch) {
         if (!sketches)
           return now;
-        let activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
-        let mergeableSelects = {};
-        for (let key in selects)
-          mergeableSelects[key] = {selected: true, rect: rects[key]};
-        //todo #icecream-season!
-        now.activeSketch = Tools.mergeDeepWithNullToDelete(activeSketch, {shapes: mergeableSelects});
+        now.activeSketch = Tools.mergeDeepWithNullToDelete(sketches[name], fluidActiveSketch);
         return now;
       }
 
