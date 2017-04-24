@@ -50,12 +50,12 @@
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
 
         this.addEventListener("new-shape", this._newShape.bind(this));
-        this.addEventListener("shape-matrix-fluid", this._shapeMatrixFluid.bind(this));
+        this.addEventListener("change-shapes", this._changeShapes.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
 
         this.addEventListener("select", this._select.bind(this));
-        this.addEventListener("shape-location", this._registerUIshape.bind(this));
+        this.addEventListener("shape-location", this._shapeLocation.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
         this.addEventListener("route-changed", this._routeChanged.bind(this));
 
@@ -88,12 +88,12 @@
       }
 
       _newShape(e) {
-        this.setSnap("new-shape", Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail));
+        this.setSnap("new-shape", Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey(), "matrix"], e.detail));
       }
 
-      //todo should I reduce the rects going up or going down 
-      _shapeMatrixFluid(e) {
-        this.setSnap("shape-matrix-fluid", Tools.setIn(this.state.now, ["fluidActiveSketch"], e.detail));
+      //todo now I am reducing going into controller-history. This is correct, because I want controller history to be the last and simple thing that is done to the state.
+      _changeShapes(e) {
+        this.setSnap("shape-matrix-fluid", Tools.mergeDeepWithNullToDelete(this.state.now, {fluidActiveSketch: {shapes: e.detail}}));
       }
 
       _changeShapesEnd(e) {
@@ -150,7 +150,7 @@
         this.setSnap("select", Tools.setIn(this.state.now, ["selects"], e.detail));
       }
 
-      _registerUIshape(e) {
+      _shapeLocation(e) {
         e.stopPropagation();
         this.setSnap("shape-rect", Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
         //todo need to filter rects so that if matrices are removed, so will the rects be
@@ -165,6 +165,7 @@
         e.stopPropagation();
         this.setSnap("route", Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
         //todo here we need to query the user whether or not he wants to keep the changes in the ui or start from scratch
+        //todo NO, this we want to do before we pass this event, down in the UI. So that we at this point know from the route wether or not to copy the current active sketch or just delete it.
       }
 
       setUrl(sketchName) {
@@ -173,7 +174,6 @@
 
       setSnap(action, newSnap) {
         newSnap.action = {type: action, timeStamp: new Date().getTime()};
-//        newSnap.activeSketch = undefined;
         this.set("snap", newSnap);
       }
 
