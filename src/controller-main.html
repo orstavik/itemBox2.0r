@@ -47,7 +47,7 @@
       static get observers() {
         return [
           "setUrl(state.now.session.sketchName)",
-          "_makeElaborateSnap(snap, serverSketch, activeSketch)"
+          "_makeElaborateSnap(snap, serverSketch, activeSketch)"    //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
 
@@ -91,6 +91,7 @@
         if (reduced) {
           newSnap.fluidActiveSketch = reduced.fluidActiveSketch;
           newSnap.rects = reduced.rects;
+          newSnap.selects = reduced.selects;
         }
         this.setSnap(e, newSnap);
       }
@@ -145,7 +146,6 @@
 
       _shapeLocation(e) {
         this.setSnap(e, Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
-        //todo need to filter rects so that if matrices are removed, so will the rects be
       }
 
       _viewChanged(e) {
@@ -164,10 +164,7 @@
       }
 
       static reduceFluidMatrix(state, serverSketches) {
-        //todo here, we can also reduce the rects if we want, and yes, this we want to do!
         let diffSketch = undefined;
-        if (!state.now.fluidActiveSketch)
-          return undefined;
         //filter the matrices
         if (serverSketches && state.now.session.sketchName) {
           let serverSketch = serverSketches.sketches[state.now.session.sketchName];
@@ -178,13 +175,18 @@
           }
         }
         //filter rects
-        let res = {};
+        let resRects = {};
         for (let key in state.now.rects) {
           if (state.now.activeSketch.shapes[key])
-            res[key] = state.now.rects[key];
+            resRects[key] = state.now.rects[key];
         }
-        //todo filter selects not implemented here
-        return {"fluidActiveSketch": diffSketch, "rects": res};
+        //filter selects
+        let resSelects = {};
+        for (let key in state.now.selects) {
+          if (state.now.activeSketch.shapes[key])
+            resSelects[key] = true;
+        }
+        return {"fluidActiveSketch": diffSketch, "rects": resRects, "selects": resSelects};
       }
 
       _makeElaborateSnap(now, serverSketch, activeSketch) {
