@@ -149,20 +149,35 @@
 
         switch (key.type) {
           case "Array":
-            this.set("_value", key.value.map(function(item, index) {
-              if (item === undefined)
-                var type = "undefined";
-              else if (item === null)
-                var type = "null";
-              else
-                var type = item.constructor.name;
-
-              return {
-                name: index,
-                type: type,
-                value: item
+            if (key.length > 100) {
+              let i0 = 0;
+              for (let i=0; i < key.length; i++) {
+                if ((i+1)%100 === 0 || i+1 === key.length) {
+                  arr.push({
+                    name: "["+i0+"-"+i+"]",
+                    type: "Array",
+                    value: key.value.slice(i0,i+1)
+                  });
+                  i0 += 100;
+                }
               }
-            }));
+              this.set("_value", arr);
+            } else {
+              this.set("_value", key.value.map(function(item, index) {
+                if (item === undefined)
+                  var type = "undefined";
+                else if (item === null)
+                  var type = "null";
+                else
+                  var type = item.constructor.name;
+
+                return {
+                  name: index,
+                  type: type,
+                  value: item
+                }
+              }));
+            }
             break;
 
           case "Map":
