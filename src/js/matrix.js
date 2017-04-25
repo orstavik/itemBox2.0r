@@ -27,11 +27,14 @@ class MatrixData {
   }
 
   static scale(start, x, y, sx, sy) {
+    // console.log(sx,sy);
+    if (isNaN(sx)|| isNaN(sy))
+      console.log(sx,sy);
     let m = Object.assign({}, start);
-    m.x += x;
-    m.y += y;
-    m.sx *= sx;
-    m.sy *= sy;
+    m.x += isNaN(x) ? 0 : x;
+    m.y += isNaN(y) ? 0 : y;
+    m.sx *= isNaN(sx) ? 0.999 : sx;
+    m.sy *= isNaN(sy) ? 0.999 : sy;
     return m;
   }
 
