@@ -2,7 +2,7 @@
 
 <dom-module id="app-router">
   <template>
-    <iron-location id="ironLocation" on-location-changed="_ironLocationChanged"></iron-location>
+    <iron-location id="ironLocation"></iron-location>
   </template>
   <script>
     class AppRouter extends Polymer.Element {
@@ -13,6 +13,7 @@
 
       connectedCallback() {
         super.connectedCallback();
+        window.addEventListener("location-changed", this._ironLocationChanged.bind(this));
         this._fire("route-changed", AppRouter.parseUrl(location));
       }
 
