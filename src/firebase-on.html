@@ -65,9 +65,9 @@
           this._disconnect();
         this._ref = firebase.database().ref(path);
         if (this.once)
-          this._ref.once("value").then(this._updateResult.bind(this));
+          this._ref.once("value").then(this._updateResult.bind(this)); // add ERROR then name is taken
         else
-          this._ref.on("value", this._updateResult.bind(this));
+          this._ref.on("value", this._updateResult.bind(this)); // add ERROR then name is taken
       }
 
       _updateResult(snap) {

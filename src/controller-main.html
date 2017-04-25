@@ -24,10 +24,16 @@
           state: Object,
           defaultSnap: {
             type: Object,
-            value: function () {
+            value: function() {
               return {
-                viewPort: {x: 0, y: 0, s: 1},
-                session: {sketchName: "unsaved"}
+                viewPort: {
+                  x: 0,
+                  y: 0,
+                  s: 1
+                },
+                session: {
+                  sketchName: "unsaved"
+                }
               };
             }
           },
@@ -40,14 +46,14 @@
             type: Object,
             computed: "_makeActiveSketch(serverSketch, snap.fluidActiveSketch)"
           },
-          elaborateSnap: Object      //elaboration on now: the active sketch
+          elaborateSnap: Object //elaboration on now: the active sketch
         }
       }
 
       static get observers() {
         return [
           "setUrl(state.now.session.sketchName)",
-          "_makeElaborateSnap(snap, serverSketch, activeSketch)"    //this observer runs after all the computeds are finished (at least two rounds).
+          "_makeElaborateSnap(snap, serverSketch, activeSketch)" //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
 
@@ -74,8 +80,13 @@
         this.addEventListener("sign-in", this._signIn.bind(this));
         this.addEventListener("sign-out", this._signOut.bind(this));
 
-        this.setSnap({type: "startup", timeStamp: new Date().getTime()}, Object.assign({}, this.defaultSnap));
-        this.set("state", Object.assign({}, {now: this.snap}));   //this is needed for the first route operations
+        this.setSnap({
+          type: "startup",
+          timeStamp: new Date().getTime()
+        }, Object.assign({}, this.defaultSnap));
+        this.set("state", Object.assign({}, {
+          now: this.snap
+        })); //this is needed for the first route operations
       }
 
       _newUser(e) {
@@ -98,11 +109,18 @@
       }
 
       _newShape(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey()], {matrix: e.detail, color: this.state.now.session.color}));
+        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey()], {
+          matrix: e.detail,
+          color: this.state.now.session.color
+        }));
       }
 
       _changeShapes(e) {
-        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {fluidActiveSketch: {shapes: e.detail}}));
+        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
+          fluidActiveSketch: {
+            shapes: e.detail
+          }
+        }));
       }
 
       _changeShapesEnd(e) {
@@ -114,7 +132,9 @@
         for (let key in this.state.now.selects)
           deletes[key] = null;
         const newSnap = Object.assign({}, this.state.now);
-        newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: deletes});
+        newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {
+          shapes: deletes
+        });
         newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
         newSnap.selects = undefined;
         this.setSnap(e, newSnap);
@@ -123,14 +143,22 @@
       _newColor(e) {
         let colors = {};
         for (let key in this.state.now.selects)
-          colors[key] = {color: e.detail};
-        let fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: colors});
+          colors[key] = {
+            color: e.detail
+          };
+        let fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {
+          shapes: colors
+        });
         this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch"], fluidActiveSketch));
         this.setSnap(e, Tools.setIn(this.state.now, ["session", "color"], e.detail));
       }
 
       _newSketch(e) {
-        this.setSnap(e, Object.assign({}, this.defaultSnap, {session: {sketchName: e.detail.url}}));
+        this.setSnap(e, Object.assign({}, this.defaultSnap, {
+          session: {
+            sketchName: e.detail.url
+          }
+        }));
       }
 
       _signIn() {
@@ -203,7 +231,11 @@
           if (state.now.activeSketch.shapes[key])
             resSelects[key] = true;
         }
-        return {"fluidActiveSketch": diffSketch, "rects": resRects, "selects": resSelects};
+        return {
+          "fluidActiveSketch": diffSketch,
+          "rects": resRects,
+          "selects": resSelects
+        };
       }
 
       _makeElaborateSnap(now, serverSketch, activeSketch) {
@@ -221,7 +253,15 @@
       }
 
       _routeChanged(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["session"], e.detail && e.detail.segments ? {sketchName: e.detail.segments[0]} : {}));
+        let sketchID = e.detail && e.detail.segments ? e.detail.segments[0] : undefined;
+        // if (Object.keys(this.state.now.sketches).indexOf(sketchID) === -1)
+        //   sketchID = "unsaved";
+
+        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
+          session: {
+            sketchName: sketchID
+          }
+        }));
         //todo we want this event to contain already processed data about whether or not the user wants us to make a copy of the sketch or start from scratch when making the new sketch.
       }
     }
