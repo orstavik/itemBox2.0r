@@ -29,7 +29,6 @@
 
   </template>
   <script>
-
     class ControllerData extends Polymer.Element {
       static get is() {
         return "controller-data";
@@ -89,7 +88,9 @@
       }
 
       _newUser(e) {
-        this.$.serverUserSnap.updateOverwrite({registered: firebase.database.ServerValue.TIMESTAMP});
+        this.$.serverUserSnap.updateOverwrite({
+          registered: firebase.database.ServerValue.TIMESTAMP
+        });
         this._fire("system-message", "Welcome new user!");
       }
 
@@ -98,12 +99,8 @@
           return;
         let activeShapes = fluidActiveSketch.shapes;
         let filteredShapes = {};
-        for (let key in activeShapes) {                                               //app-logic
-          if (activeShapes[key] === null)                                            // - extracting shape = null
-            filteredShapes[key] = null;
-          else if (activeShapes[key].matrix)                                         // - extracting shape.matrix
-            filteredShapes[key] = {matrix: activeShapes[key].matrix};
-        }
+        for (let key in activeShapes)
+          filteredShapes[key] = activeShapes[key];
         this.$.sketchData.updateMerge(filteredShapes);
       }
 
@@ -116,7 +113,11 @@
       }
 
       _fire(name, detail) {
-        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
 
       _BOOL(one) {

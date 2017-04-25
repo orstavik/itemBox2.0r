@@ -61,6 +61,7 @@
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
         this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
+        this.addEventListener("new-color", this._newColor.bind(this));
 
         this.addEventListener("select", this._select.bind(this));
         this.addEventListener("shape-location", this._shapeLocation.bind(this));
@@ -97,7 +98,7 @@
       }
 
       _newShape(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey(), "matrix"], e.detail));
+        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey()], {matrix: e.detail, color: this.state.now.session.color}));
       }
 
       _changeShapes(e) {
@@ -117,6 +118,15 @@
         newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
         newSnap.selects = undefined;
         this.setSnap(e, newSnap);
+      }
+
+      _newColor(e) {
+        let colors = {};
+        for (let key in this.state.now.selects)
+          colors[key] = {color: e.detail};
+        let fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {shapes: colors});
+        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch"], fluidActiveSketch));
+        this.setSnap(e, Tools.setIn(this.state.now, ["session", "color"], e.detail));
       }
 
       _newSketch(e) {
@@ -141,7 +151,14 @@
       }
 
       _select(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["selects"], e.detail));
+        let newNow = Tools.setIn(this.state.now, ["selects"], e.detail);
+        const keys = Object.keys(e.detail);
+        if (keys && keys.length > 0) {
+          const key = keys[0];
+          const color = this.state.now.activeSketch.shapes[key].color;
+          newNow = Tools.setIn(newNow, ["session", "color"], color);
+        };
+        this.setSnap(e, newNow);
       }
 
       _shapeLocation(e) {

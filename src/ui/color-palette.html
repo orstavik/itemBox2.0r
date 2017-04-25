@@ -60,39 +60,43 @@
     </style>
 
     <div id="colorPreview">
-      <div style$="background-color: [[color]]"></div>
+      <div style$="background-color: [[_makeColor(hsla)]]"></div>
     </div>
 
     <div id="codeWrapper">
       <paper-input data-type="hue" label="Hue"
+                   tabindex="0"
                    error-message="0-360!"
                    on-input="_validate"
                    pattern="(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])"
                    maxlength="3"
-                   value="[[hue]]">
+                   value="[[hsla.hue]]">
       </paper-input>
-      <paper-input data-type="saturation" label="Saturation" 
+      <paper-input data-type="saturation" label="Saturation"
+                   tabindex="1"
                    error-message="0-100!"
                    on-input="_validate"
                    pattern="(1[0][0]|[1-9]?[0-9])"
                    maxlength="3"
-                   value="[[saturation]]">
+                   value="[[hsla.saturation]]">
         <div slot="suffix">%</div>
       </paper-input>
-      <paper-input data-type="lightness" label="Lightness" 
+      <paper-input data-type="lightness" label="Lightness"
+                   tabindex="2"
                    error-message="0-100!"
                    on-input="_validate"
                    pattern="(1[0][0]|[1-9]?[0-9])"
                    maxlength="3"
-                   value="[[lightness]]">
+                   value="[[hsla.lightness]]">
         <div slot="suffix">%</div>
       </paper-input>
-      <paper-input data-type="alpha" label="Alpha" 
+      <paper-input data-type="alpha" label="Alpha"
+                   tabindex="3"
                    error-message="0-1!"
                    on-input="_validate"
                    pattern="(0(\.\d+)?|1)"
                    maxlength="3"
-                   value="[[alpha]]">
+                   value="[[hsla.alpha]]">
       </paper-input>
     </div>
 
@@ -101,14 +105,14 @@
         <canvas id="colorSlider1" width="20" height="200"></canvas>
         <color-knob only-y
                     on-y-change="_hueChange"
-                    y="[[_calcFromHue(hue)]]">
+                    y="[[_calcFromHue(hsla.hue)]]">
           <div id="slider1Knob" class="knob"></div>
         </color-knob>
       </div>
       <div class="canvas-box" on-x-change="_lightnessChange" on-y-change="_saturationChange">
         <canvas id="colorBox" width="200" height="200"></canvas>
-        <color-knob x="[[_calcFromLightness(lightness)]]"
-                    y="[[_calcFromSaturation(saturation)]]">
+        <color-knob x="[[_calcFromLightness(hsla.lightness)]]"
+                    y="[[_calcFromSaturation(hsla.saturation)]]">
           <div id="boxKnob" class="knob"></div>
         </color-knob>
       </div>
@@ -116,7 +120,7 @@
         <canvas id="colorSlider2" width="20" height="200"></canvas>
         <color-knob only-y
                     on-y-change="_alphaChange"
-                    y="[[_calcFromAlpha(alpha)]]">
+                    y="[[_calcFromAlpha(hsla.alpha)]]">
           <div id="slider2Knob" class="knob"></div>
         </color-knob>
       </div>
@@ -132,100 +136,99 @@
 
       static get properties() {
         return {
-          hue: {
-            type: Number,
-            value: 300
-          },
-          saturation: {
-            type: Number,
-            value: 100
-          },
-          lightness: {
-            type: Number,
-            value: 50
-          },
-          alpha: {
-            type: Number,
-            value: 1
-          },
+          hsla: Object,
           color: {
-            type: String,
-            observer: "_parseColors"
+            type: Object,
+            value: null,
+            observer: "_addColor"
           }
         }
       }
 
       static get observers() {
         return [
-          "_drawColorBox(hue,alpha)",
-          "_drawColorSlider1(saturation,lightness,alpha)",
-          "_drawColorSlider2(hue,saturation,lightness)"
+          "_drawColorBox(hsla)",
+          "_drawColorSlider1(hsla)",
+          "_drawColorSlider2(hsla)"
         ]
       }
 
-      _drawColorBox(h, a) {
+      _drawColorBox(hsla) {
         const c = this.$.colorBox.getContext("2d");
         c.clearRect(0, 0, c.canvas.width, c.canvas.height);
         const sx = c.canvas.width / 50;
         const sy = c.canvas.height / 50;
         for (let l = 0; l < 50; l++) {
           for (let s = 0; s < 50; s++) {
-            c.fillStyle = ColorPalette.makeColor(h, s * 2, l * 2, a);
+            c.fillStyle = ColorPalette.makeColor(hsla.hue, s * 2, l * 2, hsla.alpha);
             c.fillRect(sx * l, sy * (49 - s), sx, sy);
           }
         }
       }
 
-      _drawColorSlider1(s,l,a) {
-        var c = this.$.colorSlider1.getContext("2d");
+      _drawColorSlider1(hsla) {
+        const c = this.$.colorSlider1.getContext("2d");
         c.clearRect(0,0,c.canvas.width,c.canvas.height);
-        var sx = c.canvas.width;
-        for (var y = 0; y < c.canvas.height; y++) {
+        const sx = c.canvas.width;
+        for (let y = 0; y < c.canvas.height; y++) {
           let h = y/c.canvas.height*360;
-          c.fillStyle = ColorPalette.makeColor(h, s, l, a);
+          c.fillStyle = ColorPalette.makeColor(h, hsla.saturation, hsla.lightness, hsla.alpha);
           c.fillRect(0, y, sx, 1);
         }
       }
 
-      _drawColorSlider2(h, s, l) {
+      _drawColorSlider2(hsla) {
         const c = this.$.colorSlider2.getContext("2d");
         c.clearRect(0, 0, c.canvas.width, c.canvas.height);
         const sx = c.canvas.width;
         const sy = c.canvas.height;
         for (let a = 0; a < 1; a += 0.01) {
-          c.fillStyle = ColorPalette.makeColor(h, s, l, a);
+          c.fillStyle = ColorPalette.makeColor(hsla.hue, hsla.saturation, hsla.lightness, a);
           c.fillRect(0, sy * (0.99 - a), sx, sy * 0.01);
         }
       }
 
-      _parseColors(hsla) {
-        let arr = hsla.slice(5,-1).split(",").map( i => i.replace("%", "") );
-        this.setProperties({
-          "hue": Number(arr[0]),
-          "saturation": Number(arr[1]),
-          "lightness": Number(arr[2]),
-          "alpha": Number(arr[3])
-        });
+      _addColor(color) {
+        if (!color)
+          color = {
+            hue: 0,
+            saturation: 0,
+            lightness: 0,
+            alpha: 0
+          };
+        this.set("hsla", color);
       }
 
       _hueChange(e) {
-        const hue = Math.round(e.detail/this.$.colorSlider1.height*360);
-        this._fire("new-color", ColorPalette.makeColor(hue, this.saturation, this.lightness, this.alpha));
+        const newColor = Object.assign({}, this.hsla);
+        newColor.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
+        this._fire("new-color", newColor);
       }
 
       _saturationChange(e) {
-        const saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
-        this._fire("new-color", ColorPalette.makeColor(this.hue, saturation, this.lightness, this.alpha));
+        const newColor = Object.assign({}, this.hsla);
+        newColor.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
+        this._fire("new-color", newColor);
       }
 
       _lightnessChange(e) {
-        const lightness = Math.round(e.detail/this.$.colorBox.width*100);
-        this._fire("new-color", ColorPalette.makeColor(this.hue, this.saturation, lightness, this.alpha));
+        const newColor = Object.assign({}, this.hsla);
+        newColor.lightness = Math.round(e.detail/this.$.colorBox.width*100);
+        this._fire("new-color", newColor);
       }
 
       _alphaChange(e) {
-        const alpha = ColorPalette.roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
-        this._fire("new-color", ColorPalette.makeColor(this.hue, this.saturation, this.lightness, alpha));
+        const newColor = Object.assign({}, this.hsla);
+        newColor.alpha = ColorPalette.roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
+        this._fire("new-color", newColor);
+      }
+
+      _validate(e) {
+        if (!e.target.validate())
+          return;
+        const newColor = Object.assign({}, this.hsla);
+        newColor[e.target.dataset.type] = e.target.value;
+        this._fire("new-color", newColor);
       }
 
       _calcFromHue(h) {
@@ -244,9 +247,8 @@
         return (1 - a) * this.$.colorSlider2.height;
       }
 
-      _validate(e) {
-        if (e.target.validate())
-          this[e.target.dataset.type] = e.target.value;
+      _makeColor(hsla) {
+        return ColorPalette.makeColor(hsla.hue, hsla.saturation, hsla.lightness, hsla.alpha);
       }
 
       static makeColor(h, s, l, a) {

@@ -58,7 +58,7 @@ class Tools {
       if (obj instanceof Object) {
         for (let key of Object.keys(obj))
           _flattenImpl(obj[key], path.concat([key]), separator, res);
-      } else {
+      } else if (obj !== undefined) {
         res[path.join(separator)] = obj;
       }
     };

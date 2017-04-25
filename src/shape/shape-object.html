@@ -21,7 +21,7 @@
         height: 50px;
         border-radius: 0 50% 50% 50%;
         transform: rotate(45deg);
-        background: forestgreen;
+        background: transparent;
         border: 1px solid darkgreen;
         pointer-events: none;
       }
@@ -31,7 +31,7 @@
     </style>
 
     <div id="body" style$="[[_style]]">
-      <div id="innerBody"></div>
+      <div id="innerBody" style$="[[_color(color)]]"></div>
     </div>
 
   </template>
@@ -47,6 +47,7 @@
       static get properties() {
         return {
           selected: Boolean,
+          color: Object,
           matrixData: Object,
           _style: {
             type: String,
@@ -67,6 +68,11 @@
         }.bind(this));
         styleChangedObserver.observe(this.$.body, {attributes: true});
         setTimeout(this.alertLocation.bind(this), 0);
+      }
+
+      _color(color) {
+        if (color)
+          return "background-color: hsla("+color.hue+", "+color.saturation+"%, "+color.lightness+"%, "+color.alpha+");";
       }
 
       _makeStyle(matrixData) {

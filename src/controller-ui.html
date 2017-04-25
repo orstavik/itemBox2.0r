@@ -122,7 +122,7 @@
         <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
-        <color-palette id="palette" color="[[color]]"></color-palette>
+        <color-palette id="palette" color="[[state.now.session.color]]"></color-palette>
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
@@ -154,10 +154,6 @@
             value: function() {
               return firebase;
             }
-          },
-          color: {
-            type: String,
-            value: "hsla(330,100%,50%,0.8)"
           }
         }
       }
@@ -167,7 +163,6 @@
         this.addEventListener("new-sketch-dialog", this._createNewSketchDialog.bind(this));
         this.addEventListener("edit-sketch-dialog", this._editSketchDialog.bind(this));
         this.addEventListener("delete-sketch-dialog", this._deleteSketchDialog.bind(this));
-        this.addEventListener("new-color", this._newColor.bind(this));
       }
 
       _createNewSketchDialog() {
@@ -188,10 +183,6 @@
       _deleteSketchDialog(e) {
         const dialog = new DeleteSketchDialog(e.detail);
         this.shadowRoot.appendChild(dialog);
-      }
-
-      _newColor(e) {
-        this.set("color", e.detail);
       }
 
       deselect() {
