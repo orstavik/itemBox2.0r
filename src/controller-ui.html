@@ -155,10 +155,6 @@
               return firebase;
             }
           },
-          scale: {
-            type: Object,
-            observer: "_notifyScale"
-          },
           color: {
             type: String,
             value: "hsla(330,100%,50%,0.8)"
@@ -171,6 +167,7 @@
         this.addEventListener("new-sketch-dialog", this._createNewSketchDialog.bind(this));
         this.addEventListener("edit-sketch-dialog", this._editSketchDialog.bind(this));
         this.addEventListener("delete-sketch-dialog", this._deleteSketchDialog.bind(this));
+        this.addEventListener("new-color", this._newColor.bind(this));
       }
 
       _createNewSketchDialog() {
@@ -193,8 +190,8 @@
         this.shadowRoot.appendChild(dialog);
       }
 
-      _notifyScale(scale) {
-        this._fire("new-scale", scale);
+      _newColor(e) {
+        this.set("color", e.detail);
       }
 
       deselect() {

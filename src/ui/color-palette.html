@@ -60,7 +60,7 @@
     </style>
 
     <div id="colorPreview">
-      <div style$="background-color: [[_makeColor(hue,saturation,lightness,alpha)]]"></div> <!-- needs to be [[color]] -->
+      <div style$="background-color: [[color]]"></div>
     </div>
 
     <div id="codeWrapper">
@@ -159,8 +159,7 @@
         return [
           "_drawColorBox(hue,alpha)",
           "_drawColorSlider1(saturation,lightness,alpha)",
-          "_drawColorSlider2(hue,saturation,lightness)",
-          "_newColor(hue,saturation,lightness,alpha)"
+          "_drawColorSlider2(hue,saturation,lightness)"
         ]
       }
 
@@ -171,7 +170,7 @@
         const sy = c.canvas.height / 50;
         for (let l = 0; l < 50; l++) {
           for (let s = 0; s < 50; s++) {
-            c.fillStyle = this._makeColor(h, s * 2, l * 2, a);
+            c.fillStyle = ColorPalette.makeColor(h, s * 2, l * 2, a);
             c.fillRect(sx * l, sy * (49 - s), sx, sy);
           }
         }
@@ -183,7 +182,7 @@
         var sx = c.canvas.width;
         for (var y = 0; y < c.canvas.height; y++) {
           let h = y/c.canvas.height*360;
-          c.fillStyle = this._makeColor(h, s, l, a);
+          c.fillStyle = ColorPalette.makeColor(h, s, l, a);
           c.fillRect(0, y, sx, 1);
         }
       }
@@ -194,43 +193,39 @@
         const sx = c.canvas.width;
         const sy = c.canvas.height;
         for (let a = 0; a < 1; a += 0.01) {
-          c.fillStyle = this._makeColor(h, s, l, a);
+          c.fillStyle = ColorPalette.makeColor(h, s, l, a);
           c.fillRect(0, sy * (0.99 - a), sx, sy * 0.01);
         }
-      }
-
-      _makeColor(h, s, l, a) {
-        return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
       }
 
       _parseColors(hsla) {
         let arr = hsla.slice(5,-1).split(",").map( i => i.replace("%", "") );
         this.setProperties({
-          "hue": arr[0],
-          "saturation": arr[1],
-          "lightness": arr[2],
-          "alpha": arr[3]
+          "hue": Number(arr[0]),
+          "saturation": Number(arr[1]),
+          "lightness": Number(arr[2]),
+          "alpha": Number(arr[3])
         });
       }
 
-      _newColor(h,s,l,a) {
-        this._fire("new-color", this._makeColor(h,s,l,a));
-      }
-
       _hueChange(e) {
-        this.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
+        const hue = Math.round(e.detail/this.$.colorSlider1.height*360);
+        this._fire("new-color", ColorPalette.makeColor(hue, this.saturation, this.lightness, this.alpha));
       }
 
       _saturationChange(e) {
-        this.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
+        const saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
+        this._fire("new-color", ColorPalette.makeColor(this.hue, saturation, this.lightness, this.alpha));
       }
 
       _lightnessChange(e) {
-        this.lightness = Math.round(e.detail/this.$.colorBox.width*100);
+        const lightness = Math.round(e.detail/this.$.colorBox.width*100);
+        this._fire("new-color", ColorPalette.makeColor(this.hue, this.saturation, lightness, this.alpha));
       }
 
       _alphaChange(e) {
-        this.alpha = ColorPalette._roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
+        const alpha = ColorPalette.roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
+        this._fire("new-color", ColorPalette.makeColor(this.hue, this.saturation, this.lightness, alpha));
       }
 
       _calcFromHue(h) {
@@ -254,7 +249,11 @@
           this[e.target.dataset.type] = e.target.value;
       }
 
-      static _roundTo(x, n) {
+      static makeColor(h, s, l, a) {
+        return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
+      }
+
+      static roundTo(x, n) {
         const e = Math.pow(10, n);
         return Math.round(x * e) / e;
       }
