@@ -79,11 +79,12 @@
       #saveBox span {
         color: #444;
         font-weight: 500;
+        cursor: pointer;
       }
     </style>
     
-    <div id="saveBox">
-      <paper-button raised class="newSketch" on-click="_newSketch">
+    <div id="saveBox" on-click="_newSketch">
+      <paper-button raised class="newSketch">
         <iron-icon icon="add"></iron-icon>
       </paper-button>
       <span>New sketch</span>
