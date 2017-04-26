@@ -113,8 +113,8 @@
         let key = Tools.genKey();
         let newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
         newNow.sketchFluid = e.detail.clear ? undefined : this.state.now.sketchMerged;
-        newNow.serverSketch = undefined;
-        let info = {permissions: e.detail.permissions, sketchName: e.detail.name};
+        newNow.sketchServer = undefined;
+        let info = {permissions: e.detail.permissions, sketchName: e.detail.name, created: new Date()};
         newNow = Tools.setIn(newNow, ["sketchFluid", "info"], info);
         this.setSnap(e, newNow);
       }
@@ -219,13 +219,13 @@
         this.set("snap", newSnap);
       }
 
-      static reduceFluidMatrix(now, serverSketch) {
+      static reduceFluidMatrix(now, sketchServer) {
         let diffSketch = undefined;
         //filter the matrices
-        if (serverSketch) {
-          diffSketch = Tools.filterDeep(now.sketchFluid, serverSketch);
+        if (sketchServer) {
+          diffSketch = Tools.filterDeep(now.sketchFluid, sketchServer);
           for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
-            if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
+            if (!sketchServer.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
           }
         }
