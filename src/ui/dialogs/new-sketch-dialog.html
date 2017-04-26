@@ -85,7 +85,7 @@
 			<div class="dialog-content">
 				<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!" on-input="_validate" value="{{info.name::input}}"></paper-input>
 				<paper-checkbox checked="{{info.clear}}">Clear canvas</paper-checkbox>
-				<paper-radio-group selected="{{info.permisions}}">
+				<paper-radio-group selected="{{info.permissions}}">
 					<paper-radio-button name="private">Private</paper-radio-button>
 					<paper-radio-button name="read">Public(read)</paper-radio-button>
 					<paper-radio-button name="edit">Public(edit)</paper-radio-button>
@@ -113,7 +113,7 @@
 						value: function() {
 							return {
 								clear: false,
-								permisions: "read",
+								permissions: "read",
 								name: ""
 							};
 						}
@@ -132,8 +132,7 @@
 
 			_createSketch() {
 				if (this.$.nameInput.validate()) {
-					console.log(this.info);
-					this._fire("new-sketch", this.info);
+					this._fire("save-sketch", this.info);
 					this._closeDialog();
 				}
 			}

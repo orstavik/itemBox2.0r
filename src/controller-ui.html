@@ -110,7 +110,7 @@
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.now.session.sketchName]]</div>
+      <div id="sketchName">[[state.now.activeSketch.sketchName]]</div>
       <div id="saveButton" on-tap="_saveSketchDialog">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>

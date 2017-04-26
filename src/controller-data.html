@@ -15,9 +15,9 @@
                     stored-data="{{sketchDataFromServer}}"></indexed-mirror>
 
     <firebase-on id="sketchData"
-                 active="[[_validateName(state.now.user, state.now.session.sketchName)]]"
+                 active="[[_validateName(state.now.user, state.now.session.sketchID)]]"
                  result-with-path="{{sketchDataFromServer}}"
-                 path="sketches/[[state.now.session.sketchName]]/shapes"></firebase-on>
+                 path="sketches/[[state.now.session.sketchID]]/shapes"></firebase-on>
 
     <firebase-on id="serverUserSnap"
                  active="[[_BOOL(state.now.user)]]"
@@ -72,6 +72,15 @@
       }
 
       _serverUserChanged(user) {
+        user = !user ? null : {
+          displayName: user.displayName,
+          email: user.email, 
+          emailVerified: user.emailVerified,
+          isAnonymous: user.isAnonynous,
+          photoURL: user.photoURL,
+          refreshToken: user.refreshToken,
+          uid: user.uid
+        };
         this._fire("new-user", user);
       }
 
@@ -101,6 +110,13 @@
         let filteredShapes = {};
         for (let key in activeShapes)
           filteredShapes[key] = activeShapes[key];
+        let permissionData = Object.assign({}, fluidActiveSketch);
+        permissionData.shapes = undefined;
+        let sketches = {
+          sketches: {}
+        };
+        sketches.sketches[this.state.now.session.sketchID] = permissionData;
+        this.$.serverUserSnap.updateMerge(sketches);
         this.$.sketchData.updateMerge(filteredShapes);
       }
 

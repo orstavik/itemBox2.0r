@@ -35,7 +35,7 @@
                   s: 1
                 },
                 session: {
-                  sketchName: "unsaved"
+                  sketchID: "unsaved"
                 }
               };
             }
@@ -43,7 +43,7 @@
           snap: Object,
           serverSketch: {
             type: Object,
-            computed: "_getServerSketch(snap.sketches, snap.session.sketchName)"
+            computed: "_getServerSketch(snap.sketches, snap.session.sketchID)"
           },
           activeSketch: {
             type: Object,
@@ -55,7 +55,7 @@
 
       static get observers() {
         return [
-          "setUrl(state.now.session.sketchName)",
+          "setUrl(state.now.session.sketchID)",
           "_makeElaborateSnap(snap, serverSketch, activeSketch)" //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
@@ -65,6 +65,8 @@
         this.addEventListener("new-user", this._newUser.bind(this));
         this.addEventListener("new-user-data", this._newUserData.bind(this));
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
+
+        this.addEventListener("save-sketch", this._saveSketch.bind(this));
 
         this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
@@ -109,6 +111,19 @@
           newSnap.selects = reduced.selects;
         }
         this.setSnap(e, newSnap);
+      }
+
+      _saveSketch(e) {
+        let key = Tools.genKey();
+        let newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
+        if (e.detail.clear)
+          newNow.fluidActiveSketch = undefined;
+        else
+          newNow.fluidActiveSketch = this.state.now.activeSketch;
+        newNow.serverSketch = undefined;
+        newNow = Tools.setIn(newNow, ["fluidActiveSketch", "permissions"], e.detail.permissions);
+        newNow = Tools.setIn(newNow, ["fluidActiveSketch", "sketchName"], e.detail.name);
+        this.setSnap(e, newNow);
       }
 
       _newShape(e) {
@@ -159,7 +174,7 @@
       _newSketch(e) {
         this.setSnap(e, Object.assign({}, this.defaultSnap, {
           session: {
-            sketchName: e.detail.url
+            sketchID: e.detail.url
           }
         }));
       }
@@ -200,8 +215,8 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["viewPort"], e.detail));
       }
 
-      setUrl(sketchName) {
-        this.$.location.setUrl("/" + sketchName);
+      setUrl(sketchID) {
+        this.$.location.setUrl("/" + sketchID);
       }
 
       setSnap(e, newSnap) {
@@ -214,8 +229,8 @@
       static reduceFluidMatrix(state, serverSketches) {
         let diffSketch = undefined;
         //filter the matrices
-        if (serverSketches && state.now.session.sketchName) {
-          let serverSketch = serverSketches.sketches[state.now.session.sketchName];
+        if (serverSketches && state.now.session.sketchID) {
+          let serverSketch = serverSketches.sketches[state.now.session.sketchID];
           diffSketch = Tools.filterDeep(state.now.fluidActiveSketch, serverSketch);
           for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
@@ -247,8 +262,8 @@
         this.set("elaborateSnap", now);
       }
 
-      _getServerSketch(sketches, sketchName) {
-        return sketches && sketchName ? sketches[sketchName] : undefined;
+      _getServerSketch(sketches, sketchID) {
+        return sketches && sketchID ? sketches[sketchID] : undefined;
       }
 
       _makeActiveSketch(serverSketch, fluidActiveSketch) {
@@ -262,7 +277,7 @@
 
         this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
           session: {
-            sketchName: sketchID
+            sketchID: sketchID
           }
         }));
         //todo we want this event to contain already processed data about whether or not the user wants us to make a copy of the sketch or start from scratch when making the new sketch.
