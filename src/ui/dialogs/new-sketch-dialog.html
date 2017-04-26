@@ -1,9 +1,11 @@
-<link rel="import" href="../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../../bower_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 
-<dom-module id="edit-sketch-dialog">
+<dom-module id="new-sketch-dialog">
   <template>
     <style>
 			:host {
@@ -26,7 +28,7 @@
 			}
 			#dialogBody {
 				display: flex;
-				width: 300px;
+				width: 340px;
 				max-width: 80vw;
 				border-radius: 2px;
 				position: relative;
@@ -68,6 +70,10 @@
 				margin: 12px 0;
     		font-size: 14px;
 			}
+			paper-radio-group {
+				font-size: 13px;
+    		--paper-radio-group-item-padding: 12px 12px 12px 0;
+			}
 			paper-button {
 				font-size: 14px;
 			}
@@ -75,13 +81,19 @@
 
 		<paper-material elevation="5" id="dialogBody">
 			<div class="dialog-header">
-				<span class="dialog-title">Edit Sketch</span>
+				<span class="dialog-title">New Sketch</span>
 			</div>
 			<div class="dialog-content">
 				<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!" on-input="_validate" value="{{info.name::input}}"></paper-input>
+				<paper-checkbox checked="{{info.clear}}">Clear canvas</paper-checkbox>
+				<paper-radio-group selected="{{info.permisions}}">
+					<paper-radio-button name="private">Private</paper-radio-button>
+					<paper-radio-button name="read">Public(read)</paper-radio-button>
+					<paper-radio-button name="edit">Public(edit)</paper-radio-button>
+				</paper-radio-group>
 			</div>
 			<div class="dialog-actions">
-				<paper-button on-tap="_saveSketch">Save</paper-button>
+				<paper-button on-tap="_createSketch">Create</paper-button>
 				<paper-button on-tap="_closeDialog">Cancel</paper-button>
 			</div>
 		</paper-material>
@@ -90,9 +102,9 @@
 
   </template>
   <script>
-    class EditSketchDialog extends Polymer.GestureEventListeners(Polymer.Element) {
+    class NewSketchDialog extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "edit-sketch-dialog";
+        return "new-sketch-dialog";
       }
 
       static get properties() {
@@ -101,6 +113,8 @@
 						type: Object,
 						value: function() {
 							return {
+								clear: false,
+								permisions: "read",
 								name: ""
 							};
 						}
@@ -108,19 +122,19 @@
         }
       }
 
-			constructor(sketchName) {
+			constructor() {
 				super();
 				super.ready();
-				this.$.nameInput.value = sketchName;
 			}
 
 			_validate(e) {
 				this.$.nameInput.validate();
 			}
 
-			_saveSketch() {
+			_createSketch() {
 				if (this.$.nameInput.validate()) {
-					this._fire("edit-sketch", this.info);
+					console.log(this.info);
+					this._fire("new-sketch", this.info);
 					this._closeDialog();
 				}
 			}
@@ -133,6 +147,6 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
-    customElements.define(EditSketchDialog.is, EditSketchDialog);
+    customElements.define(NewSketchDialog.is, NewSketchDialog);
   </script>
 </dom-module>
