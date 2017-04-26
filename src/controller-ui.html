@@ -110,7 +110,7 @@
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.now.activeSketch.sketchName]]</div>
+      <div id="sketchName">[[_orUnsaved(state.now.sketchMerged.sketchName)]]</div>
       <div id="saveButton" on-tap="_saveSketchDialog">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
@@ -131,7 +131,7 @@
     </tools-button>
 
     <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
-      <app-login sketches="[[state.now.sketches]]" user="[[state.now.user]]"></app-login>
+      <app-login sketches="[[state.now.sketchList]]" user="[[state.now.user]]"></app-login>
     </account-button>
 
     <messages-help messages="[[state.history.helpMsgs]]" count=3></messages-help>
@@ -244,6 +244,10 @@
 
       _BOOL(obj) {
         return !!obj;
+      }
+
+      _orUnsaved(sketchName){
+        return sketchName || "unsaved";
       }
 
       _fire(name, detail) {

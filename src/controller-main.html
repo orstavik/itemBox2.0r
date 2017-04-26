@@ -27,7 +27,7 @@
           state: Object,
           defaultSnap: {
             type: Object,
-            value: function() {
+            value: function () {
               return {
                 viewPort: {
                   x: 0,
@@ -41,13 +41,9 @@
             }
           },
           snap: Object,
-          serverSketch: {
+          sketchMerged: {
             type: Object,
-            computed: "_getServerSketch(snap.sketches, snap.session.sketchID)"
-          },
-          activeSketch: {
-            type: Object,
-            computed: "_makeActiveSketch(serverSketch, snap.fluidActiveSketch)"
+            computed: "_makeSketchMerged(snap.sketchServer, snap.sketchFluid)"
           },
           elaborateSnap: Object //elaboration on now: the active sketch
         }
@@ -56,14 +52,14 @@
       static get observers() {
         return [
           "setUrl(state.now.session.sketchID)",
-          "_makeElaborateSnap(snap, serverSketch, activeSketch)" //this observer runs after all the computeds are finished (at least two rounds).
+          "_makeElaborateSnap(snap, sketchMerged)" //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
 
       constructor() {
         super();
         this.addEventListener("new-user", this._newUser.bind(this));
-        this.addEventListener("new-user-data", this._newUserData.bind(this));
+        this.addEventListener("new-sketch-list", this._newSketchList.bind(this));
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
 
         this.addEventListener("save-sketch", this._saveSketch.bind(this));
@@ -98,15 +94,15 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
-      _newUserData(e) {
-        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, e.detail));
+      _newSketchList(e) {
+        this.setSnap(e, Tools.setIn(this.state.now, ["sketchList"], e.detail));
       }
 
       _newSketchData(e) {
-        const newSnap = Tools.setIn(this.state.now, ["sketches"], e.detail.sketches);
-        let reduced = ControllerMain.reduceFluidMatrix(this.state, e.detail);
+        const newSnap = Tools.setIn(this.state.now, ["sketchServer"], e.detail);
+        let reduced = ControllerMain.reduceFluidMatrix(this.state.now, e.detail);
         if (reduced) {
-          newSnap.fluidActiveSketch = reduced.fluidActiveSketch;
+          newSnap.sketchFluid = reduced.sketchFluid;
           newSnap.rects = reduced.rects;
           newSnap.selects = reduced.selects;
         }
@@ -116,18 +112,15 @@
       _saveSketch(e) {
         let key = Tools.genKey();
         let newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
-        if (e.detail.clear)
-          newNow.fluidActiveSketch = undefined;
-        else
-          newNow.fluidActiveSketch = this.state.now.activeSketch;
+        newNow.sketchFluid = e.detail.clear ? undefined : this.state.now.sketchMerged;
         newNow.serverSketch = undefined;
-        newNow = Tools.setIn(newNow, ["fluidActiveSketch", "permissions"], e.detail.permissions);
-        newNow = Tools.setIn(newNow, ["fluidActiveSketch", "sketchName"], e.detail.name);
+        let info = {permissions: e.detail.permissions, sketchName: e.detail.name};
+        newNow = Tools.setIn(newNow, ["sketchFluid", "info"], info);
         this.setSnap(e, newNow);
       }
 
       _newShape(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch", "shapes", Tools.genKey()], {
+        this.setSnap(e, Tools.setIn(this.state.now, ["sketchFluid", "shapes", Tools.genKey()], {
           matrix: e.detail,
           color: this.state.now.session.color
         }));
@@ -135,7 +128,7 @@
 
       _changeShapes(e) {
         this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
-          fluidActiveSketch: {
+          sketchFluid: {
             shapes: e.detail
           }
         }));
@@ -150,7 +143,7 @@
         for (let key in this.state.now.selects)
           deletes[key] = null;
         const newSnap = Object.assign({}, this.state.now);
-        newSnap.fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {
+        newSnap.sketchFluid = Tools.mergeDeepWithNullToDelete(this.state.now.sketchFluid, {
           shapes: deletes
         });
         newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
@@ -164,10 +157,10 @@
           colors[key] = {
             color: e.detail
           };
-        let fluidActiveSketch = Tools.mergeDeepWithNullToDelete(this.state.now.fluidActiveSketch, {
+        let sketchFluid = Tools.mergeDeepWithNullToDelete(this.state.now.sketchFluid, {
           shapes: colors
         });
-        this.setSnap(e, Tools.setIn(this.state.now, ["fluidActiveSketch"], fluidActiveSketch));
+        this.setSnap(e, Tools.setIn(this.state.now, ["sketchFluid"], sketchFluid));
         this.setSnap(e, Tools.setIn(this.state.now, ["session", "color"], e.detail));
       }
 
@@ -201,9 +194,9 @@
         const keys = Object.keys(e.detail);
         if (keys && keys.length > 0) {
           const key = keys[0];
-          const color = this.state.now.activeSketch.shapes[key].color;
+          const color = this.state.now.sketchMerged.shapes[key].color;
           newNow = Tools.setIn(newNow, ["session", "color"], color);
-        };
+        }
         this.setSnap(e, newNow);
       }
 
@@ -226,12 +219,11 @@
         this.set("snap", newSnap);
       }
 
-      static reduceFluidMatrix(state, serverSketches) {
+      static reduceFluidMatrix(now, serverSketch) {
         let diffSketch = undefined;
         //filter the matrices
-        if (serverSketches && state.now.session.sketchID) {
-          let serverSketch = serverSketches.sketches[state.now.session.sketchID];
-          diffSketch = Tools.filterDeep(state.now.fluidActiveSketch, serverSketch);
+        if (serverSketch) {
+          diffSketch = Tools.filterDeep(now.sketchFluid, serverSketch);
           for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
             if (!serverSketch.shapes[key] && !diffSketch[key].matrix)
               delete diffSketch[key];
@@ -239,39 +231,34 @@
         }
         //filter rects
         let resRects = {};
-        for (let key in state.now.rects) {
-          if (state.now.activeSketch.shapes[key])
-            resRects[key] = state.now.rects[key];
+        for (let key in now.rects) {
+          if (now.sketchMerged.shapes[key])
+            resRects[key] = now.rects[key];
         }
         //filter selects
         let resSelects = {};
-        for (let key in state.now.selects) {
-          if (state.now.activeSketch.shapes[key])
+        for (let key in now.selects) {
+          if (now.sketchMerged.shapes[key])
             resSelects[key] = true;
         }
         return {
-          "fluidActiveSketch": diffSketch,
+          "sketchFluid": diffSketch,
           "rects": resRects,
           "selects": resSelects
         };
       }
 
-      _makeElaborateSnap(now, serverSketch, activeSketch) {
-        now.activeSketch = activeSketch;
-        now.serverSketch = serverSketch;
+      _makeElaborateSnap(now, sketchMerged) {
+        now.sketchMerged = sketchMerged;
         this.set("elaborateSnap", now);
       }
 
-      _getServerSketch(sketches, sketchID) {
-        return sketches && sketchID ? sketches[sketchID] : undefined;
-      }
-
-      _makeActiveSketch(serverSketch, fluidActiveSketch) {
-        return Tools.mergeDeepWithNullToDelete(serverSketch, fluidActiveSketch);
+      _makeSketchMerged(sketchServer, sketchFluid) {
+        return Tools.mergeDeepWithNullToDelete(sketchServer, sketchFluid);
       }
 
       _routeChanged(e) {
-        let sketchID = e.detail && e.detail.segments ? e.detail.segments[0] : undefined;
+        let sketchID = e.detail && e.detail.segments ? e.detail.segments[0] : "unsaved";
         // if (Object.keys(this.state.now.sketches).indexOf(sketchID) === -1)
         //   sketchID = "unsaved";
 
