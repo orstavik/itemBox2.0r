@@ -93,11 +93,8 @@
       <paper-material elevation="1" class="sketchCard">
         <div class="contentBox">
           <div>
-            <h4 data-key$="[[item.key]]" on-input="_changeSketchName" on-pointerdown="_stopProp">
-              [[item.value.info.sketchName]]
-            </h4>
-            <!--<iron-icon icon="create"></iron-icon>-->
-            <span>[[_toDate(item.value.info.created)]]</span>
+            <h4>[[item.name]]</h4>
+            <span>[[item.date]]</span>
           </div>
           <div class="buttonRow">
             <a href="/[[item.key]]">
@@ -111,6 +108,13 @@
     </template>
   </template>
   <script>
+
+    class SketchInfo{
+      constructor(key, info){
+        this.key = key;
+        this.info = info;
+      }
+    }
 
     class AppUiSketchlist extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
@@ -131,12 +135,13 @@
       _toArray(sketches) {
         if (!sketches) return sketches;
         return Object.keys(sketches).map(function (key) {
-          return {key: key, value: sketches[key]};
+          let info = sketches[key].info;
+          return {
+            key: key,
+            name: info.sketchName,
+            date: (info.created ? new Date(info.created).toLocaleString() : "no creation date")
+          };
         });
-      }
-
-      _toDate(date) {
-        return date ? new Date(date).toLocaleString() : "no creation date";
       }
 
       _newSketch(e) {
@@ -144,22 +149,13 @@
       }
 
       _editSketch(e) {
-        this._fire("edit-sketch-dialog", this.getSketchInfo(e.target.dataset.key));
+        let key = e.target.dataset.key;
+        this._fire("edit-sketch-dialog", new SketchInfo(key, this.sketches[key]));
       }
 
       _deleteSketch(e) {
-        this._fire("delete-sketch-dialog", this.getSketchInfo(e.target.dataset.key));
-      }
-
-      _changeSketchName(e) {
-        if (this.nameChanger)
-          clearTimeout(this.nameChanger);
-        const newName = e.target.innerHTML;
-        let id = e.target.dataset.key;
-        this.nameChanger = setTimeout(function () {
-          this._fire("rename-sketch", {sketch: id, name: newName});
-          this.nameChanger = null;
-        }.bind(this), 2000);
+        let key = e.target.dataset.key;
+        this._fire("delete-sketch-dialog", new SketchInfo(key, this.sketches[key]));
       }
 
       _fire(name, detail) {
@@ -168,12 +164,6 @@
 
       _stopProp(e) {
         e.stopPropagation();
-      }
-
-      getSketchInfo(key) {
-        let res = Object.assign({}, this.sketches[key]);
-        res.key = key;
-        return res;
       }
     }
     customElements.define(AppUiSketchlist.is, AppUiSketchlist);

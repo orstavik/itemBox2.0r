@@ -17,8 +17,7 @@
     <firebase-on id="activeSketchDB"
                  active="[[_validateName(state.now.user.uid, state.now.session.sketchID)]]"
                  result="{{activeSketchServed}}"
-                 path="/users/[[state.now.user.uid]]/sketches/[[state.now.session.sketchID]]"
-                 on-found-no-data="_noDataForSketch"></firebase-on>
+                 path="/users/[[state.now.user.uid]]/sketches/[[state.now.session.sketchID]]"></firebase-on>
 
     <firebase-on id="sketchListDB"
                  active="[[_BOOL(state.now.user.uid)]]"
@@ -79,11 +78,11 @@
         this._fire("new-sketch-data", sketch);
       }
 
-      _noDataForSketch(){
-        this._fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
-        this._fire("route-changed", undefined);
-      }
-
+//      _noDataForSketch(){
+//        this._fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
+        //this._fire("route-changed", undefined);
+//      }
+//
       signIn() {
         this.$.auth.signIn();
       }
