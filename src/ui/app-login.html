@@ -148,7 +148,7 @@
   <script>
     class AppLogin extends Polymer.Element {
       static get is() {
-        return "app-login";
+        return 'app-login';
       }
 
       static get properties() {
@@ -191,6 +191,6 @@
         return !!obj;
       }
     }
-    customElements.define(AppLogin.is, AppLogin);
+    window.customElements.define(AppLogin.is, AppLogin);
   </script>
 </dom-module>

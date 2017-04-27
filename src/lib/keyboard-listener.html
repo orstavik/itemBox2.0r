@@ -84,7 +84,7 @@
       }
     }
 
-    class KeyboardListener extends Polymer.Element {
+    class KeyboardListener extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "keyboard-listener";
       }

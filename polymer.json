@@ -4,10 +4,10 @@
   "fragments": [],
   "sources": [
    "src/**/*",
+   "img/**/*",
    "bower.json"
   ],
   "extraDependencies": [
-    "404.html",
     "manifest.json",
     ".firebaserc",
     "firebase.json",

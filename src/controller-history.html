@@ -1,6 +1,6 @@
 <dom-module id="controller-history">
   <script>
-    class ControllerHistory extends Polymer.Element {
+    class ControllerHistory extends Polymer.GestureEventListeners(Polymer.Element) {
 
       static get is() {
         return "controller-history";

@@ -98,7 +98,7 @@
 			}
     </style>
 
-		<div id="logBox" on-click="_hideLog">
+		<div id="logBox" on-tap="_hideLog">
 			<h4>SYSTEM LOG</h4>
 			<div id="scrollBox">
 				<div id="scroller">
@@ -115,13 +115,13 @@
 		<div id="message"
 				 on-pointerenter="_holdMessage"
 				 on-pointerleave="_leaveMessage"
-				 on-click="_showLog">
+				 on-tap="_showLog">
 			<span>[[lastMessage.systemMessage]]</span>
 		</div>
 
   </template>
   <script>
-    class MessagesSystem extends Polymer.Element {
+    class MessagesSystem extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "messages-system";
       }

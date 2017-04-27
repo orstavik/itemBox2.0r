@@ -37,7 +37,7 @@
 
   <script>
 
-    class ShapePlain extends Polymer.Element {
+    class ShapePlain extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "shape-plain";
       }

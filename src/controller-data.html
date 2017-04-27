@@ -36,7 +36,7 @@
 
   </template>
   <script>
-    class ControllerData extends Polymer.Element {
+    class ControllerData extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "controller-data";
       }

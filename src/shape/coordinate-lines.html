@@ -29,16 +29,16 @@
 			}
 		</style>
 
-		<div id="horizLine" style="[[_horizStyle]]"></div>
-		<div id="vertLine" style="[[_vertStyle]]"></div>
+		<div id="horizLine" style$="[[_horizStyle]]"></div>
+		<div id="vertLine" style$="[[_vertStyle]]"></div>
 
   </template>
 
   <script>
-    class CoordinateLines extends Polymer.Element {
+    class CoordinateLines extends Polymer.GestureEventListeners(Polymer.Element) {
 
       static get is() {
-        return 'coordinate-lines';
+        return "coordinate-lines";
       }
 
       static get properties() {
