@@ -114,7 +114,8 @@
         let newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
         newNow.sketchFluid = e.detail.clear ? undefined : this.state.now.sketchMerged;
         newNow.sketchServer = undefined;
-        let info = {permissions: e.detail.permissions, sketchName: e.detail.name, created: new Date()};
+        let info = e.detail.info;
+        info.created = new Date().getTime();
         newNow = Tools.setIn(newNow, ["sketchFluid", "info"], info);
         this.setSnap(e, newNow);
       }

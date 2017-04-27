@@ -7,97 +7,98 @@
 <dom-module id="new-sketch-dialog">
   <template>
     <style>
-			:host {
-				display: flex;
-				width: 100vw;
-				height: 100vh;
-				position: absolute;
-				top: 0;
-				left: 0;
-				align-items: center;
-				justify-content: center;
-    		z-index: 1000;
-			}
-			#overlay {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				background-color: rgba(0,0,0,0.5);
-				z-index: -1;
-			}
-			#dialogBody {
-				display: flex;
-				width: 340px;
-				max-width: 80vw;
-				border-radius: 2px;
-				position: relative;
-				flex-direction: column;
-				background-color: white;
-				animation: Appear 0.3s forwards;
-			}
-			@keyframes Appear {
-				from { 
-					transform: scale(0.9);
-					opacity: 0;
-				}
-				to { 
-					transform: scale(1);
-					opacity: 1;
-				}
-			}
-			.dialog-header {
-				display: flex;
-				align-items: center;
-			}
-			.dialog-title {
-				flex: 1;
-				margin: 16px 20px 0;
-				font-size: 18px;
-				font-weight: 500;
-			}
-			.dialog-content {
-				display: flex;
-				flex-direction: column;
-				margin: 0 20px;
-			}
-			.dialog-actions {
-				display: flex;
-				justify-content: flex-end;
-				margin: 6px
-			}
-			paper-checkbox {
-				margin: 12px 0;
-    		font-size: 14px;
-			}
-			paper-radio-group {
-				font-size: 13px;
-    		--paper-radio-group-item-padding: 12px 12px 12px 0;
-			}
-			paper-button {
-				font-size: 14px;
-			}
+      :host {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      #overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+      #dialogBody {
+        display: flex;
+        width: 340px;
+        max-width: 80vw;
+        border-radius: 2px;
+        position: relative;
+        flex-direction: column;
+        background-color: white;
+        animation: Appear 0.3s forwards;
+      }
+      @keyframes Appear {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .dialog-header {
+        display: flex;
+        align-items: center;
+      }
+      .dialog-title {
+        flex: 1;
+        margin: 16px 20px 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .dialog-content {
+        display: flex;
+        flex-direction: column;
+        margin: 0 20px;
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: 6px
+      }
+      paper-checkbox {
+        margin: 12px 0;
+        font-size: 14px;
+      }
+      paper-radio-group {
+        font-size: 13px;
+        --paper-radio-group-item-padding: 12px 12px 12px 0;
+      }
+      paper-button {
+        font-size: 14px;
+      }
     </style>
 
-		<paper-material elevation="5" id="dialogBody">
-			<div class="dialog-header">
-				<span class="dialog-title">New Sketch</span>
-			</div>
-			<div class="dialog-content">
-				<paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!" on-input="_validate" value="{{info.name::input}}"></paper-input>
-				<paper-checkbox checked="{{info.clear}}">Clear canvas</paper-checkbox>
-				<paper-radio-group selected="{{info.permissions}}">
-					<paper-radio-button name="private">Private</paper-radio-button>
-					<paper-radio-button name="read">Public(read)</paper-radio-button>
-					<paper-radio-button name="edit">Public(edit)</paper-radio-button>
-				</paper-radio-group>
-			</div>
-			<div class="dialog-actions">
-				<paper-button on-tap="_createSketch">Create</paper-button>
-				<paper-button on-tap="_closeDialog">Cancel</paper-button>
-			</div>
-		</paper-material>
+    <paper-material elevation="5" id="dialogBody">
+      <div class="dialog-header">
+        <span class="dialog-title">New Sketch</span>
+      </div>
+      <div class="dialog-content">
+        <paper-input id="nameInput" label="Sketch Name" required error-message="Name your sketch!" on-input="_validate"
+                     value="{{data.info.sketchName::input}}"></paper-input>
+        <paper-checkbox checked="{{data.clear}}">Clear canvas</paper-checkbox>
+        <paper-radio-group selected="{{data.info.permissions}}">
+          <paper-radio-button name="private">Private</paper-radio-button>
+          <paper-radio-button name="read">Public(read)</paper-radio-button>
+          <paper-radio-button name="edit">Public(edit)</paper-radio-button>
+        </paper-radio-group>
+      </div>
+      <div class="dialog-actions">
+        <paper-button on-tap="_createSketch">Create</paper-button>
+        <paper-button on-tap="_closeDialog">Cancel</paper-button>
+      </div>
+    </paper-material>
 
-		<div id="overlay" on-tap="_closeDialog"></div>
+    <div id="overlay" on-tap="_closeDialog"></div>
 
   </template>
   <script>
@@ -108,38 +109,41 @@
 
       static get properties() {
         return {
-					info: {
-						type: Object,
-						value: function() {
-							return {
-								clear: false,
-								permissions: "read",
-								name: ""
-							};
-						}
-					}
+          data: {
+            type: Object,
+            value: function () {
+              return {
+                key: undefined,
+                clear: false,
+                info: {
+                  permissions: "read",
+                  sketchName: ""
+                }
+              };
+            }
+          }
         }
       }
 
-			constructor() {
-				super();
-				super.ready();
-			}
+      constructor() {
+        super();
+        super.ready();
+      }
 
-			_validate(e) {
-				this.$.nameInput.validate();
-			}
+      _validate(e) {
+        this.$.nameInput.validate();
+      }
 
-			_createSketch() {
-				if (this.$.nameInput.validate()) {
-					this._fire("save-sketch", this.info);
-					this._closeDialog();
-				}
-			}
+      _createSketch() {
+        if (this.$.nameInput.validate()) {
+          this._fire("save-sketch", this.data);
+          this._closeDialog();
+        }
+      }
 
-			_closeDialog() {
-				this.remove();
-			}
+      _closeDialog() {
+        this.remove();
+      }
 
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));

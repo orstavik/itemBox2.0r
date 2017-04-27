@@ -82,7 +82,7 @@
         cursor: pointer;
       }
     </style>
-    
+
     <div id="saveBox" on-click="_newSketch">
       <paper-button raised class="newSketch">
         <iron-icon icon="add"></iron-icon>
@@ -94,25 +94,17 @@
         <div class="contentBox">
           <div>
             <h4 data-key$="[[item.key]]" on-input="_changeSketchName" on-pointerdown="_stopProp">
-                [[item.value.sketchName]]
+              [[item.value.info.sketchName]]
             </h4>
             <!--<iron-icon icon="create"></iron-icon>-->
-            <span>[[_toDate(item.value.created)]]</span>
+            <span>[[_toDate(item.value.info.created)]]</span>
           </div>
           <div class="buttonRow">
             <a href="/[[item.key]]">
               <paper-button id="load" raised data-key$="[[item.key]]">Load</paper-button>
             </a>
-            <paper-button id="edit"
-                          raised
-                          on-tap="_editSketch"
-                          data-key$="[[item.key]]"
-                          data-name$="[[item.value.name]]">Edit</paper-button>
-            <paper-button id="remove"
-                          raised
-                          on-tap="_deleteSketch"
-                          data-key$="[[item.key]]"
-                          data-name$="[[item.value.name]]">Delete</paper-button>
+            <paper-button id="edit" raised on-tap="_editSketch" data-key$="[[item.key]]">Edit</paper-button>
+            <paper-button id="remove" raised on-tap="_deleteSketch" data-key$="[[item.key]]">Delete</paper-button>
           </div>
         </div>
       </paper-material>
@@ -143,24 +135,20 @@
         });
       }
 
-      _toDate(num) {
-        return new Date(num).toLocaleString();
+      _toDate(date) {
+        return date ? new Date(date).toLocaleString() : "no creation date";
       }
 
       _newSketch(e) {
         this._fire("new-sketch-dialog");
       }
 
-      _loadSketch(e) {
-        this._fire("load-sketch", e.target.dataset.key);
-      }
-
       _editSketch(e) {
-        this._fire("edit-sketch-dialog", e.target.dataset.name);
+        this._fire("edit-sketch-dialog", this.getSketchInfo(e.target.dataset.key));
       }
 
       _deleteSketch(e) {
-        this._fire("delete-sketch-dialog", {key: e.target.dataset.key, name: e.target.dataset.name});
+        this._fire("delete-sketch-dialog", this.getSketchInfo(e.target.dataset.key));
       }
 
       _changeSketchName(e) {
@@ -180,6 +168,12 @@
 
       _stopProp(e) {
         e.stopPropagation();
+      }
+
+      getSketchInfo(key) {
+        let res = Object.assign({}, this.sketches[key]);
+        res.key = key;
+        return res;
       }
     }
     customElements.define(AppUiSketchlist.is, AppUiSketchlist);

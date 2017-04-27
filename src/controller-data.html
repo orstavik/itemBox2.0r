@@ -92,13 +92,6 @@
         this.$.auth.signOut();
       }
 
-//      _newUser(e) { //todo this we want to do as a firebase cloud function
-//        this.$.serverUserSnap.updateOverwrite({
-//          registered: firebase.database.ServerValue.TIMESTAMP
-//        });
-//        this._fire("system-message", "Welcome new user!");
-//      }
-
       saveChanges(sketchFluid) {
         if (sketchFluid)
           this.$.activeSketchDB.updateMerge(sketchFluid);
