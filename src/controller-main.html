@@ -41,10 +41,10 @@
             }
           },
           snap: Object,
-          sketchMerged: {
-            type: Object,
-            computed: "_makeSketchMerged(snap.sketchServer, snap.sketchFluid)"
-          },
+          // sketchMerged: {
+          //   type: Object,
+          //   computed: "_makeSketchMerged(snap.sketchServer, snap.sketchFluid)"
+          // },
           elaborateSnap: Object //elaboration on now: the active sketch
         }
       }
@@ -52,17 +52,19 @@
       static get observers() {
         return [
           "setUrl(state.now.session.sketchID)",
-          "_makeElaborateSnap(snap, sketchMerged)" //this observer runs after all the computeds are finished (at least two rounds).
+          "_makeElaborateSnap(snap)" //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
 
       constructor() {
         super();
         this.addEventListener("new-user", this._newUser.bind(this));
-        this.addEventListener("new-sketch-list", this._newSketchList.bind(this));
+        this.addEventListener("new-sketch-list", this._newSketchListServer.bind(this));
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
 
         this.addEventListener("save-sketch", this._saveSketch.bind(this));
+        this.addEventListener("edit-sketch", this._editSketch.bind(this));
+        this.addEventListener("delete-sketch", this._deleteSketch.bind(this));
 
         this.addEventListener("new-shape", this._newShape.bind(this));
         this.addEventListener("change-shapes", this._changeShapes.bind(this));
@@ -94,8 +96,8 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
       }
 
-      _newSketchList(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["sketchList"], e.detail));
+      _newSketchListServer(e) {
+        this.setSnap(e, Tools.setIn(this.state.now, ["sketchListServer"], e.detail));
       }
 
       _newSketchData(e) {
@@ -123,6 +125,16 @@
         let newNow2 = Tools.setIn(this.state.now, ["sketchFluid"], screenData);
         newNow2 = Tools.setIn(newNow2, ["sketchFluid", "info"], info);
         this.setSnap(e, newNow2);
+      }
+
+      _editSketch(e) {
+        let newNow = Tools.setIn(this.state.now, ["sketchListFluid", e.detail.key, "info"], e.detail.info);
+        this.setSnap(e, newNow);
+      }
+
+      _deleteSketch(e) {
+        let newNow = Tools.setIn(this.state.now, ["sketchListFluid", e.detail.key], null);
+        this.setSnap(e, newNow);
       }
 
       _newShape(e) {
@@ -235,6 +247,8 @@
               delete diffSketch[key];
           }
         }
+        if (!now.sketchMerged || !now.sketchMerged.shapes)
+          return {"sketchFluid": diffSketch};
         //filter rects
         let resRects = {};
         for (let key in now.rects) {
@@ -254,9 +268,10 @@
         };
       }
 
-      _makeElaborateSnap(now, sketchMerged) {
-        now.sketchMerged = sketchMerged;
-        this.set("elaborateSnap", now);
+      _makeElaborateSnap(snap) {
+        snap.sketchMerged = Tools.mergeDeepWithNullToDelete(snap.sketchServer, snap.sketchFluid);
+        snap.sketchListMerged = Tools.mergeDeepWithNullToDelete(snap.sketchListServer, snap.sketchListFluid);
+        this.set("elaborateSnap", snap);
       }
 
       _makeSketchMerged(sketchServer, sketchFluid) {

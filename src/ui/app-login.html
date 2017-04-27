@@ -1,7 +1,5 @@
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
-<link rel="import" href="app-ui-sketchlist.html">
-
 <dom-module id="app-login">
   <template>
     <style>
@@ -28,7 +26,6 @@
         margin-right: 20px;
         border-radius: 50%;
         border: 1px solid #cccccc;
-        background-image: url(https://lh5.googleusercontent.com/-9S_-DOF54g4/AAAAAAAAAAI/AAAAAAAAAF4/x3wk4OsDgYA/photo.jpg);
         background-size: cover;
       }
       .secondCol {
@@ -143,7 +140,7 @@
         <span class="addText">Sign in to save your sketches</span>
       </div>
       <div class="scrollWrapper" removed$="[[!user]]">
-        <app-ui-sketchlist id="sketchlist" uid="[[user.uid]]" sketches="[[sketches]]"></app-ui-sketchlist>
+        <slot></slot>
       </div>
     </div>
 
@@ -164,8 +161,7 @@
           _userName: {
             type: String,
             computed: "_setUserName(user)"
-          },
-          sketches: Object
+          }
         }
       }
 

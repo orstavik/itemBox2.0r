@@ -11,13 +11,21 @@
     </style>
 
     <indexed-mirror key="systemSketches"
-                    data="[[serverSystemSketches]]"
-                    stored-data="{{sketchDataFromServer}}"></indexed-mirror>
+                    data="[[activeSketchServed]]"
+                    stored-data="{{activeSketchServed}}"></indexed-mirror>
+
+    <indexed-mirror key="sketchList"
+                    data="[[sketchListServed]]"
+                    stored-data="{{sketchListServed}}"></indexed-mirror>
 
     <firebase-on id="activeSketchDB"
                  active="[[_validateName(state.now.user.uid, state.now.session.sketchID)]]"
                  result="{{activeSketchServed}}"
                  path="/users/[[state.now.user.uid]]/sketches/[[state.now.session.sketchID]]"></firebase-on>
+    
+    <firebase-on id="activeSketchListDB" write-only
+                 active="[[_BOOL(state.now.user.uid)]]"
+                 path="/users/[[state.now.user.uid]]/sketches"></firebase-on>
 
     <firebase-on id="sketchListDB"
                  active="[[_BOOL(state.now.user.uid)]]"
@@ -48,13 +56,25 @@
             observer: "_sketchListServedChanged"
           },
           state: Object,
-          sketchFluid: {
-            type: Object,
-            computed: "_getFluidActiveSketch(state.now.sketchFluid)",
-            observer: "saveChangesDebounced"
-          },
+          // sketchFluid: {
+          //   type: Object,
+          //   computed: "_getFluidActiveSketch(state.now.sketchFluid)",
+          //   observer: "saveChangesDebounced"
+          // },
+          // sketchListFluid: {
+          //   type: Object,
+          //   computed: "_getFluidActiveSketch(state.now.sketchListFluid)",
+          //   observer: "saveChangesDebouncedList"
+          // },
           actionType: String
         };
+      }
+
+      static get observers() {
+        return [
+          "saveChangesDebounced(state.now.sketchFluid)",
+          "saveChangesDebouncedList(state.now.sketchListFluid)",
+        ]
       }
 
       constructor() {
@@ -62,9 +82,9 @@
         this._ref = firebase.database().ref();
       }
 
-      _getFluidActiveSketch(sketchFluid) {
-        return sketchFluid;
-      }
+      // _getFluidActiveSketch(sketchFluid) {
+      //   return sketchFluid;
+      // }
 
       _sketchListServedChanged(sketchList) {
         this._fire("new-sketch-list", sketchList);
@@ -96,11 +116,24 @@
           this.$.activeSketchDB.updateMerge(sketchFluid);
       }
 
+      saveChangesList(sketchFluidList) {
+        if (sketchFluidList)
+          this.$.activeSketchListDB.updateMerge(sketchFluidList);
+      }
+
       saveChangesDebounced(fluidSnap) {
         this._saveDebouncer = Polymer.Debouncer.debounce(
           this._saveDebouncer,
           Polymer.Async.timeOut.after(33),
           this.saveChanges.bind(this, fluidSnap)
+        );
+      }
+
+      saveChangesDebouncedList(fluidListSnap) {
+        this._saveDebouncerList = Polymer.Debouncer.debounce(
+          this._saveDebouncerList,
+          Polymer.Async.timeOut.after(33),
+          this.saveChangesList.bind(this, fluidListSnap)
         );
       }
 

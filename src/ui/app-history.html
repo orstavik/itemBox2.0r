@@ -1,4 +1,4 @@
-<dom-module id="app-ui-history">
+<dom-module id="app-history">
   <template>
     <style>
       :host {
@@ -118,9 +118,9 @@
   </template>
 
   <script>
-    class AppUiHistory extends Polymer.GestureEventListeners(Polymer.Element) {
+    class AppHistory extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "app-ui-history";
+        return "app-history";
       }
 
       static get properties() {
@@ -231,6 +231,6 @@
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
     }
-    customElements.define(AppUiHistory.is, AppUiHistory);
+    customElements.define(AppHistory.is, AppHistory);
   </script>
 </dom-module>
