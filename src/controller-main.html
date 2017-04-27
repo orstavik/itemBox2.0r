@@ -110,14 +110,19 @@
       }
 
       _saveSketch(e) {
+        //getData for the future
+        let screenData = e.detail.clear ? undefined : this.state.now.sketchMerged;
         let key = Tools.genKey();
-        let newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
-        newNow.sketchFluid = e.detail.clear ? undefined : this.state.now.sketchMerged;
-        newNow.sketchServer = undefined;
+        //unset the old serverSketch Data and set the new sketchID
+        const newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
+        newNow.sketchServer = {};
+        this.setSnap(e, newNow);
+        //set the screenData
         let info = e.detail.info;
         info.created = new Date().getTime();
-        newNow = Tools.setIn(newNow, ["sketchFluid", "info"], info);
-        this.setSnap(e, newNow);
+        let newNow2 = Tools.setIn(this.state.now, ["sketchFluid"], screenData);
+        newNow2 = Tools.setIn(newNow2, ["sketchFluid", "info"], info);
+        this.setSnap(e, newNow2);
       }
 
       _newShape(e) {
