@@ -110,8 +110,8 @@
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[state.now.activeSketch.sketchName]]</div>
-      <div id="saveButton" on-tap="_saveSketchDialog">
+      <div id="sketchName">[[_orUnsaved(state.now.sketchMerged.info.sketchName)]]</div>
+      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(state.now.session.sketchID)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
@@ -131,7 +131,7 @@
     </tools-button>
 
     <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
-      <app-login sketches="[[state.now.sketches]]" user="[[state.now.user]]"></app-login>
+      <app-login sketches="[[state.now.sketchList]]" user="[[state.now.user]]"></app-login>
     </account-button>
 
     <messages-help messages="[[state.history.helpMsgs]]" count=3></messages-help>
@@ -151,7 +151,7 @@
           history: Array,
           firebase: {
             type: Object,
-            value: function() {
+            value: function () {
               return firebase;
             }
           }
@@ -166,23 +166,19 @@
       }
 
       _createNewSketchDialog() {
-        const dialog = new NewSketchDialog();
-        this.shadowRoot.appendChild(dialog);
+        this.shadowRoot.appendChild(new NewSketchDialog());
       }
 
       _editSketchDialog(e) {
-        const dialog = new EditSketchDialog(e.detail);
-        this.shadowRoot.appendChild(dialog);
+        this.shadowRoot.appendChild(new EditSketchDialog(e.detail));
       }
 
-      _saveSketchDialog(e) {
-        const dialog = new SaveSketchDialog();
-        this.shadowRoot.appendChild(dialog);
+      _saveSketchDialog() {
+        this.shadowRoot.appendChild(new SaveSketchDialog());
       }
 
       _deleteSketchDialog(e) {
-        const dialog = new DeleteSketchDialog(e.detail);
-        this.shadowRoot.appendChild(dialog);
+        this.shadowRoot.appendChild(new DeleteSketchDialog(e.detail));
       }
 
       deselect() {
@@ -211,10 +207,10 @@
           case "Delete":
             this._fire("delete-selected");
             return;
-          case "KeyN":
-            let copy = confirm("Do you want to copy the current sketch?");
-            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
-            return;
+//          case "KeyN":
+//            let copy = confirm("Do you want to copy the current sketch?");
+//            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
+//            return;
 //          case "KeyM":
 //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.mirror()));
 //            return;
@@ -244,6 +240,14 @@
 
       _BOOL(obj) {
         return !!obj;
+      }
+
+      _orUnsaved(sketchName) {
+        return sketchName || "unsaved";
+      }
+
+      _isNotUnsaved(sketchID) {
+        return sketchID !== "unsaved";
       }
 
       _fire(name, detail) {

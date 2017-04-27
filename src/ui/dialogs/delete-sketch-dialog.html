@@ -6,75 +6,75 @@
 <dom-module id="delete-sketch-dialog">
   <template>
     <style>
-			:host {
-				display: flex;
-				width: 100vw;
-				height: 100vh;
-				position: absolute;
-				top: 0;
-				left: 0;
-				align-items: center;
-				justify-content: center;
-    		z-index: 1000;
-			}
-			#overlay {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				background-color: rgba(0,0,0,0.5);
-				z-index: -1;
-			}
-			#dialogBody {
-				display: flex;
-				width: 300px;
-				max-width: 80vw;
-				border-radius: 2px;
-				position: relative;
-				flex-direction: column;
-				background-color: white;
-				animation: Appear 0.3s forwards;
-			}
-			@keyframes Appear {
-				from { 
-					transform: scale(0.9);
-					opacity: 0;
-				}
-				to { 
-					transform: scale(1);
-					opacity: 1;
-				}
-			}
-			.dialog-content {
-				display: flex;
-				flex-direction: column;
-				margin: 20px 20px 10px;
-				color: var(--paper-grey-700);
-			}
-			.dialog-actions {
-				display: flex;
-				justify-content: flex-end;
-				margin: 6px
-			}
-			paper-checkbox {
-				margin: 12px 0;
-    		font-size: 14px;
-			}
-			paper-button {
-				font-size: 14px;
-			}
+      :host {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      #overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+      #dialogBody {
+        display: flex;
+        width: 300px;
+        max-width: 80vw;
+        border-radius: 2px;
+        position: relative;
+        flex-direction: column;
+        background-color: white;
+        animation: Appear 0.3s forwards;
+      }
+      @keyframes Appear {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .dialog-content {
+        display: flex;
+        flex-direction: column;
+        margin: 20px 20px 10px;
+        color: var(--paper-grey-700);
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: 6px
+      }
+      paper-checkbox {
+        margin: 12px 0;
+        font-size: 14px;
+      }
+      paper-button {
+        font-size: 14px;
+      }
     </style>
 
-		<paper-material elevation="5" id="dialogBody">
-			<div class="dialog-content">
-				<span>Do you really want to delete "[[info.name]]"?</span>
-			</div>
-			<div class="dialog-actions">
-				<paper-button on-tap="_deleteSketch">Delete</paper-button>
-				<paper-button on-tap="_closeDialog">Cancel</paper-button>
-			</div>
-		</paper-material>
+    <paper-material elevation="5" id="dialogBody">
+      <div class="dialog-content">
+        <span>Do you really want to delete "[[data.info.name]]"?</span>
+      </div>
+      <div class="dialog-actions">
+        <paper-button on-tap="_deleteSketch">Delete</paper-button>
+        <paper-button on-tap="_closeDialog">Cancel</paper-button>
+      </div>
+    </paper-material>
 
-		<div id="overlay" on-tap="_closeDialog"></div>
+    <div id="overlay" on-tap="_closeDialog"></div>
 
   </template>
   <script>
@@ -85,34 +85,24 @@
 
       static get properties() {
         return {
-					info: {
-						type: Object,
-						value: function() {
-							return {
-								name: ""
-							};
-						}
-					}
+          data: Object
         }
       }
 
-			constructor(detail) {
-				super();
-				super.ready();
-				this.set("info", {
-					key: detail.key,
-					name: detail.name
-				});
-			}
+      constructor(data) {
+        super();
+        super.ready();
+        this.data = data;
+      }
 
-			_deleteSketch() {
-				this._fire("delete-sketch", this.info);
-				this._closeDialog();
-			}
+      _deleteSketch() {
+        this._fire("delete-sketch", this.data);
+        this._closeDialog();
+      }
 
-			_closeDialog() {
-				this.remove();
-			}
+      _closeDialog() {
+        this.remove();
+      }
 
       _fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));

@@ -48,12 +48,11 @@
        *   now                       now === history[0]  / ("state.now" equals "state.history.0" Polymer binding).
        *    - selects
        *    - rects
-       *    - sketches
-       *    - fluidActiveSketch
-       *    - activeSketch
+       *    - sketchMerged
+       *    - sketchFluid
+       *    - sketchMerged
        **/
       _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now) {
-//        now.activeSketch = activeSketch;
         this.set("state", {
           history: {
             all: history,

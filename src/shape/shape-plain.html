@@ -53,11 +53,11 @@
           },
           selecteds: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(state.now.activeSketch, state.now.selects, state.now.rects)"
+            computed: "_makeSelecteds(state.now.sketchMerged, state.now.selects, state.now.rects)"
           },
           shapesArray: {
             type: Array,
-            computed: "_toArray(state.now.activeSketch.shapes)"
+            computed: "_toArray(state.now.sketchMerged.shapes)"
           }
         }
       }
@@ -83,12 +83,12 @@
         this.fire("new-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 
-      _makeSelecteds(activeSketch, selects, rects) {
-        if (!activeSketch || !selects)
+      _makeSelecteds(sketchMerged, selects, rects) {
+        if (!sketchMerged || !selects)
           return undefined;
         let selectsShapes = {};
         for (let key in selects)
-          selectsShapes[key] = {matrix: activeSketch.shapes[key].matrix, rect: rects[key]};
+          selectsShapes[key] = {matrix: sketchMerged.shapes[key].matrix, rect: rects[key]};
         return selectsShapes;
       }
 
