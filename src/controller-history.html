@@ -9,19 +9,19 @@
       static get properties() {
         return {
           now: Object,
-          history: {                                //history array of all nows
+          all: {                                //history array of all nows
             type: Array,
             computed: "_makeHistory(now)"
           },
-          editHistory: {                            //partial history array of nows: edit events only
+          edits: {                            //partial history array of nows: edit events only
             type: Array,
             computed: "_makeEditHistory(now)"
           },
-          systemMessageHistory: {                   //partial history array of nows: system messages only
+          systemMsgs: {                   //partial history array of nows: system messages only
             type: Array,
             computed: "_makeSystemMessageHistory(now)"
           },
-          helpMessageHistory: {                     //partial history array of nows: help messages only
+          helpMsgs: {                     //partial history array of nows: help messages only
             type: Array,
             computed: "_makeHelpMessageHistory(now)"
           },
@@ -33,7 +33,7 @@
       }
 
       static get observers() {
-        return ["_makeState(history,editHistory,systemMessageHistory,helpMessageHistory,now)"];  //this has to be done after all the computed, hence it is done via an observer. In Polymer, computed is run first, then observers.
+        return ["_makeState(all, edits, systemMsgs, helpMsgs, now)"];  //In Polymer, computed functions run first, then observers second.
       }
 
       /*
@@ -45,46 +45,48 @@
        *    - helpMsgs               partial arrayOfNows[]
        *    - systemMsgs             partial arrayOfNows[]
        *
-       *   now                       now === history[0]  / ("state.now" equals "state.history.0" Polymer binding).
+       *   now                       now === history.all[0]  / ("state.now" equals "state.history.all.0" Polymer binding).
        *    - selects
        *    - rects
        *    - sketchMerged
        *    - sketchFluid
        *    - sketchMerged
        **/
-      _makeState(history, editHistory, systemMessageHistory, helpMessageHistory, now) {
+      _makeState(all, edits, systemMsgs, helpMsgs, now) {
         this.set("state", {
           history: {
-            all: history,
-            edits: editHistory,
-            systemMsgs: systemMessageHistory,
-            helpMsgs: helpMessageHistory,
+            all: all,
+            edits: edits,
+            systemMsgs: systemMsgs,
+            helpMsgs: helpMsgs,
           },
           now: now,
         });
       }
 
       _makeHistory(now) {
-        return this.history ? [now].concat(this.history) : [now];
+        return this.all ? [now].concat(this.all) : [now];
       }
 
       _makeEditHistory(now) {
-        let t = now.action.type;
-        if (t === "change-shapes-end" || t === "new-shape" || t === "delete-selected")// || t === "shape-scale" || t === "shape-rotate")
-          return this.editHistory ? [now].concat(this.editHistory) : [now];
-        return this.editHistory;
+        return ControllerHistory._unshiftIf(now, this.edits, ["change-shapes-end", "new-shape", "delete-selected"]);
       }
 
       _makeSystemMessageHistory(now) {
-        if (now.action.type === "system-message")
-          return this.systemMessageHistory ? [now].concat(this.systemMessageHistory) : [now];
-        return this.systemMessageHistory;
+        return ControllerHistory._unshiftIf(now, this.systemMsgs, ["system-message"]);
       }
 
       _makeHelpMessageHistory(now) {
-        if (now.action.type === "help-message")
-          return this.helpMessageHistory ? [now].concat(this.helpMessageHistory) : [now];
-        return this.helpMessageHistory;
+        return ControllerHistory._unshiftIf(now, this.helpMsgs, ["help-message"]);
+      }
+
+      //returns an immuted version of the array
+      static _unshiftIf(now, array, conditionStates) {
+        if (conditionStates.indexOf(now.action.type) === -1)
+          return array;
+        if (array)
+          return [now].concat(array);
+        return [now];
       }
     }
     customElements.define(ControllerHistory.is, ControllerHistory);
