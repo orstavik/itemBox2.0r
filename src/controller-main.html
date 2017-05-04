@@ -89,9 +89,7 @@
           type: "startup",
           timeStamp: new Date().getTime()
         }, Object.assign({}, this.defaultSnap));
-        this.set("state", Object.assign({}, {
-          now: this.snap
-        })); //this is needed for the first route operations
+        this.set("state", Object.assign({}, {now: this.snap })); //this is needed for the first route operations
       }
 
       _newUser(e) {
