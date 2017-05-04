@@ -26,7 +26,7 @@
 			}
     </style>
 
-		<div id="listWrapper" on-click="_toggle">
+		<div id="listWrapper" on-tap="_toggle">
 			<template is="dom-repeat" items="[[_showLess(messages,count)]]" on-dom-change="_animateLastOne">
 				<messages-help-single value="[[item.helpMessage]]" style$="[[_calcStyle(item,index,count)]]"></messages-help-single>
 			</template>
@@ -34,7 +34,7 @@
 
   </template>
   <script>
-    class MessagesHelp extends Polymer.Element {
+    class MessagesHelp extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "messages-help";
       }

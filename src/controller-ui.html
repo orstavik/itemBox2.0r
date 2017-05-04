@@ -2,13 +2,15 @@
 <link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-styles/color.html">
+<!--<link rel="import" href="../bower_components/paper-styles/paper-style.html">-->
 
 <link rel="import" href="ui/app-login.html">
 <link rel="import" href="ui/app-sketchlist.html">
-<link rel="import" href="ui/tools-button.html">
+<!--<link rel="import" href="ui/tools-button.html">-->
+<link rel="import" href="ui/fab-container.html">
+<link rel="import" href="ui/fab-transformer.html">
 <link rel="import" href="ui/account-button.html">
-<link rel="import" href="ui/tools-item-button.html">
+<!--<link rel="import" href="ui/tools-item-button.html">-->
 <link rel="import" href="ui/object-viewer.html">
 <link rel="import" href="ui/color-palette.html">
 <link rel="import" href="ui/app-history.html">
@@ -29,7 +31,14 @@
       :host {
         height: 100%;
       }
-      tools-button {
+      #tools {
+        --fab-color: var(--paper-indigo-a100);
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+      }
+      /*tools-button {
         --mother-button-size: 50px;
         --mother-button-color: var(--paper-pink-a100);
         --mother-button-icon-color: black;
@@ -37,7 +46,7 @@
         top: 6px;
         left: 6px;
         z-index: 100;
-      }
+      }*/
       tools-item-button {
         --tools-item-button-size: 36px;
         --tools-item-button-color: white;
@@ -64,12 +73,10 @@
         right: 16px;
         background-color: rgba(255, 255, 255, 0.5);
         border-radius: 3px;
-        opacity: 1;
-        transform: translateY(0);
-        transition: opacity 0.5s, transform 0.4s;
         overflow: hidden;
         z-index: 10;
         font-weight: 400;
+        @apply --shadow-elevation-2dp;
       }
       #sketchName {
         margin: 0 16px;
@@ -84,39 +91,32 @@
       *[hidden] {
         display: none;
       }
-      #systemBox {
-        display: flex;
-        flex-direction: column-reverse;
-        position: absolute;
-        top: 100vh;
-        left: 50vw;
-        transform: translateX(-50%);
-        z-index: 100;
-      }
-      #testButtons {
-        display: inline-block;
-        position: absolute;
-        top: 50%;
-        right: 0;
-        z-index: 100;
-        font-size: 10px;
-      }
     </style>
 
     <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener>
-    <music-clef id="clef" octave="4" mode="major" key="C" scale="{{scale}}"></music-clef>
 
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
-    <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
+    <div id="sketchNamePaper" status$="[[state.now.savedStatus]]">
       <div id="sketchName">[[_orUnsaved(state.now.sketchMerged.info.sketchName)]]</div>
       <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(state.now.session.sketchID)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
-    </paper-material>
+    </div>
 
-    <tools-button id="tools" icon="icons:build">
+    <fab-container id="tools" icon="build" direction="bottom">
+      <fab-transformer mini icon="settings-ethernet" fab-child>
+        <!--<object-viewer json="[[state]]" name="state"></object-viewer>-->
+      </fab-transformer>
+      <fab-transformer mini icon="image:color-lens" fab-child>
+        <!--<color-palette id="palette" color="[[state.now.session.color]]"></color-palette>-->
+      </fab-transformer>
+      <fab-transformer mini icon="restore" fab-child>
+        <!--<app-history history="[[state.history.edits]]" parent-active="[[historyActive]]"></app-history>-->
+      </fab-transformer>
+    </fab-container>
+    <!--<tools-button id="tools" icon="icons:build">
       <tools-item-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
         <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
@@ -127,7 +127,7 @@
                          active="{{historyActive}}">
         <app-history history="[[state.history.edits]]" parent-active="[[historyActive]]"></app-history>
       </tools-item-button>
-    </tools-button>
+    </tools-button>-->
 
     <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
       <app-login user="[[state.now.user]]">

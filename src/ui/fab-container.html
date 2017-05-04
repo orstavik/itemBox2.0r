@@ -1,0 +1,170 @@
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="fab-container">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        align-items: center;
+        --fab-color: white;
+        --fab-icon-color: black;
+      }
+      :host([direction=top]),
+      :host([direction=bottom]) {
+        flex-direction: column;
+      }
+      #fab {
+        display: flex;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        position: relative;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--fab-color);
+        cursor: pointer;
+        @apply --shadow-elevation-4dp;
+        @apply --shadow-transition;
+      }
+      :host([active]) #fab {
+        @apply --shadow-elevation-12dp;
+      }
+      paper-ripple {
+        color: white;
+      }
+      iron-icon {
+        position: absolute;
+        color: var(--fab-icon-color);
+      }
+      iron-icon:last-child {
+        opacity: 0;
+      }
+      #fab:not([loading]) iron-icon[active] {
+        animation: RotateL 0.1s ease-out forwards;
+      }
+      #fab:not([loading]) iron-icon:not([active]) {
+        animation: RotateR 0.1s ease-out forwards;
+      }
+      @keyframes RotateL {
+        from { opacity: 0; transform: rotate(-90deg); }
+        to { opacity: 1; transform: rotate(0deg)); }
+      }
+      @keyframes RotateR {
+        from { opacity: 1; transform: rotate(0deg); }
+        to { opacity: 0; transform: rotate(90deg); }
+      }
+      #container {
+        display: flex;
+        align-items: center;
+        position: absolute;
+        pointer-events: none;
+      }
+      #container ::slotted([fab-child]) {
+        margin: 6px;
+        transition: opacity 0.1s;
+        pointer-events: auto;
+      }
+      :host([active]) #container ::slotted([fab-child]) {
+        transition: opacity 0.2s ease-in;
+      }
+      :host([direction=top]) #container {
+        bottom: 66px;
+        flex-direction: column-reverse;
+      }
+      :host([direction=bottom]) #container {
+        top: 66px;
+        flex-direction: column;
+      }
+      :host([direction=left]) #container {
+        right: 66px;
+        flex-direction: row-reverse;
+      }
+      :host([direction=right]) #container {
+        left: 66px;
+        flex-direction: row;
+      }
+    </style>
+
+    <div id="fab" on-tap="_toggle" loading>
+      <paper-ripple center></paper-ripple>
+      <iron-icon icon$="[[icon]]" active$="[[!active]]"></iron-icon>
+      <iron-icon icon="clear" active$="[[active]]"></iron-icon>
+    </div>
+
+    <div id="container">
+      <slot></slot>
+    </div>
+
+  </template>
+  <script>
+    class FabContainer extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "fab-container";
+      }
+
+      static get properties() {
+        return {
+          active: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
+          },
+          icon: String,
+          _children: Array
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._children = this.querySelectorAll("[fab-child]");
+        this.addEventListener("fab-transformer-activated", this._deactivateChildren.bind(this));
+        this._deactivate();
+      }
+
+      _deactivateChildren(e) {
+        this._children.forEach(function(child) {
+          if (child !== e.target)
+            child.deactivate();
+        })
+      }
+
+      _toggle() {
+        if (this.$.fab.hasAttribute("loading"))
+          this.$.fab.removeAttribute("loading")
+        if (!this.active)
+          return this._activate();
+        return this._deactivate();
+      }
+
+      _activate() {
+        this.active = true;
+        let step = 200/this._children.length;
+        this._children.forEach(function(child, index) {
+          window.setTimeout(function() {
+            this._showChild(child);
+          }.bind(this), step*index);
+        }.bind(this))
+      }
+
+      _deactivate() {
+        this.active = false;
+        this._children.forEach(function(child) {
+          this._hideChild(child);
+        }.bind(this))
+      }
+
+      _hideChild(child) {
+        child.style.opacity = 0;
+        child.style.pointerEvents = "none";
+      }
+
+      _showChild(child) {
+        child.style.opacity = 1;
+        child.style.pointerEvents = "auto";
+      }
+    }
+    customElements.define(FabContainer.is, FabContainer);
+  </script>
+</dom-module>

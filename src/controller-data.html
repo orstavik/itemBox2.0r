@@ -10,17 +10,17 @@
       }
     </style>
 
-    <indexed-mirror key="activeSketch"
+    <!--<indexed-mirror key="activeSketch"
                     data="[[activeSketchServedPre]]"
                     stored-data="{{activeSketchServed}}"></indexed-mirror>
 
     <indexed-mirror key="sketchList"
                     data="[[sketchListServedPre]]"
-                    stored-data="{{sketchListServed}}"></indexed-mirror>
+                    stored-data="{{sketchListServed}}"></indexed-mirror>-->
 
     <firebase-on id="activeSketchDB"
                  active="[[_validateName(state.now.user.uid, state.now.session.sketchID)]]"
-                 result="{{activeSketchServedPre}}"
+                 result="{{activeSketchServed}}"
                  path="/users/[[state.now.user.uid]]/sketches/[[state.now.session.sketchID]]"></firebase-on>
     
     <firebase-on id="activeSketchListDB" write-only
@@ -29,7 +29,7 @@
 
     <firebase-on id="sketchListDB"
                  active="[[_BOOL(state.now.user.uid)]]"
-                 result="{{sketchListServedPre}}"
+                 result="{{sketchListServed}}"
                  path="/viewSketchList/users/[[state.now.user.uid]]/sketches"></firebase-on>
 
     <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
