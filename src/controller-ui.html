@@ -47,12 +47,19 @@
         left: 6px;
         z-index: 100;
       }*/
-      tools-item-button {
+      /*tools-item-button {
         --tools-item-button-size: 36px;
         --tools-item-button-color: white;
         --tools-item-button-icon-color: black;
+      }*/
+      #account {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 10;
+        --fab-color: var(--paper-indigo-a100);
       }
-      account-button#account {
+      /*account-button#account {
         --account-button-size: 50px;
         --account-button-color: white;
         --account-button-icon-color: black;
@@ -60,7 +67,7 @@
         top: 6px;
         right: 6px;
         z-index: 100;
-      }
+      }*/
       account-button#account[signed] {
         --account-button-color: var(--paper-pink-a100);
       }
@@ -116,6 +123,12 @@
         <!--<app-history history="[[state.history.edits]]" parent-active="[[historyActive]]"></app-history>-->
       </fab-transformer>
     </fab-container>
+
+    <fab-transformer id="account" icon="account-circle">
+      <app-login user="[[state.now.user]]">
+        <app-sketchlist uid="[[state.now.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[state.now.session.sketchID]]"></app-sketchListMerged>
+      </app-login>
+    </fab-transformer>
     <!--<tools-button id="tools" icon="icons:build">
       <tools-item-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
         <object-viewer json="[[state]]" name="state"></object-viewer>
@@ -129,18 +142,17 @@
       </tools-item-button>
     </tools-button>-->
 
-    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
+    <!--<account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
       <app-login user="[[state.now.user]]">
         <app-sketchlist uid="[[state.now.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[state.now.session.sketchID]]"></app-sketchListMerged>
       </app-login>
-    </account-button>
+    </account-button>-->
 
     <messages-help messages="[[state.history.helpMsgs]]" count=3></messages-help>
     <messages-system messages="[[state.history.systemMsgs]]" count=5></messages-system>
   </template>
 
   <script>
-
     class ControllerUI extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "controller-ui";
@@ -152,7 +164,7 @@
           history: Array,
           firebase: {
             type: Object,
-            value: function () {
+            value: function() {
               return firebase;
             }
           }
@@ -208,30 +220,34 @@
           case "Delete":
             this._fire("delete-selected");
             return;
-//          case "KeyN":
-//            let copy = confirm("Do you want to copy the current sketch?");
-//            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
-//            return;
-//          case "KeyM":
-//            this._fire("change-shapes", this.getSelectedInfos().map(info => info.mirror()));
-//            return;
-//          case "KeyN":
-//            this._fire("change-shapes", this.getSelectedInfos().map(info => info.center()));
-//            return;
-//          case "PageUp":
-//            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zUp()));
-//            return;
-//          case "PageDown":
-//            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zDown()));
-//            return;
+            //          case "KeyN":
+            //            let copy = confirm("Do you want to copy the current sketch?");
+            //            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
+            //            return;
+            //          case "KeyM":
+            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.mirror()));
+            //            return;
+            //          case "KeyN":
+            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.center()));
+            //            return;
+            //          case "PageUp":
+            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zUp()));
+            //            return;
+            //          case "PageDown":
+            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zDown()));
+            //            return;
         }
         if (e.detail.ctrl()) {
           if (e.detail.code() === "Digit0")
-            this._fire("view-changed", {x: 0, y: 0, s: 1});
-//          else if (e.detail.code() === "KeyC")
-//            this.copy();
-//          else if (e.detail.code() === "KeyV")
-//            this.paste();
+            this._fire("view-changed", {
+              x: 0,
+              y: 0,
+              s: 1
+            });
+          //          else if (e.detail.code() === "KeyC")
+          //            this.copy();
+          //          else if (e.detail.code() === "KeyV")
+          //            this.paste();
         }
       }
 
@@ -252,7 +268,11 @@
       }
 
       _fire(name, detail) {
-        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
     }
     customElements.define(ControllerUI.is, ControllerUI);

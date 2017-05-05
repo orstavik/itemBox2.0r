@@ -6,40 +6,90 @@
     <style>
       :host {
         display: flex;
+        width: 56px;
+        height: 56px;
         --fab-color: white;
         --fab-icon-color: black;
+        --transformable-style: {
+
+        }
+      }
+      :host([mini]) {
+        width: 40px;
+        height: 40px;
       }
       #fab {
         display: flex;
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        position: relative;
+        position: absolute;
+        right: 0; /*optional*/
         align-items: center;
         justify-content: center;
         background-color: var(--fab-color);
-        @apply --shadow-elevation-4dp;
-        @apply --shadow-transition;
+        pointer-events: auto;
         cursor: pointer;
+      }
+      :host([active]) #xTransform {
+        transition: transform 0.2s ease-in;
+      }
+      :host([active]) #yTransform {
+        transition: transform 0.2s ease-out;
       }
       :host([mini]) #fab {
         width: 40px;
         height: 40px;
       }
       :host([active]) #fab {
-        background-color: grey;
+        background-color: white;
+        transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1) 0.1s,
+                    background-color 0.3s cubic-bezier(0.39, 0.58, 0.57, 1);
       }
       iron-icon {
         color: var(--fab-icon-color);
       }
+      :host([active]) iron-icon {
+        opacity: 0;
+      }
+      #filter {
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.14)) 
+                drop-shadow(0 1px 5px rgba(0, 0, 0, 0.12)) 
+                drop-shadow(0 3px 1px rgba(0, 0, 0, 0.26));
+        pointer-events: none;
+      }
+      #shape {
+        border-radius: 3px;
+        position: absolute;
+        right: 0;  /*optional*/
+        pointer-events: none;
+        overflow: hidden;
+        @apply --transformable-style;
+      }
+      #fabContent {
+        position: relative;
+        opacity: 0;
+      }
+      :host([active]) #fabContent {
+        opacity: 1;
+        pointer-events: auto;
+        transition: opacity 0.2s ease-out 0.2s;
+      }
     </style>
 
-    <div id="fab" on-tap="_toggle">
-      <iron-icon icon$="[[icon]]"></iron-icon>
-    </div>
-
-    <div id="container">
-      <slot></slot>
+    <div id="filter">
+      <div id="shape">
+        <div id="xTransform">
+          <div id="yTransform">
+            <div id="fab" on-tap="_toggle">
+              <iron-icon icon$="[[icon]]"></iron-icon>
+            </div>
+          </div>
+        </div>
+        <div id="fabContent">
+          <slot></slot>
+        </div>
+      </div>
     </div>
 
   </template>
@@ -62,6 +112,7 @@
 
       connectedCallback() {
         super.connectedCallback();
+        this.addEventListener("close-fab-transformer", this.deactivate.bind(this));
       }
 
       _toggle() {
@@ -73,14 +124,36 @@
       _activate() {
         this.active = true;
         this.fire("fab-transformer-activated");
+        if (!this._transform)
+          this._animCalculations();
+        this.$.xTransform.style.transform = "translateX("+this._transform.x+"px)";
+        this.$.yTransform.style.transform = "translateY("+this._transform.y+"px)";
+        this.$.fab.style.transform = "scale("+this._transform.s+")";
       }
 
       deactivate() {
         this.active = false;
+        this.$.xTransform.style.transform = "translateX(0px)";
+        this.$.yTransform.style.transform = "translateY(0px)";
+        this.$.fab.style.transform = "scale(1)";
+      }
+
+      _animCalculations() {
+        const rShape = this.$.shape.getBoundingClientRect();
+        const rFab = this.$.fab.getBoundingClientRect();
+        this._transform = {
+          x: (rShape.left+rShape.width/2) - (rFab.left+rFab.width/2),
+          y: (rShape.top+rShape.height/2) - (rFab.top+rFab.height/2),
+          s: Math.sqrt(Math.pow(rShape.width,2)+Math.pow(rShape.height,2))/rFab.width
+        };
       }
 
       fire(name, detail) {
-        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
     }
     customElements.define(FabTransformer.is, FabTransformer);

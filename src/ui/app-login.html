@@ -1,4 +1,6 @@
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
 <dom-module id="app-login">
   <template>
@@ -9,6 +11,7 @@
         width: 290px;
         flex-direction: column;
         align-items: flex-start;
+        background-color: white;
       }
       .headerRow {
         display: flex;
@@ -55,6 +58,12 @@
       paper-button#signIn {
         background-color: var(--paper-indigo-a200);
         color: white;
+      }
+      #close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        cursor: pointer;
       }
       .tabsRow {
         display: flex;
@@ -124,11 +133,14 @@
 
       <div class="secondCol">
         <div class="accountName">[[_userName]]</div>
-        <paper-button id="signIn" raised on-click="_signIn" hidden$="[[_BOOL(user)]]">Sign in with Google
+        <paper-button id="signIn" raised on-tap="_signIn" hidden$="[[_BOOL(user)]]">Sign in with Google
         </paper-button>
-        <paper-button raised on-click="_signOut" hidden$="[[!user]]">Sign out</paper-button>
+        <paper-button raised on-tap="_signOut" hidden$="[[!user]]">Sign out</paper-button>
       </div>
     </div>
+
+    <paper-icon-button id="close" icon="clear" on-tap="_closeIt"></paper-icon-button>
+
     <div class="tabsRow">
       <div class="tabTitle">
         <h4>YOUR SKETCHES</h4>
@@ -146,7 +158,7 @@
 
   </template>
   <script>
-    class AppLogin extends Polymer.Element {
+    class AppLogin extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return 'app-login';
       }
@@ -187,8 +199,20 @@
           return user.photoURL;
       }
 
+      _closeIt() {
+        this.fire("close-fab-transformer");
+      }
+
       _BOOL(obj) {
         return !!obj;
+      }
+
+      fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
     }
     window.customElements.define(AppLogin.is, AppLogin);

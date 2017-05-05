@@ -67,7 +67,7 @@
         pointer-events: auto;
       }
       :host([active]) #container ::slotted([fab-child]) {
-        transition: opacity 0.2s ease-in;
+        transition: opacity 0.15s ease-in;
       }
       :host([direction=top]) #container {
         bottom: 66px;
@@ -140,7 +140,7 @@
 
       _activate() {
         this.active = true;
-        let step = 200/this._children.length;
+        let step = 150/this._children.length;
         this._children.forEach(function(child, index) {
           window.setTimeout(function() {
             this._showChild(child);
