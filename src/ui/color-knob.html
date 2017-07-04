@@ -1,0 +1,123 @@
+<dom-module id="color-knob">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+      #knobWrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+      }
+      :host([only-x]) #knobWrapper {
+        top: 50%;
+      }
+      :host([only-y]) #knobWrapper {
+        left: 50%;
+      }
+      :host ::slotted(*) {
+        transform: translate(-50%, -50%) scale(1);
+        transition: transform 0.1s;
+        cursor: pointer;
+      }
+      :host([pressed]) ::slotted(*) {
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+    </style>
+
+    <div id="knobWrapper" style$="[[_updateKnob(x,y)]]">
+      <slot></slot>
+    </div>
+
+  </template>
+
+  <script>
+    class ColorKnob extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "color-knob";
+      }
+
+      static get properties() {
+        return {
+          x: {
+            type: Number,
+            value: 0
+          },
+          y: {
+            type: Number,
+            value: 0
+          },
+          onlyX: {
+            type: Boolean,
+            value: false
+          },
+          onlyY: {
+            type: Boolean,
+            value: false
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.Gestures.addListener(this, "down", (e) => this._startTracking(e));
+        Polymer.Gestures.addListener(this, "track", (e) => this._doTracking(e));
+        Polymer.Gestures.addListener(this, "up", (e) => this.removeAttribute("pressed"));
+      }
+
+      _startTracking(e) {
+        e.preventDefault();
+        this.rect = this.getBoundingClientRect();
+        this._moveKnob(e.detail.x, e.detail.y, this.rect);
+        this.setAttribute("pressed", "");
+      }
+
+      _doTracking(e) {
+        e.preventDefault();
+        switch (e.detail.state) {
+          case 'start':
+            return this._moveKnob(e.detail.x, e.detail.y, this.rect);
+          case 'track':
+            return this._moveKnob(e.detail.x, e.detail.y, this.rect);
+        }
+      }
+
+      _moveKnob(x, y, r) {
+
+        if (!this.onlyY) {
+          this.x = x - r.left;
+          if (this.x < 0)
+            this.x = 0;
+          else if (this.x > r.width)
+            this.x = r.width;
+
+          this._fire("x-change", this.x);
+        }
+
+        if (!this.onlyX) {
+          this.y = y - r.top;
+          if (this.y < 0)
+            this.y = 0;
+          else if (this.y > r.height)
+            this.y = r.height;
+
+          this._fire("y-change", this.y);
+        }
+      }
+
+      _updateKnob(x, y) {
+        return "transform: translate(" + x + "px, " + y + "px)";
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+    }
+    customElements.define(ColorKnob.is, ColorKnob);
+  </script>
+</dom-module>

@@ -1,0 +1,162 @@
+<dom-module id="selection-box">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+      }
+      :host([active]) #body {
+        display: block;
+      }
+      #body {
+        display: none;
+        width: 0;
+        height: 0;
+        box-sizing: border-box;
+        border: 1px dashed crimson;
+      }
+    </style>
+
+    <div id="body" style$="[[_style]]"></div>
+    <slot></slot>
+  </template>
+
+  <script>
+
+    class SelectionBox extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "selection-box";
+      }
+
+      static get properties() {
+        return {
+          state: Object,
+          heldKeys: Object,
+          rect: {
+            type: Object,
+            observer: "_rectChanged"
+          },
+          _style: {
+            type: String,
+            computed: "_makeStyle(rect)"
+          },
+          active: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
+          activate: Boolean
+        }
+      }
+
+      constructor() {
+        super();
+        Polymer.Gestures.addListener(this, "down", this._down.bind(this));
+        Polymer.Gestures.addListener(this, "up", this._up.bind(this));
+        Polymer.Gestures.addListener(this, "track", this._track.bind(this));
+      }
+
+      _down(e) {
+        if (!this.activate)
+          return;
+        //todo 1 remove selects when shift is down and we are pressing on an already selected
+        //todo 2 make shift down and select work with the box selection
+        for (let target of e.path) {
+          if (target instanceof Element && target.hasAttribute("selectable")){
+            this._downOnShapeObject(e);
+            return;
+          }
+          if (target === this)
+            break;
+        }
+        e.preventDefault();
+        this.fire("select", {});
+        this.start = e;
+      }
+
+      _up(e) {
+        if (!this.activate)
+          return;
+        for (let target of e.composedPath()) {
+          if (target instanceof ShapeObject){
+            this._upOnShapeObject(e);
+            return;
+          }
+          if (target === this)
+            break;
+        }
+        if (e.detail.sourceEvent instanceof Touch && (e.timeStamp - this.start.timeStamp) > 600)
+          this.fire("long-press", {x: e.detail.x, y: e.detail.y});//todo here I do a new-shape .. this should be done in shapeplain
+      }
+
+      _track(e) {
+        if (!this.activate)
+          return;
+        e.preventDefault();
+        if (e.detail.state === "end")
+          return this.set("active", false);
+
+        this.set("rect", Rectangle.makeFromTwoPoints(this.start.detail, e.detail));
+        this.set("active", true);
+      }
+
+      _makeStyle(r) {
+        if (!r)
+          return "";
+        return "transform: translate(" + r.left + "px," + r.top + "px); " +
+          "width: " + r.width + "px; " +
+          "height: " + r.height + "px;";
+      }
+
+      _rectChanged() {
+        let mutated = false;
+        let newSelects = {};
+        let currentSelection = this.state.now.selects || {};
+        let rects = this.state.now.rects || {};
+        for (let key in rects) {
+          let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, rects[key].center);
+          if (pointIsWithinBorders)
+            newSelects[key] = true;
+          if (pointIsWithinBorders != currentSelection[key])
+            mutated = true;
+        }
+        if (mutated)
+          this.fire("select", newSelects);
+      }
+
+      _downOnShapeObject(e) {
+        e.stopPropagation();
+        if (e.detail.sourceEvent instanceof Touch)
+          this.selectionTimer = setTimeout(function () {
+            this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, true));
+            this.selectionTimer = undefined;
+          }.bind(this), 600);
+        else {
+          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, this.heldKeys.shift()));
+        }
+      }
+
+      _upOnShapeObject(e) {
+        e.stopPropagation();
+        if (this.selectionTimer) {
+          clearTimeout(this.selectionTimer);
+          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, false));
+        }
+      }
+
+      fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      static makeSelectsObject(id, oldSelected, shift) {
+        let selects = shift ? Object.assign({}, oldSelected) : {};
+        selects[id] = true;
+        return selects;
+      }
+    }
+    customElements.define(SelectionBox.is, SelectionBox);
+  </script>
+</dom-module>

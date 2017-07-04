@@ -9,6 +9,9 @@
         display: inline-block;
         pointer-events: none;
       }
+      :host([active]) {
+        z-index: 20 !important;
+      }
       #mainCircle {
         display: flex;
         width: var(--mother-button-size);
@@ -132,7 +135,7 @@
         if (this.active)
           return;
         this.active = true;
-        this.$.mainCircle.elevation = 2;
+        this.$.mainCircle.elevation = 4;
       }
     }
     customElements.define(ToolsButton.is, ToolsButton);

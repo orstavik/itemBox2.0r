@@ -1,6 +1,6 @@
 <dom-module id="firebase-on">
   <script>
-    class FirebaseOn extends Polymer.Element {
+    class FirebaseOn extends Polymer.GestureEventListeners(Polymer.Element) {
 
       static get is() {
         return "firebase-on";
@@ -10,13 +10,9 @@
         return {
           active: {
             type: Boolean,
-            value: false,
-            notify: false,
+            value: false
           },
-          path: {
-            type: String,
-            notify: false,
-          },
+          path: String,
           result: {
             type: Object,
             notify: true,
@@ -31,7 +27,12 @@
           once: {
             type: Boolean,
             value: false,
-            notify: false,
+            reflectToAttribute: true
+          },
+          writeOnly: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
           }
         };
       }
@@ -64,10 +65,12 @@
         if (this._ref)
           this._disconnect();
         this._ref = firebase.database().ref(path);
+        if (this.writeOnly)
+          return;
         if (this.once)
-          this._ref.once("value").then(this._updateResult.bind(this));
+          this._ref.once("value").then(this._updateResult.bind(this)); // add ERROR then name is taken
         else
-          this._ref.on("value", this._updateResult.bind(this));
+          this._ref.on("value", this._updateResult.bind(this)); // add ERROR then name is taken
       }
 
       _updateResult(snap) {

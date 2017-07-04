@@ -1,0 +1,196 @@
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="app-login">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        box-sizing: border-box;
+        width: 290px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .headerRow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 25px 25px 20px;
+      }
+      #accountImage {
+        display: flex;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
+        width: 100px;
+        height: 100px;
+        margin-right: 20px;
+        border-radius: 50%;
+        border: 1px solid #cccccc;
+        background-size: cover;
+      }
+      .secondCol {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #accountImage img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px solid #cccccc;
+      }
+      .accountName {
+        font-size: 20px;
+        font-weight: 300;
+        margin-bottom: 6px;
+      }
+      *[hidden] {
+        visibility: hidden;
+      }
+      paper-button {
+        margin: 0;
+        text-align: center;
+        font-size: 12px;
+      }
+      paper-button#signIn {
+        background-color: var(--paper-indigo-a200);
+        color: white;
+      }
+      .tabsRow {
+        display: flex;
+        position: relative;
+        width: 100%;
+        justify-content: center;
+        background-color: white;
+        z-index: 2;
+      }
+      .tabTitle {
+        border-bottom: 3px solid blue;
+      }
+      .tabTitle > h4 {
+        margin: 8px;
+        font-size: 14px;
+        font-weight: 400;
+      }
+      .shadow {
+        position: relative;
+        width: 100%;
+        height: 10px;
+        margin-top: -10px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+      .sketchRow {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 100%;
+        height: 300px;
+        background-color: var(--paper-grey-100);
+      }
+      .scrollWrapper {
+        box-sizing: border-box;
+				/*width: calc(100% + 17px);*/
+				width: 100%;
+        height: 100%;
+        padding: 12px 16px;
+        overflow: auto;
+      }
+      .addWrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+      .addText {
+        width: 250px;
+        text-align: center;
+        line-height: 1.2;
+        font-size: 36px;
+        font-weight: 900;
+        opacity: 0.2;
+      }
+      *[removed] {
+        display: none;
+      }
+    </style>
+
+    <div class="headerRow">
+      <div class="firstCol">
+        <div id="accountImage" style="background-image: url('[[_userImage]]')"></div>
+      </div>
+
+      <div class="secondCol">
+        <div class="accountName">[[_userName]]</div>
+        <paper-button id="signIn" raised on-click="_signIn" hidden$="[[_BOOL(user)]]">Sign in with Google
+        </paper-button>
+        <paper-button raised on-click="_signOut" hidden$="[[!user]]">Sign out</paper-button>
+      </div>
+    </div>
+    <div class="tabsRow">
+      <div class="tabTitle">
+        <h4>YOUR SKETCHES</h4>
+      </div>
+    </div>
+    <div class="shadow"></div>
+    <div class="sketchRow">
+      <div class="addWrapper" removed$="[[_BOOL(user)]]">
+        <span class="addText">Sign in to save your sketches</span>
+      </div>
+      <div class="scrollWrapper" removed$="[[!user]]">
+        <slot></slot>
+      </div>
+    </div>
+
+  </template>
+  <script>
+    class AppLogin extends Polymer.Element {
+      static get is() {
+        return 'app-login';
+      }
+
+      static get properties() {
+        return {
+          user: Object,
+          _userImage: {
+            type: String,
+            computed: "_setUserImage(user)"
+          },
+          _userName: {
+            type: String,
+            computed: "_setUserName(user)"
+          }
+        }
+      }
+
+      connectedCallback(){
+        super.connectedCallback();
+        this.set("user", null); //its a polymer bug needed to initialize the first computed value for _userName and _userImage
+      }
+
+      _signIn() {
+        this.dispatchEvent(new CustomEvent("sign-in", {composed: true, bubbles: true}));
+      }
+
+      _signOut() {
+        this.dispatchEvent(new CustomEvent("sign-out", {composed: true, bubbles: true}));
+      }
+
+      _setUserName(user) {
+        return user ? user.displayName : "Anonymous";
+      }
+
+      _setUserImage(user) {
+        if(user)
+          return user.photoURL;
+      }
+
+      _BOOL(obj) {
+        return !!obj;
+      }
+    }
+    window.customElements.define(AppLogin.is, AppLogin);
+  </script>
+</dom-module>

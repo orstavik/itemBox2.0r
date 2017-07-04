@@ -49,10 +49,10 @@
 				border-top: 1px solid gray;
 			}
 			#scroller {
-    		width: calc(100% + 17px);
+    		width: 100%;
     		height: 100%;
 				position: absolute;
-				overflow-y: scroll;
+				overflow-y: auto;
 				overflow-x: hidden;
 			}
 			.logMessage {
@@ -98,14 +98,14 @@
 			}
     </style>
 
-		<div id="logBox" on-click="_hideLog">
+		<div id="logBox" on-tap="_hideLog">
 			<h4>SYSTEM LOG</h4>
 			<div id="scrollBox">
 				<div id="scroller">
 					<template is="dom-repeat" items="[[messages]]">
 						<div class="logMessage">
-							<span class="time">[[_getTime(item.timestamp)]]</span>
-							<span class="text">[[item.value]]</span>
+							<span class="time">[[_getTime(item.action.timeStamp)]]</span>
+							<span class="text">[[item.systemMessage]]</span>
 						</div>
 					</template>
 				</div>
@@ -115,13 +115,13 @@
 		<div id="message"
 				 on-pointerenter="_holdMessage"
 				 on-pointerleave="_leaveMessage"
-				 on-click="_showLog">
-			<span>[[lastMessage.value]]</span>
+				 on-tap="_showLog">
+			<span>[[lastMessage.systemMessage]]</span>
 		</div>
 
   </template>
   <script>
-    class MessagesSystem extends Polymer.Element {
+    class MessagesSystem extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "messages-system";
       }
@@ -136,12 +136,6 @@
 					count: Number
         }
       }
-
-			// static get observers() {
-      //   return [
-			// 		"_showMessage(messages)"
-			// 	]
-			// }
 
 			connectedCallback() {
 				super.connectedCallback();
@@ -180,7 +174,7 @@
 			}
 
 			_getTime(time) {
-				return time.toLocaleTimeString();
+				return new Date(time).toLocaleTimeString();
 			}
     }
     customElements.define(MessagesSystem.is, MessagesSystem);

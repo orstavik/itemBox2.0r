@@ -1,0 +1,123 @@
+<dom-module id="space-camera">
+  <template>
+    <style>
+      :host {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+      }
+    </style>
+    <slot></slot>
+  </template>
+
+  <script>
+    class ViewPort {
+
+      static move(start, x, y) {
+        return {x: start.x + x, y: start.y + y, s: start.s};
+      }
+
+      static zoom(start, ds, ex, ey) {
+        let xShift = (ex - start.x) * (1 - ds);
+        let yShift = (ey - start.y) * (1 - ds);
+        return {x: start.x + xShift, y: start.y + yShift, s: start.s * ds};
+      }
+
+      static calculatePositionFromCenterOfViewPort(viewPort, x, y) {
+        return {
+          x: (x - window.innerWidth / 2 - viewPort.x) / viewPort.s,
+          y: (y - window.innerHeight / 2 - viewPort.y) / viewPort.s
+        };
+      }
+    }
+
+    class SpaceCamera extends Polymer.GestureEventListeners(Polymer.Element) {
+
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.Gestures.addListener(this.parentNode, 'track', function (e) {
+          if (!this.moveable || e.detail.state !== "track")
+            return;
+          e.stopPropagation();
+          this.moveViewport(e);
+        }.bind(this));
+        this.parentNode.addEventListener('wheel', function (e) {
+          this.checkScroll(e);
+        }.bind(this));
+        this.parentNode.addEventListener('touchmove', function (e) {
+          e.stopPropagation();
+          this.pinch(e);
+        }.bind(this));
+        this.parentNode.addEventListener('touchend', function (e) {
+          e.stopPropagation();
+          this.endPinch(e);
+        }.bind(this));
+      }
+
+      static get is() {
+        return 'space-camera';
+      }
+
+      static get properties() {
+        return {
+          viewPort: {
+            type: Object,
+            observer: "_updateView"
+          },
+          moveable: Boolean
+        };
+      }
+
+      moveViewport(e) {
+        const ddx = e.detail.ddx !== undefined ? e.detail.ddx : e.detail.dx;
+        const ddy = e.detail.ddy !== undefined ? e.detail.ddy : e.detail.dy;
+        if (this.tapZoom)            //todo move this maybe??
+          return;
+        this._fire("view-changed", ViewPort.move(this.viewPort, ddx, ddy));
+      }
+
+      pinch(e) {
+        if (e.touches.length !== 2)
+          return;
+        this.tapZoom = true;
+
+        let dx = e.touches[0].clientX - e.touches[1].clientX;
+        let dy = e.touches[0].clientY - e.touches[1].clientY;
+        let d = Math.sqrt(dx * dx + dy * dy);
+
+        if (this._diag) {
+          let ds = d / this._diag;
+          let cx = e.touches[1].clientX + dx / 2;
+          let cy = e.touches[1].clientY + dy / 2;
+          this._zoomViewport(ds, cx, cy);
+        }
+        this._diag = d;
+      }
+
+      endPinch() {
+        this.tapZoom = false;
+        this._diag = null;
+      }
+
+      checkScroll(e) {
+        let ds = 1 - (e.deltaY / 1000);
+        this._zoomViewport(ds, e.x, e.y);
+      }
+
+      _zoomViewport(ds, sx, sy) {
+        this._fire("view-changed", ViewPort.zoom(this.viewPort, ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
+      }
+
+      _updateView(view) {
+        let matrix = [view.s, 0, 0, view.s, view.x, view.y];
+        this.style.transform = "matrix(" + matrix.join(",") + ")";
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+
+    window.customElements.define(SpaceCamera.is, SpaceCamera);
+  </script>
+</dom-module>

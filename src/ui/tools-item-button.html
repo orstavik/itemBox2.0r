@@ -1,0 +1,257 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../styles/css-reset.html">
+
+<dom-module id="tools-item-button">
+  <template>
+    <style include="css-reset">
+      :host {
+        display: inline-block;
+        pointer-events: none !important;
+      }
+      #mainCircle {
+        display: flex;
+        width: var(--tools-item-button-size);
+        height: var(--tools-item-button-size);
+        margin: calc(var(--tools-item-button-size) * 0.2);
+        align-items: center;
+        justify-content: center;
+        background-color: var(--tools-item-button-color);
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 1;
+        transition: box-shadow 0.2s, opacity 0.2s;
+        pointer-events: auto;
+        z-index: 11;
+      }
+      #mainCircle > iron-icon {
+        --iron-icon-width: calc(var(--tools-item-button-size) * 0.5);
+        --iron-icon-height: calc(var(--tools-item-button-size) * 0.5);
+        --iron-icon-fill-color: var(--tools-item-button-icon-color);
+      }
+      #outerBox {
+        display: flex;
+        justify-content: center;
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        left: calc(-150px + var(--mother-button-size) / 2);
+        border-radius: 3px;
+        pointer-events: none;
+        opacity: 0;
+        overflow: hidden;
+        z-index: 10;
+      }
+      @media (max-width: 400px) {
+        #outerBox {
+          width: 100vw;
+          top: -32px;
+          left: -209px;
+          border-radius: 0;
+        }
+      }
+      #outerBox[expanded] {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1000;
+      }
+      #outerBox[expanded] #boxContent {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+        transition-duration: 100ms;
+        transition-delay: 200ms;
+      }
+      #shadyCircle {
+        width: var(--tools-item-button-size);
+        height: var(--tools-item-button-size);
+        position: absolute;
+        border-radius: 50%;
+        background-color: white;
+        will-change: transform;
+        pointer-events: none;
+        z-index: -1;
+      }
+      #boxContent {
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateX(-2px);
+				background-color: var(--paper-grey-100);
+      }
+      #boxContent .header {
+        display: flex;
+        align-items: center;
+        height: 50px;
+        position: relative;
+        background-color: white;
+        z-index: 2;
+      }
+      #boxContent .header > iron-icon {
+        --iron-icon-width: 27px;
+        --iron-icon-height: 27px;
+        margin: 0px 16px;
+      }
+      .header > h3 {
+        flex: 1;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .shadow {
+        position: relative;
+        width: 100%;
+        height: 10px;
+        margin-top: -10px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+      #closeButton {
+        position: relative;
+        margin: 0 5px;
+        z-index: 10;
+      }
+    </style>
+
+    <paper-material id="mainCircle" on-click="_toggle" hidden="[[active]]">
+      <iron-icon icon="[[icon]]"></iron-icon>
+    </paper-material>
+
+    <paper-material id="outerBox" elevation=0 expanded$="[[active]]" style$="margin-top: [[marginTopOuterBox]]px;">
+      <paper-material id="shadyCircle" expanded$="[[active]]" style$="top: [[circleTop]]px;"></paper-material>
+      <div id="boxContent">
+        <div class="header">
+          <iron-icon icon="[[icon]]"></iron-icon>
+          <h3>[[menu]]</h3>
+          <paper-icon-button id="closeButton" icon="clear" on-tap="_close"></paper-icon-button>
+        </div>
+        <div class="shadow"></div>
+        <slot></slot>
+      </div>
+    </paper-material>
+
+  </template>
+  <script>
+    class ToolsItemButton extends Polymer.Element {
+      static get is() {
+        return "tools-item-button";
+      }
+
+      static get properties() {
+        return {
+          active: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            notify:true
+          },
+          menu: String,
+          icon: String,
+          position: Number,
+        }
+      }
+
+      _toggle(e) {
+        e.stopPropagation();
+        this.active ? this.deactivate() : this.activate();
+      }
+
+      _close(e){
+        e.stopPropagation();
+        this.deactivate();
+      }
+
+      deactivate() {
+        if (!this.active)
+          return;
+        this.active = false;
+        this._collapseCard(300);
+      }
+
+      activate() {
+        if (this.active)
+          return;
+        this.active = true;
+        if (!this.visualData)
+          this._calcVisualData();
+        this._expandCard(300);
+        this.dispatchEvent(new CustomEvent("selected-button", {composed: true, bubbles: true}));
+      }
+
+      _calcVisualData() {
+        this.visualData = ToolsItemButton._calcScaleShift(this.$.outerBox, this.$.shadyCircle);
+        this.set("marginTopOuterBox",16 - this.visualData.bTop);
+        this.set("circleTop", this.visualData.cTop - 16);
+      }
+
+      _expandCard(dur) {
+        this.$.mainCircle.elevation = 2;
+        this.$.outerBox.animate({transform: ["translateX(0)", "translateX(194px)"]}, {
+          duration: dur,
+          fill: "forwards",
+          easing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)"  /*"cubic-bezier(0.4, 0, 0.2, 1)"*/
+        });
+        this.$.shadyCircle.animate({transform: ["translateY(0) scale(1)", "translateY(" + this.visualData.topShift + "px) scale(" + this.visualData.scale + ")"]}, {
+          duration: dur,
+          fill: "forwards",
+          easing: "linear"
+        });
+        setTimeout(function () {
+          this.$.outerBox.elevation = 2;
+        }.bind(this), dur*2/3);
+      }
+
+      static _calcScaleShift(box, circle) {
+        const bRect = box.getBoundingClientRect();
+        const cRect = circle.getBoundingClientRect();
+        const diagonal = Math.sqrt(bRect.height * bRect.height + bRect.width * bRect.width)
+        const topShift = (bRect.height - cRect.height) / 2 - (cRect.top - 16);
+        const scale = diagonal / cRect.width;
+        return {bTop: bRect.top, cTop: cRect.top, topShift: topShift, scale: scale};
+      }
+
+      _collapseCard(dur) {
+        this.$.outerBox.elevation = 0;
+        this.$.mainCircle.elevation = 1;
+      }
+
+//      connectedCallback() {
+//        const parentIsActive = new MutationObserver(this._parentIsActive.bind(this));
+//        parentIsActive.observe(this.parentNode, {attributes: true, attributeFilter: ["active"]});
+//      }
+//
+//      _parentIsActive(mutations) {
+//        for (let mutation of mutations) {
+//          if (mutation.attributeName == "active") {
+//            const value = mutation.target.hasAttribute(mutation.attributeName);
+//            if (!value)
+//              this.deactivate();
+//          }
+//        }
+//      }
+//
+      /*
+       show(){
+       this.animate({opacity: [0, 1], transform: ["scale(0.95)", "scale(1)"]}, {
+       duration: 150,
+       delay: this.position * (2 - this.position) * 100,
+       fill: "forwards"
+       });
+       }
+
+       hide(){
+       //        if (!this.active)
+       //          return;
+       this.deactivate();
+       this.animate({opacity: [1, 0], transform: ["scale(1)", "scale(0.95)"]}, {
+       duration: 150,
+       fill: "forwards"
+       });
+       }
+       */
+    }
+    customElements.define(ToolsItemButton.is, ToolsItemButton);
+  </script>
+</dom-module>

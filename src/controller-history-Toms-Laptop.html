@@ -1,0 +1,94 @@
+<dom-module id="controller-history">
+  <script>
+    class ControllerHistory extends Polymer.GestureEventListeners(Polymer.Element) {
+
+      static get is() {
+        return "controller-history";
+      }
+
+      static get properties() {
+        return {
+          now: Object,
+          all: {                                //history array of all nows
+            type: Array,
+            computed: "_makeHistory(now)"
+          },
+          edits: {                            //partial history array of nows: edit events only
+            type: Array,
+            computed: "_makeEditHistory(now)"
+          },
+          systemMsgs: {                   //partial history array of nows: system messages only
+            type: Array,
+            computed: "_makeSystemMessageHistory(now)"
+          },
+          helpMsgs: {                     //partial history array of nows: help messages only
+            type: Array,
+            computed: "_makeHelpMessageHistory(now)"
+          },
+          state: {
+            type: Object,
+            notify: true
+          }
+        };
+      }
+
+      static get observers() {
+        return ["_makeState(all, edits, systemMsgs, helpMsgs, now)"];  //In Polymer, computed functions run first, then observers second.
+      }
+
+      /*
+       * state
+       *
+       *   history
+       *    - all                    full arrayOfNows[]
+       *    - edits                  partial arrayOfNows[]
+       *    - helpMsgs               partial arrayOfNows[]
+       *    - systemMsgs             partial arrayOfNows[]
+       *
+       *   now                       now === history.all[0]  / ("state.now" equals "state.history.all.0" Polymer binding).
+       *    - selects
+       *    - rects
+       *    - sketchMerged
+       *    - sketchFluid
+       *    - sketchMerged
+       **/
+      _makeState(all, edits, systemMsgs, helpMsgs, now) {
+        this.set("state", {
+          history: {
+            all: all,
+            edits: edits,
+            systemMsgs: systemMsgs,
+            helpMsgs: helpMsgs,
+          },
+          now: now,
+        });
+      }
+
+      _makeHistory(now) {
+        return this.all ? [now].concat(this.all) : [now];
+      }
+
+      _makeEditHistory(now) {
+        return ControllerHistory._unshiftIf(now, this.edits, ["change-shapes-end", "new-shape", "delete-selected"]);
+      }
+
+      _makeSystemMessageHistory(now) {
+        return ControllerHistory._unshiftIf(now, this.systemMsgs, ["system-message"]);
+      }
+
+      _makeHelpMessageHistory(now) {
+        return ControllerHistory._unshiftIf(now, this.helpMsgs, ["help-message"]);
+      }
+
+      //returns an immuted version of the array
+      static _unshiftIf(now, array, conditionStates) {
+        if (conditionStates.indexOf(now.action.type) === -1)
+          return array;
+        if (array)
+          return [now].concat(array);
+        return [now];
+      }
+    }
+    customElements.define(ControllerHistory.is, ControllerHistory);
+  </script>
+</dom-module>

@@ -1,6 +1,6 @@
 <dom-module id="indexed-mirror">
   <script>
-    class IndexedMirror extends Polymer.Element {
+    class IndexedMirror extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() { return 'indexed-mirror'; }
       static get properties() {
         return {

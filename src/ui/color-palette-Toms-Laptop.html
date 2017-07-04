@@ -1,0 +1,269 @@
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="color-knob.html">
+
+<dom-module id="color-palette">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        box-sizing: border-box;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        padding: 16px;
+      }
+      #colorPreview {
+        height: 100px;
+        width: 260px;
+        position: relative;
+        background-image: url("../../img/transparent.jpg");
+      }
+      #colorPreview>div {
+        height: 100%;
+      }
+      #colorWrapper {
+        display: flex;
+        width: 260px;
+        justify-content: space-between;
+      }
+      #codeWrapper {
+        display: flex;
+        width: 260px;
+        justify-content: space-between;
+        margin: 12px 0;
+      }
+      .canvas-box {
+        display: inline-flex;
+        position: relative;
+        background-image: url("../../img/transparent.jpg");
+        user-select: none;
+      }
+      .knob {
+        background: white;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+      #slider1Knob, #slider2Knob {
+        width: 22px;
+        height: 8px;
+        border-radius: 4px;
+      }
+      #boxKnob {
+        width: 16px;
+        height: 16px;
+        border-radius: 8px;
+      }
+      paper-input {
+        width: 60px;
+      }
+    </style>
+
+    <div id="colorPreview">
+      <div style$="background-color: [[_makeColor(hsla)]]"></div>
+    </div>
+
+    <div id="codeWrapper">
+      <paper-input data-type="hue" label="Hue"
+                   tabindex="0"
+                   error-message="0-360!"
+                   on-input="_validate"
+                   pattern="(36[0]|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[hsla.hue]]">
+      </paper-input>
+      <paper-input data-type="saturation" label="Saturation"
+                   tabindex="1"
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[hsla.saturation]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="lightness" label="Lightness"
+                   tabindex="2"
+                   error-message="0-100!"
+                   on-input="_validate"
+                   pattern="(1[0][0]|[1-9]?[0-9])"
+                   maxlength="3"
+                   value="[[hsla.lightness]]">
+        <div slot="suffix">%</div>
+      </paper-input>
+      <paper-input data-type="alpha" label="Alpha"
+                   tabindex="3"
+                   error-message="0-1!"
+                   on-input="_validate"
+                   pattern="(0(\.\d+)?|1)"
+                   maxlength="3"
+                   value="[[hsla.alpha]]">
+      </paper-input>
+    </div>
+
+    <div id="colorWrapper">
+      <div class="canvas-box">
+        <canvas id="colorSlider1" width="20" height="200"></canvas>
+        <color-knob only-y
+                    on-y-change="_hueChange"
+                    y="[[_calcFromHue(hsla.hue)]]">
+          <div id="slider1Knob" class="knob"></div>
+        </color-knob>
+      </div>
+      <div class="canvas-box" on-x-change="_lightnessChange" on-y-change="_saturationChange">
+        <canvas id="colorBox" width="200" height="200"></canvas>
+        <color-knob x="[[_calcFromLightness(hsla.lightness)]]"
+                    y="[[_calcFromSaturation(hsla.saturation)]]">
+          <div id="boxKnob" class="knob"></div>
+        </color-knob>
+      </div>
+      <div class="canvas-box">
+        <canvas id="colorSlider2" width="20" height="200"></canvas>
+        <color-knob only-y
+                    on-y-change="_alphaChange"
+                    y="[[_calcFromAlpha(hsla.alpha)]]">
+          <div id="slider2Knob" class="knob"></div>
+        </color-knob>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    class ColorPalette extends Polymer.Element {
+      static get is() {
+        return "color-palette";
+      }
+
+      static get properties() {
+        return {
+          hsla: Object,
+          color: {
+            type: Object,
+            value: null,
+            observer: "_addColor"
+          }
+        }
+      }
+
+      static get observers() {
+        return [
+          "_drawColorBox(hsla)",
+          "_drawColorSlider1(hsla)",
+          "_drawColorSlider2(hsla)"
+        ]
+      }
+
+      _drawColorBox(hsla) {
+        const c = this.$.colorBox.getContext("2d");
+        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const sx = c.canvas.width / 50;
+        const sy = c.canvas.height / 50;
+        for (let l = 0; l < 50; l++) {
+          for (let s = 0; s < 50; s++) {
+            c.fillStyle = ColorPalette.makeColor(hsla.hue, s * 2, l * 2, hsla.alpha);
+            c.fillRect(sx * l, sy * (49 - s), sx, sy);
+          }
+        }
+      }
+
+      _drawColorSlider1(hsla) {
+        const c = this.$.colorSlider1.getContext("2d");
+        c.clearRect(0,0,c.canvas.width,c.canvas.height);
+        const sx = c.canvas.width;
+        for (let y = 0; y < c.canvas.height; y++) {
+          let h = y/c.canvas.height*360;
+          c.fillStyle = ColorPalette.makeColor(h, hsla.saturation, hsla.lightness, hsla.alpha);
+          c.fillRect(0, y, sx, 1);
+        }
+      }
+
+      _drawColorSlider2(hsla) {
+        const c = this.$.colorSlider2.getContext("2d");
+        c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const sx = c.canvas.width;
+        const sy = c.canvas.height;
+        for (let a = 0; a < 1; a += 0.01) {
+          c.fillStyle = ColorPalette.makeColor(hsla.hue, hsla.saturation, hsla.lightness, a);
+          c.fillRect(0, sy * (0.99 - a), sx, sy * 0.01);
+        }
+      }
+
+      _addColor(color) {
+        if (!color)
+          color = {
+            hue: 0,
+            saturation: 0,
+            lightness: 0,
+            alpha: 0
+          };
+        this.set("hsla", color);
+      }
+
+      _hueChange(e) {
+        const newColor = Object.assign({}, this.hsla);
+        newColor.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
+        this._fire("new-color", newColor);
+      }
+
+      _saturationChange(e) {
+        const newColor = Object.assign({}, this.hsla);
+        newColor.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
+        this._fire("new-color", newColor);
+      }
+
+      _lightnessChange(e) {
+        const newColor = Object.assign({}, this.hsla);
+        newColor.lightness = Math.round(e.detail/this.$.colorBox.width*100);
+        this._fire("new-color", newColor);
+      }
+
+      _alphaChange(e) {
+        const newColor = Object.assign({}, this.hsla);
+        newColor.alpha = ColorPalette.roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
+        this._fire("new-color", newColor);
+      }
+
+      _validate(e) {
+        if (!e.target.validate())
+          return;
+        const newColor = Object.assign({}, this.hsla);
+        newColor[e.target.dataset.type] = e.target.value;
+        this._fire("new-color", newColor);
+      }
+
+      _calcFromHue(h) {
+        return h / 360 * this.$.colorSlider1.height;
+      }
+
+      _calcFromSaturation(s) {
+        return (1 - s / 100) * this.$.colorBox.height;
+      }
+
+      _calcFromLightness(l) {
+        return l / 100 * this.$.colorBox.width;
+      }
+
+      _calcFromAlpha(a) {
+        return (1 - a) * this.$.colorSlider2.height;
+      }
+
+      _makeColor(hsla) {
+        return ColorPalette.makeColor(hsla.hue, hsla.saturation, hsla.lightness, hsla.alpha);
+      }
+
+      static makeColor(h, s, l, a) {
+        return "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
+      }
+
+      static roundTo(x, n) {
+        const e = Math.pow(10, n);
+        return Math.round(x * e) / e;
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+    }
+    customElements.define(ColorPalette.is, ColorPalette);
+  </script>
+</dom-module>

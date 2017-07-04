@@ -1,0 +1,342 @@
+<link rel="import" href="../styles/css-reset.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="object-key">
+  <template>
+    <style include="css-reset">
+			:host {
+				display: block;
+        box-sizing: border-box;
+        align-items: center;
+        padding-left: 14px;
+        font-size: 14px;
+        word-wrap: break-word;
+			}
+      #opener {
+        visibility: hidden;
+        display: inline-block;
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+      #opener[visible] {
+        visibility: visible;
+      }
+      iron-icon {
+        --iron-icon-width: 16px;
+        --iron-icon-height: 16px;
+        --iron-icon-fill-color: var(--paper-indigo-a700);
+      }
+      #type {
+        text-transform: capitalize;
+        font-style: italic;
+        color: var(--paper-grey-400);
+      }
+      #name {
+        margin-right: 6px;
+      }
+      #primValue.String {
+        font-weight: 600;
+        color: var(--paper-green-800);
+      }
+      #primValue.Date {
+        font-weight: 600;
+        color: var(--paper-yellow-800);
+      }
+      #primValue.String::before, #primValue.String::after {
+        content: '"';
+      }
+      #primValue.Number {
+        font-weight: 600;
+        color: var(--paper-red-800);
+      }
+      #primValue.Boolean {
+        font-weight: 600;
+        color: var(--paper-blue-800);
+      }
+      #primValue.Function {
+        font-style: italic;
+        color: var(--paper-brown-400);
+      }
+      #primValue.undefined, #primValue.null {
+        color: var(--paper-grey-700);
+      }
+      #objValue:not([hidden]) + #closeBracket {
+        padding-left: 20px;
+      }
+    </style>
+
+    <div id="opener" class$="[[key.type]]" visible$="[[openable]]" on-tap="_toggle">
+      <iron-icon icon="add-circle" hidden$="[[active]]"></iron-icon>
+      <iron-icon icon="remove-circle-outline" hidden$="[[!active]]"></iron-icon>
+    </div>
+    <span id="name">[[key.name]]:</span>
+    <span id="openBracket" hidden$="[[!objType]]">[[brackets.open]]</span>
+    <span hidden$="[[!objType]]">
+      <span id="type" hidden$="[[active]]">[[_compObjType(key.type, key.length)]]</span>
+    </span>
+    <span id="primValue" class$="[[key.type]]" hidden$="[[objType]]">[[key.value]]</span>
+    <div id="objValue" hidden$="[[!active]]">
+      <template is="dom-repeat" items="[[_value]]">
+        <object-key key="[[item]]"></object-key>
+      </template>
+    </div>
+    <span id="closeBracket" hidden$="[[!objType]]">[[brackets.close]]</span>
+
+  </template>
+  <script>
+    class ObjectKey extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "object-key";
+      }
+
+      static get properties() {
+        return {
+					key: Object,
+          _value: Array,
+          objType: Boolean,
+          active: {
+            type: Boolean,
+            value: false
+          },
+          openable: {
+            type: Boolean,
+            computed: "_isOpenable(objType, key.length)"
+          },
+          brackets: Object
+        }
+      }
+
+      static get observers() {
+        return [
+          "_displayKey(key, active)",
+          "_useType(key.type, key.value)"
+        ]
+      }
+
+      _displayKey(key, active) {
+        if (!key)
+          return;
+
+        switch (key.type) {
+          case "undefined":
+            this.set("key.value", "undefined");
+            break;
+
+          case "null":
+            this.set("key.value", "null");
+            break;
+
+          case "Object":
+            this.set("key.length", Object.keys(key.value).length);
+            break;
+
+          case "Map":
+            this.set("key.length", key.value.size);
+            break;
+
+          case "Array":
+            this.set("key.length", key.value.length);
+            break;
+
+          case "Function":
+            this.set("key.value", "function()");
+            break;
+        }
+
+        if (!active)
+          return;
+        
+        let arr = [];
+
+        switch (key.type) {
+          case "Array":
+            if (key.length > 100) {
+              let i0 = 0;
+              for (let i=0; i < key.length; i++) {
+                if ((i+1)%100 === 0 || i+1 === key.length) {
+                  arr.push({
+                    name: "["+i0+"-"+i+"]",
+                    type: "Array",
+                    startIndex: i0,
+                    value: key.value.slice(i0,i+1)
+                  });
+                  i0 += 100;
+                }
+              }
+              this.set("_value", arr);
+            } else {
+              this.set("_value", key.value.map(function(item, index) {
+                if (item === undefined)
+                  var type = "undefined";
+                else if (item === null)
+                  var type = "null";
+                else
+                  var type = item.constructor.name;
+
+                return {
+                  name: index+key.startIndex,
+                  type: type,
+                  startIndex: 0,
+                  value: item
+                }
+              }));
+            }
+            break;
+
+          case "Map":
+            key.value.forEach(function(value,name){
+              if (value === undefined)
+                var type = "undefined";
+              else if (value === null)
+                var type = "null";
+              else
+                var type = value.constructor.name;
+              arr.push({
+                name: name,
+                type: type,
+                startIndex: 0,
+                value: value
+              })
+            });
+            this.set("_value", arr);
+            break;
+            
+          case "Object":
+            for (let k in key.value) {
+              if (key.value[k] === undefined)
+                var type = "undefined";
+              else if (key.value[k] === null)
+                var type = "null";
+              else
+                var type = key.value[k].constructor.name;
+              arr.push({
+                name: k,
+                type: type,
+                startIndex: 0,
+                value: key.value[k]
+              })
+            };
+            this.set("_value", arr);
+            break;
+
+          case "Date":
+            break;
+            
+          default:
+            if (key.value instanceof Object) {
+              for (let k in key.value) {
+                if (key.value[k] === undefined)
+                  var type = "undefined";
+                else if (key.value[k] === null)
+                  var type = "null";
+                else
+                  var type = key.value[k].constructor.name;
+                arr.push({
+                  name: k,
+                  type: type,
+                  startIndex: 0,
+                  value: key.value[k]
+                })
+              };
+              this.set("_value", arr);
+            }
+            break;
+        }
+      }
+
+      _useType(type, value) {
+        switch (type) {
+          case "Array":
+            this.setProperties({
+              "brackets": {
+                open: "[",
+                close: "]"
+              },
+              "objType": true
+            });
+            break;
+          case "Map":
+            this.setProperties({
+              "brackets": {
+                open: "[",
+                close: "]"
+              },
+              "objType": true
+            });
+            break;
+          case "Object":
+            this.setProperties({
+              "brackets": {
+                open: "{",
+                close: "}"
+              },
+              "objType": true
+            });
+            break;
+          case "Date":
+            this.setProperties({
+              "brackets": {
+                open: "",
+                close: ""
+              },
+              "objType": false
+            });
+            break;
+          case "Function":
+            this.setProperties({
+              "brackets": {
+                open: "",
+                close: ""
+              },
+              "objType": false
+            });
+            break;
+          default:
+            if (value instanceof Object) {
+              this.setProperties({
+                "brackets": {
+                  open: "{",
+                  close: "}"
+                },
+                "objType": true
+              });
+            } else {
+              this.setProperties({
+                "brackets": {
+                  open: "",
+                  close: ""
+                },
+                "objType": false
+              });
+            }
+            break;
+        }
+      }
+
+      _compObjType(type, length) {
+        if (type === "Array")
+          return type+"("+length+")";
+        else if (type === "Map")
+          return type+"("+length+")";
+        else
+          return type;
+      }
+
+      _isOpenable(obj, length) {
+        if (!obj || length === 0) {
+          this.active = false;
+          return false;
+        }
+        return true;
+      }
+
+      _toggle() {
+        this.active = !this.active;
+      }
+    }
+    customElements.define(ObjectKey.is, ObjectKey);
+  </script>
+</dom-module>

@@ -1,0 +1,185 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="account-button">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        pointer-events: none;
+      }
+      :host([active]) {
+        z-index: 20 !important;
+      }
+      #mainCircle {
+        display: flex;
+        width: var(--account-button-size);
+        height: var(--account-button-size);
+        margin: 10px;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--account-button-color);
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 1;
+        pointer-events: auto;
+        transition: box-shadow 0.2s, opacity 0.2s, background-color 0.3s;
+      }
+      #mainCircle[hidden] {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #mainCircle > iron-icon {
+        --iron-icon-width: calc(var(--account-button-size) * 0.5);
+        --iron-icon-height: calc(var(--account-button-size) * 0.5);
+        --iron-icon-fill-color: var(--account-button-icon-color);
+      }
+      #outerBox {
+        display: flex;
+        box-sizing: border-box;
+        max-height: 600px;
+        position: absolute;
+        border-radius: 3px;
+        pointer-events: none;
+        opacity: 0;
+        overflow: hidden;
+        z-index: 10;
+      }
+      #outerBox[expanded] {
+        pointer-events: auto;
+        z-index: 1000;
+      }
+      #shadyCircle {
+        width: var(--account-button-size);
+        height: var(--account-button-size);
+        position: absolute;
+        border-radius: 50%;
+        background-color: var(--account-button-color);
+        will-change: transform;
+        pointer-events: none;
+        z-index: -1;
+        transition: background-color 0.3s;
+      }
+      #shadyCircle[expanded] {
+        background-color: white;
+      }
+      #boxContent {
+        opacity: 0;
+      }
+      #closeButton {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 10;
+      }
+      :host(.left ) #outerBox { left: 10px; }
+      :host(.left ) #shadyCircle { left: 0; }
+      :host(.right) #outerBox { right: 10px; }
+      :host(.right) #shadyCircle { right: 0; }
+      :host(.top) #outerBox { top: 10px; }
+      :host(.top) #shadyCircle { top: 0; }
+      :host(.bottom) #outerBox { bottom: 10px; }
+      :host(.bottom) #shadyCircle { bottom: 0; }
+    </style>
+
+    <paper-material id="mainCircle" elevation=1 on-tap="_toggleState" hidden="[[active]]">
+      <paper-ripple></paper-ripple>
+      <iron-icon icon="[[icon]]"></iron-icon>
+    </paper-material>
+
+    <paper-material id="outerBox" elevation=0 expanded$="[[active]]">
+      <paper-material id="shadyCircle" expanded$="[[active]]"></paper-material>
+      <div id="boxContent">
+        <paper-icon-button id="closeButton" icon="clear" on-tap="deactivate"></paper-icon-button>
+        <slot></slot>
+      </div>
+    </paper-material>
+
+  </template>
+  <script>
+    class AccountButton extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "account-button";
+      }
+
+      static get properties() {
+        return {
+          icon: String,
+          active: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          }
+        }
+      }
+
+      _toggleState(e) {
+        if (this.active)
+          this.deactivate();
+        else
+          this.activate();
+      }
+
+      activate(){
+        if (this.active)
+          return;
+        if (!this.scale)
+          this.scale = AccountButton._calcScale(this.$.outerBox, this.$.shadyCircle);
+        this._expandCard(300);
+        this.set("active", true);
+      }
+
+      deactivate() {
+        if (!this.active)
+          return;
+        this._collapseCard(300);
+        this.set("active", false);
+      }
+
+      _expandCard(dur) {
+        this.$.mainCircle.elevation = 2;
+        setTimeout(function () {
+          this.$.outerBox.elevation = 2;
+        }.bind(this), dur / 2);
+        this.$.outerBox.animate({opacity: [0, 1]}, {
+          duration: 0,
+          fill: "forwards"
+        });
+        this.$.shadyCircle.animate({transform: ["scale(1)", "scale(" + this.scale + ")"]}, {
+          duration: dur,
+          fill: "forwards",
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)"
+        });
+        this.$.boxContent.animate({opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0)"]}, {
+          delay: dur / 3,
+          duration: dur / 3 * 2,
+          fill: "forwards",
+          easing: "ease-out"
+        });
+      }
+
+      static _calcScale(box, circle) {
+        const bRect = box.getBoundingClientRect();
+        const cRect = circle.getBoundingClientRect();
+        const diagonal = Math.sqrt(bRect.height * bRect.height + bRect.width * bRect.width);
+        return diagonal / cRect.width * 2;
+      }
+
+      _collapseCard(dur) {
+        this.$.mainCircle.elevation = 1;
+        this.$.outerBox.elevation = 0;
+        this.$.outerBox.animate({opacity: [1, 0]}, {
+          duration: dur / 3,
+          fill: "forwards"
+        });
+        this.$.boxContent.animate({opacity: [1, 0]}, {
+          duration: 0,
+          fill: "forwards"
+        });
+      }
+    }
+    customElements.define(AccountButton.is, AccountButton);
+  </script>
+</dom-module>

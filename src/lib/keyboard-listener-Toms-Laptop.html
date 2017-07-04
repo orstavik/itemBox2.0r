@@ -84,7 +84,7 @@
       }
     }
 
-    class KeyboardListener extends Polymer.Element {
+    class KeyboardListener extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "keyboard-listener";
       }
@@ -123,7 +123,7 @@
 
       static preventCertainDefaultAction(e) {
         let c = e.code;
-        if (c === "Tab" || c === "Enter" || c === "ShiftLeft" || c === "Backquote" || c === "Backspace")
+        if (c === "Tab" || c === "Enter" || c === "Backquote")
           e.preventDefault();
         e.stopPropagation();
       }
