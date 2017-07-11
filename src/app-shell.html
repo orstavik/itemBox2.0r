@@ -1,5 +1,6 @@
-<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
+<link rel="import" href="app-state.html">
 <link rel="import" href="controller-ui.html">
 <link rel="import" href="controller-data.html">
 <link rel="import" href="controller-history.html">
@@ -8,20 +9,24 @@
 <script src="js/rectangle.js"></script>
 <script src="js/matrix.js"></script>
 
-<dom-module id="controller-main">
+<dom-module id="app-shell">
   <template>
     <style>
       :host { height: 100%; }
     </style>
-    <app-router id="location"></app-router>
+
+    <app-state state="{{newState}}"></app-state>
+
+    <app-router default-url="unsaved"></app-router>
+    
     <controller-history id="history" state="{{state}}" now="[[elaborateSnap]]"></controller-history>
-    <controller-data id="data" state="[[state]]"></controller-data>
-    <controller-ui id="ui" state="[[state]]"></controller-ui>
+    <controller-data id="data" state="[[state]]" new-state="[[newState]]"></controller-data>
+    <controller-ui id="ui" state="[[state]]" new-state="[[newState]]"></controller-ui>
   </template>
   <script>
-    class ControllerMain extends Polymer.Element {
+    class AppShell extends Polymer.Element {
       static get is() {
-        return "controller-main";
+        return "app-shell";
       }
 
       static get properties() {
@@ -53,7 +58,6 @@
 
       static get observers() {
         return [
-          "setUrl(state.now.session.sketchID)",
           "_makeElaborateSnap(snap)" //this observer runs after all the computeds are finished (at least two rounds).
         ];
       }
@@ -77,7 +81,6 @@
         this.addEventListener("select", this._select.bind(this));
         this.addEventListener("shape-location", this._shapeLocation.bind(this));
         this.addEventListener("view-changed", this._viewChanged.bind(this));
-        this.addEventListener("route-changed", this._routeChanged.bind(this));
 
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("system-error", this._systemMessage.bind(this));
@@ -92,6 +95,11 @@
         this.set("state", Object.assign({}, {now: this.snap })); //this is needed for the first route operations
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+        this.fire('app-connected');
+      }
+
       _newUser(e) {
         this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
       }
@@ -102,7 +110,7 @@
 
       _newSketchData(e) {
         const newSnap = Tools.setIn(this.state.now, ["sketchServer"], e.detail);
-        let reduced = ControllerMain.reduceFluidMatrix(this.state.now, e.detail);
+        let reduced = AppShell.reduceFluidMatrix(this.state.now, e.detail);
         if (reduced) {
           newSnap.sketchFluid = reduced.sketchFluid;
           newSnap.rects = reduced.rects;
@@ -226,10 +234,6 @@
         this.setSnap(e, Tools.setIn(this.state.now, ["viewPort"], e.detail));
       }
 
-      setUrl(sketchID) {
-        this.$.location.setUrl("/" + sketchID);
-      }
-
       setSnap(e, newSnap) {
         if (e instanceof Event)
           e.stopPropagation();
@@ -278,19 +282,14 @@
         return Tools.mergeDeepWithNullToDelete(sketchServer, sketchFluid);
       }
 
-      _routeChanged(e) {
-        let sketchID = e.detail && e.detail.segments ? e.detail.segments[0] : "unsaved";
-        // if (Object.keys(this.state.now.sketches).indexOf(sketchID) === -1)
-        //   sketchID = "unsaved";
-
-        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
-          session: {
-            sketchID: sketchID
-          }
-        }));
-        //todo we want this event to contain already processed data about whether or not the user wants us to make a copy of the sketch or start from scratch when making the new sketch.
+      fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }))
       }
     }
-    customElements.define(ControllerMain.is, ControllerMain);
+    customElements.define(AppShell.is, AppShell);
   </script>
 </dom-module>

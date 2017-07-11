@@ -1,7 +1,20 @@
 /**
- * Created by ivar.orstavik and tom.phales 2017.
+ * Created by ivar.orstavik and tom.fales 2017.
  */
 class Tools {
+
+  static deepFreeze(o) {
+    Object.freeze(o);
+    Object.getOwnPropertyNames(o).forEach((prop) => {
+      if (o.hasOwnProperty(prop) &&
+        o[prop] !== null &&
+        (typeof o[prop] === "object" || typeof o[prop] === "function") &&
+        !Object.isFrozen(o[prop])) {
+        this.deepFreeze(o[prop]);
+      }
+    });
+    return o;
+  }
 
   //returns an immutable copy of A with the branches of B either
   // - merged (if they differ) or
@@ -9,19 +22,23 @@ class Tools {
   //
   //if either only B === null, then the branch will be deleted. (if the same criteria was set for A, it would be impossible to write in a new value for the same key later)
   //if either A or B === undefined or {} (empty object), then the other branch is used.
-  static mergeDeepWithNullToDelete(A, B) {
+  static mergeDeepWithNullToDelete(A, B, freeze) {
     if (B === null) return null;
-    if (B === undefined || Tools.emptyObject(B)) return A;
-    if (A === undefined || Tools.emptyObject(A)) return B;
-    if (A === B) return A;
-    if (!(A instanceof Object && B instanceof Object)) return B;
+    if (B === undefined || Tools.emptyObject(B))
+      return freeze ? Object.freeze(A) : A;
+    if (A === undefined || Tools.emptyObject(A))
+      return freeze ? Object.freeze(B) : B;
+    if (A === B)
+      return freeze ? Object.freeze(A) : A;
+    if (!(A instanceof Object && B instanceof Object))
+      return freeze ? Object.freeze(B) : B;
 
-    const C = Object.assign({}, A);
+    let C = Object.assign({}, A);
     let hasMutated = false;
     for (let key of Object.keys(B)) {
       const a = A[key];
       const b = B[key];
-      let c = Tools.mergeDeepWithNullToDelete(a, b);
+      let c = Tools.mergeDeepWithNullToDelete(a, b, freeze);
       if (c === a)
         continue;
       hasMutated = true;
@@ -31,10 +48,10 @@ class Tools {
         C[key] = c;     //null is also set as a value in C
     }
     if (!hasMutated)
-      return A;
+      return freeze ? Object.freeze(A) : A;
     if (Object.keys(C).length === 0)
       return undefined;
-    return C;
+    return freeze ? Object.freeze(C) : C;
   }
 
   /**
@@ -87,24 +104,25 @@ class Tools {
     return result;
   }
 
-  static setIn(obj, path, value) {
-    return Tools.getIn(obj, path) === value ? obj : Tools.setInNoCheck(obj, path, value);
+  static setIn(obj, path, value, freeze) {
+    return Tools.getIn(obj, path) === value ? obj : Tools.setInNoCheck(obj, path, value, freeze);
   }
 
   //returns sets a value to object tree path,
   //if some part of that path is explicitly set to null,
   //then nothing is set and undefined is returned
-  static setInNoCheck(obj, path, value) {
+  static setInNoCheck(obj, path, value, freeze) {
     let rootRes = Object.assign({}, obj);
     let res = rootRes;
     if (res === null) return undefined;
     for (let i = 0; i < path.length - 1; i++) {
       let key = path[i];
       res[key] = Object.assign({}, res[key]);
-      res = res[key];
+      res = freeze ? Object.freeze(res[key]) : res[key];
       if (res === null) return undefined;
     }
-    res[path[path.length - 1]] = value;
+    res[path[path.length - 1]] = freeze ? Object.freeze(value) : value;
+    
     return rootRes;
   }
 

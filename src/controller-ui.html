@@ -109,7 +109,7 @@
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[_orUnsaved(state.now.sketchMerged.info.sketchName)]]</div>
-      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(state.now.session.sketchID)]]">
+      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.persistent.sketchId)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
@@ -130,7 +130,7 @@
 
     <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
       <app-login user="[[state.now.user]]">
-        <app-sketchlist uid="[[state.now.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[state.now.session.sketchID]]"></app-sketchListMerged>
+        <app-sketchlist uid="[[state.now.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[newState.persistent.sketchId]]"></app-sketchListMerged>
       </app-login>
     </account-button>
 
@@ -148,6 +148,7 @@
       static get properties() {
         return {
           state: Object,
+          newState: Object,
           history: Array,
           firebase: {
             type: Object,

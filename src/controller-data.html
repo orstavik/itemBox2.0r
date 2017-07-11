@@ -19,9 +19,9 @@
                     stored-data="{{sketchListServed}}"></indexed-mirror>-->
 
     <firebase-on id="activeSketchDB"
-                 active="[[_validateName(state.now.user.uid, state.now.session.sketchID)]]"
+                 active="[[_validateName(state.now.user.uid, newState.persistent.sketchId)]]"
                  result="{{activeSketchServed}}"
-                 path="/users/[[state.now.user.uid]]/sketches/[[state.now.session.sketchID]]"></firebase-on>
+                 path="/users/[[state.now.user.uid]]/sketches/[[newState.persistent.sketchId]]"></firebase-on>
     
     <firebase-on id="activeSketchListDB" write-only
                  active="[[_BOOL(state.now.user.uid)]]"
@@ -56,6 +56,7 @@
             observer: "_sketchListServedChanged"
           },
           state: Object,
+          newState: Object,
           // sketchFluid: {
           //   type: Object,
           //   computed: "_getFluidActiveSketch(state.now.sketchFluid)",
@@ -100,7 +101,7 @@
 
 //      _noDataForSketch(){
 //        this._fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
-        //this._fire("route-changed", undefined);
+        //this._fire("state-change-route", undefined);
 //      }
 //
       signIn() {

@@ -1,0 +1,117 @@
+<dom-module id="app-state">
+  <script>
+    class AppState extends Polymer.Element {
+      static get is() {
+        return "app-state";
+      }
+
+      static get properties() {
+        return {
+          state: {
+            type: Object,
+            notify: true,
+            value: () => ({
+              history: {
+                all: [],
+                sketchEdit: [],
+                systemMessages: [],
+                helpMessages: []
+              }
+            })
+          },
+          initialState: {
+            type: Object,
+            value: () => ({
+              viewPort: {
+                x: 0,
+                y: 0,
+                s: 1
+              },
+              sketchId: "unsaved"
+            })
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        window.addEventListener('app-connected',              this._appConnected.bind(this));
+        // window.addEventListener('state-user-in',              this._stateUserIn.bind(this));
+        // window.addEventListener('state-user-out',             this._stateUserOut.bind(this));
+        // window.addEventListener('state-server-albums',        this._stateServerAlbums.bind(this));
+        // window.addEventListener('state-server-settings',      this._stateServerSettings.bind(this));
+        // window.addEventListener('state-change-settings',      this._stateChangeSettings.bind(this));
+        window.addEventListener('state-change-route',         this._stateChangeRoute.bind(this));
+
+      }
+
+      _updateState(statePrst, stateSess, action) {
+        this.set('state', {
+          session: stateSess,
+          persistent: statePrst,
+          history: AppState.addSnapshot(this.state.history, {
+            session: stateSess,
+            persistent: statePrst
+          }, action)
+        });
+        if (statePrst)
+          this._storeState(statePrst);
+      }
+
+      static addSnapshot(history, snapshot, action) {
+        const snap = {
+          action: action,
+          snapshot: snapshot,
+          timestamp: performance.now()
+        }
+
+        const newHistory = Object.assign(history);
+        newHistory.all = [snap].concat(history.all);
+
+        if (action === 'state-change-settings')
+          newHistory.settings = [snap].concat(history.settings);
+
+        return newHistory;
+      }
+
+      _appConnected(e) {
+        console.log(e.type, performance.now());
+        let statePrst;
+        if (!this.state.persistent) {
+          const storedState = this._getState();
+          if (storedState)
+            statePrst = Tools.deepFreeze(Object.assign(storedState));
+          else
+            statePrst = Tools.deepFreeze(Object.assign(this.initialState));
+        }
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateChangeRoute(e) {
+        console.log(e.type, performance.now());
+        const route = e.detail;
+        const stateSess = Tools.deepFreeze(Tools.setIn(this.state.session, ['route'], route));
+        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['sketchId'], route.segments[0]));
+        this._updateState(statePrst, stateSess, e.type);
+      }
+
+      _storeState(state) {
+        localStorage.setItem('state', JSON.stringify(state));
+      }
+
+      _getState() {
+        return JSON.parse(localStorage.getItem('state'));
+      }
+
+      fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }))
+      }
+    }
+    customElements.define(AppState.is, AppState);
+  </script>
+</dom-module>
