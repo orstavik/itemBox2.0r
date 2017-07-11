@@ -37,8 +37,8 @@
         super.connectedCallback();
 
         window.addEventListener('app-connected',              this._appConnected.bind(this));
-        // window.addEventListener('state-user-in',              this._stateUserIn.bind(this));
-        // window.addEventListener('state-user-out',             this._stateUserOut.bind(this));
+        window.addEventListener('state-user-in',              this._stateUserIn.bind(this));
+        window.addEventListener('state-user-out',             this._stateUserOut.bind(this));
         // window.addEventListener('state-server-albums',        this._stateServerAlbums.bind(this));
         // window.addEventListener('state-server-settings',      this._stateServerSettings.bind(this));
         // window.addEventListener('state-change-settings',      this._stateChangeSettings.bind(this));
@@ -77,8 +77,8 @@
 
       _appConnected(e) {
         console.log(e.type, performance.now());
-        let statePrst;
-        if (!this.state.persistent) {
+        let statePrst = this.state.persistent;
+        if (!statePrst) {
           const storedState = this._getState();
           if (storedState)
             statePrst = Tools.deepFreeze(Object.assign(storedState));
@@ -88,12 +88,24 @@
         this._updateState(statePrst, this.state.session, e.type);
       }
 
+      _stateUserIn(e) {
+        console.log(e.type, performance.now());
+        const user = e.detail;
+        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['user'], user));
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateUserOut(e) {
+        console.log(e.type, performance.now());
+        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['user'], null));
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
       _stateChangeRoute(e) {
         console.log(e.type, performance.now());
         const route = e.detail;
         const stateSess = Tools.deepFreeze(Tools.setIn(this.state.session, ['route'], route));
-        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['sketchId'], route.segments[0]));
-        this._updateState(statePrst, stateSess, e.type);
+        this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _storeState(state) {

@@ -1,8 +1,8 @@
 <link rel="import" href="indexed-mirror.html">
 <link rel="import" href="firebase-on.html">
-<link rel="import" href="firebase-loginout.html">
+<link rel="import" href="fire-auth.html">
 
-<dom-module id="controller-data">
+<dom-module id="app-data">
   <template>
     <style>
       :host {
@@ -19,34 +19,30 @@
                     stored-data="{{sketchListServed}}"></indexed-mirror>-->
 
     <firebase-on id="activeSketchDB"
-                 active="[[_validateName(state.now.user.uid, newState.persistent.sketchId)]]"
+                 active="[[_validateName(newState.persistent.user.uid, newState.session.route.segments.0)]]"
                  result="{{activeSketchServed}}"
-                 path="/users/[[state.now.user.uid]]/sketches/[[newState.persistent.sketchId]]"></firebase-on>
+                 path="/users/[[newState.persistent.user.uid]]/sketches/[[newState.session.route.segments.0]]"></firebase-on>
     
     <firebase-on id="activeSketchListDB" write-only
-                 active="[[_BOOL(state.now.user.uid)]]"
-                 path="/users/[[state.now.user.uid]]/sketches"></firebase-on>
+                 active="[[_BOOL(newState.persistent.user.uid)]]"
+                 path="/users/[[newState.persistent.user.uid]]/sketches"></firebase-on>
 
     <firebase-on id="sketchListDB"
-                 active="[[_BOOL(state.now.user.uid)]]"
+                 active="[[_BOOL(newState.persistent.user.uid)]]"
                  result="{{sketchListServed}}"
-                 path="/viewSketchList/users/[[state.now.user.uid]]/sketches"></firebase-on>
+                 path="/viewSketchList/users/[[newState.persistent.user.uid]]/sketches"></firebase-on>
 
-    <firebase-loginout id="auth" user="{{serverUser}}"></firebase-loginout>
+    <fire-auth id="auth"></fire-auth>
 
   </template>
   <script>
-    class ControllerData extends Polymer.GestureEventListeners(Polymer.Element) {
+    class AppData extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "controller-data";
+        return "app-data";
       }
 
       static get properties() {
         return {
-          serverUser: {
-            type: Object,
-            observer: "_serverUserChanged"
-          },
           activeSketchServed: {
             type: Object,
             observer: "_activeSketchServedChanged"
@@ -80,7 +76,22 @@
 
       constructor() {
         super();
+        window.addEventListener('app-connected', (e) => this._appConnected());
+        window.addEventListener('online', (e) => this._appOnline());
+        window.addEventListener('offline', (e) => this._appOffline());
         this._ref = firebase.database().ref();
+      }
+
+      async _appConnected() {
+        const user = await this._checkUser();
+
+        if (user) {
+          this.fire('state-user-in', user);
+        } else {
+          this.fire('state-user-out');
+        }
+
+        this.fire('app-data-loaded');
       }
 
       // _getFluidActiveSketch(sketchFluid) {
@@ -89,10 +100,6 @@
 
       _sketchListServedChanged(sketchList) {
         this._fire("new-sketch-list", sketchList);
-      }
-
-      _serverUserChanged(user) {
-        this._fire("new-user", ControllerData.filterUser(user));
       }
 
       _activeSketchServedChanged(sketch) {
@@ -104,12 +111,44 @@
         //this._fire("state-change-route", undefined);
 //      }
 //
-      signIn() {
-        this.$.auth.signIn();
+
+      async signIn() {
+        try {
+          const result = await this.$.auth.signIn();
+          const user = AppData.makeUser(result.user);
+          this.$.settings.activate();
+          this.fire('state-user-in', user);
+          this._readUserSettings(user);
+        } catch(err) {
+          throw new Error(err);
+        }
       }
 
-      signOut() {
-        this.$.auth.signOut();
+      async signOut() {
+        // if user is out disconnecting user settings fire-data
+        this.$.settings.deactivate();
+        try {
+          await this.$.auth.signOut();
+          this.fire('state-user-out');
+        } catch(err) {
+          throw new Error(err);
+        }
+      }
+
+      static makeUser(user) {
+        if (!user)
+          return user;
+        return {
+          name: user.displayName,
+          email: user.email,
+          photo: user.photoURL,
+          uid: user.uid
+        }
+      }
+
+      async _checkUser() {
+        const user = await this.$.auth.checkUser();
+        return AppData.makeUser(user);
       }
 
       saveChanges(sketchFluid) {
@@ -158,18 +197,14 @@
         return !!one || !!two;
       }
 
-      static filterUser(user) {
-        return !user ? null : {
-          displayName: user.displayName,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          isAnonymous: user.isAnonymous,
-          photoURL: user.photoURL,
-          refreshToken: user.refreshToken,
-          uid: user.uid
-        };
+      fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
     }
-    customElements.define(ControllerData.is, ControllerData);
+    customElements.define(AppData.is, AppData);
   </script>
 </dom-module>

@@ -179,12 +179,12 @@
       }
 
       _setUserName(user) {
-        return user ? user.displayName : "Anonymous";
+        return user ? user.name : "Anonymous";
       }
 
       _setUserImage(user) {
         if(user)
-          return user.photoURL;
+          return user.photo;
       }
 
       _BOOL(obj) {

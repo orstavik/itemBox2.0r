@@ -107,9 +107,9 @@
 
     <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
-    <paper-material id="sketchNamePaper" hidden$="[[!state.now.user]]" status$="[[state.now.savedStatus]]" elevation=1>
+    <paper-material id="sketchNamePaper" hidden$="[[!newState.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[_orUnsaved(state.now.sketchMerged.info.sketchName)]]</div>
-      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.persistent.sketchId)]]">
+      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.session.route.segments.0)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
@@ -128,9 +128,9 @@
       </tools-item-button>
     </tools-button>
 
-    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.now.user)]]">
-      <app-login user="[[state.now.user]]">
-        <app-sketchlist uid="[[state.now.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[newState.persistent.sketchId]]"></app-sketchListMerged>
+    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(newState.persistent.user)]]">
+      <app-login user="[[newState.persistent.user]]">
+        <app-sketchlist uid="[[newState.persistent.user.uid]]" sketches="[[state.now.sketchListMerged]]" current-sketch="[[newState.session.route.segments.0]]"></app-sketchListMerged>
       </app-login>
     </account-button>
 
