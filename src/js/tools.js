@@ -113,17 +113,23 @@ class Tools {
   //then nothing is set and undefined is returned
   static setInNoCheck(obj, path, value, freeze) {
     let rootRes = Object.assign({}, obj);
+    let resPath = [];
     let res = rootRes;
     if (res === null) return undefined;
     for (let i = 0; i < path.length - 1; i++) {
       let key = path[i];
       res[key] = Object.assign({}, res[key]);
-      res = freeze ? Object.freeze(res[key]) : res[key];
+      resPath[i] = res[key];
+      res = res[key];
       if (res === null) return undefined;
     }
     res[path[path.length - 1]] = freeze ? Object.freeze(value) : value;
     
-    return rootRes;
+    for (let i = 0; i < resPath.length; i++) {
+      Object.freeze(resPath[i]);
+    }
+    
+    return freeze ? Object.freeze(rootRes) : rootRes;
   }
 
   /**
