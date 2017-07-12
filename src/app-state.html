@@ -152,14 +152,17 @@
         console.log(e.type, performance.now());
         const color = e.detail;
         let colors = {};
-        for (let key in this.state.session.selected)
-          colors[key] = {
-            color: color
-          };
-        const currentSketch = Tools.mergeDeepWithNullToDelete(this.state.persistent.currentSketch, {
-          shapes: colors
-        });
-        const statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, true);
+        let statePrst = this.state.persistent;
+        if (Object.keys(this.state.session.selected).length !== 0) {
+          for (let key in this.state.session.selected)
+            colors[key] = {
+              color: color
+            };
+          const currentSketch = Tools.mergeDeepWithNullToDelete(this.state.persistent.currentSketch, {
+            shapes: colors
+          });
+          statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, true);
+        }
         const stateSess = Tools.setIn(this.state.session, ["editColor"], color, true);
         this._updateState(statePrst, stateSess, e.type);
       }

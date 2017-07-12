@@ -73,6 +73,13 @@
         // window.addEventListener('online',             this._appOnline.bind(this));
         // window.addEventListener('offline',            this._appOffline.bind(this));
         this._ref = firebase.database().ref();
+
+        this._writeUserSketch = _.throttle((sketch) => {
+          if (navigator.onLine && this.user) {
+            this.$.currentSketch.write(sketch);
+            console.log('sketch written');
+          }
+        }, 1000);
       }
 
       async _appConnected() {
@@ -177,13 +184,6 @@
         const sketchList = await this.$.sketchList.read();
         if (sketchList)
           return this.fire('state-server-sketchlist', sketchList);
-      }
-
-      _writeUserSketch(sketch) {
-        if (navigator.onLine && this.user) {
-          this.$.currentSketch.write(sketch);
-          console.log('sketch written');
-        }
       }
 
       saveChanges(sketchFluid) {
