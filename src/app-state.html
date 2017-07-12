@@ -40,7 +40,7 @@
         window.addEventListener('state-user-out',               this._stateUserOut.bind(this));
         window.addEventListener('state-server-sketch',          this._stateServerSketch.bind(this));
         window.addEventListener('state-server-sketchlist',      this._stateServerSketchList.bind(this));
-        window.addEventListener("state-change-viewport",        this._stateChangeViewport.bind(this));
+        window.addEventListener("state-change-viewport",        _.throttle(this._stateChangeViewport.bind(this), 1000/60));
 
         window.addEventListener('state-change-route',           this._stateChangeRoute.bind(this));
 

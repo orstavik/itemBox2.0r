@@ -33,6 +33,21 @@
 
     class SpaceCamera extends Polymer.GestureEventListeners(Polymer.Element) {
 
+      static get is() {
+        return 'space-camera';
+      }
+
+      static get properties() {
+        return {
+          viewPort: {
+            type: Object,
+            observer: "_updateView"
+          },
+          _vPort: Object, // local version of viewPort: allows to use throttle on 'state-change-viewport' elsewhere
+          moveable: Boolean
+        };
+      }
+
       connectedCallback() {
         super.connectedCallback();
         Polymer.Gestures.addListener(this.parentNode, 'track', function (e) {
@@ -54,26 +69,15 @@
         }.bind(this));
       }
 
-      static get is() {
-        return 'space-camera';
-      }
-
-      static get properties() {
-        return {
-          viewPort: {
-            type: Object,
-            observer: "_updateView"
-          },
-          moveable: Boolean
-        };
-      }
-
       moveViewport(e) {
+        if (!this._vPort)
+          this._vPort = Object.assign(this.viewPort);
         const ddx = e.detail.ddx !== undefined ? e.detail.ddx : e.detail.dx;
         const ddy = e.detail.ddy !== undefined ? e.detail.ddy : e.detail.dy;
         if (this.tapZoom)            //todo move this maybe??
           return;
-        this._fire("view-changed", ViewPort.move(this.viewPort, ddx, ddy));
+        this._vPort = ViewPort.move(this._vPort, ddx, ddy);
+        this._fire("state-change-viewport", this._vPort);
       }
 
       pinch(e) {
@@ -105,7 +109,10 @@
       }
 
       _zoomViewport(ds, sx, sy) {
-        this._fire("view-changed", ViewPort.zoom(this.viewPort, ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2));
+        if (!this._vPort)
+          this._vPort = Object.assign(this.viewPort);
+        this._vPort = ViewPort.zoom(this.viewPort, ds, sx - window.innerWidth / 2, sy - window.innerHeight / 2)
+        this._fire("state-change-viewport", this._vPort);
       }
 
       _updateView(view) {
