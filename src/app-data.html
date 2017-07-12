@@ -1,5 +1,6 @@
 <link rel="import" href="indexed-mirror.html">
 <link rel="import" href="firebase-on.html">
+<link rel="import" href="fire-data.html">
 <link rel="import" href="fire-auth.html">
 
 <dom-module id="app-data">
@@ -10,14 +11,6 @@
       }
     </style>
 
-    <!--<indexed-mirror key="activeSketch"
-                    data="[[activeSketchServedPre]]"
-                    stored-data="{{activeSketchServed}}"></indexed-mirror>
-
-    <indexed-mirror key="sketchList"
-                    data="[[sketchListServedPre]]"
-                    stored-data="{{sketchListServed}}"></indexed-mirror>-->
-
     <firebase-on id="activeSketchDB"
                  active="[[_validateName(newState.persistent.user.uid, newState.session.route.segments.0)]]"
                  result="{{activeSketchServed}}"
@@ -27,10 +20,8 @@
                  active="[[_BOOL(newState.persistent.user.uid)]]"
                  path="/users/[[newState.persistent.user.uid]]/sketches"></firebase-on>
 
-    <firebase-on id="sketchListDB"
-                 active="[[_BOOL(newState.persistent.user.uid)]]"
-                 result="{{sketchListServed}}"
-                 path="/viewSketchList/users/[[newState.persistent.user.uid]]/sketches"></firebase-on>
+    <fire-data id="currentSketch"></fire-data>
+    <fire-data id="sketchList"></fire-data>
 
     <fire-auth id="auth"></fire-auth>
 
@@ -47,21 +38,12 @@
             type: Object,
             observer: "_activeSketchServedChanged"
           },
-          sketchListServed: {
-            type: Object,
-            observer: "_sketchListServedChanged"
-          },
           state: Object,
           newState: Object,
           // sketchFluid: {
           //   type: Object,
           //   computed: "_getFluidActiveSketch(state.now.sketchFluid)",
           //   observer: "saveChangesDebounced"
-          // },
-          // sketchListFluid: {
-          //   type: Object,
-          //   computed: "_getFluidActiveSketch(state.now.sketchListFluid)",
-          //   observer: "saveChangesDebouncedList"
           // },
           actionType: String
         };
@@ -70,27 +52,33 @@
       static get observers() {
         return [
           "saveChangesDebounced(state.now.sketchFluid)",
-          "saveChangesDebouncedList(state.now.sketchListFluid)",
         ]
       }
 
       constructor() {
         super();
-        window.addEventListener('app-connected', (e) => this._appConnected());
-        window.addEventListener('online', (e) => this._appOnline());
-        window.addEventListener('offline', (e) => this._appOffline());
+        window.addEventListener('app-connected', this._appConnected.bind(this));
+        // window.addEventListener('online',             this._appOnline.bind(this));
+        // window.addEventListener('offline',            this._appOffline.bind(this));
         this._ref = firebase.database().ref();
       }
 
       async _appConnected() {
         const user = await this._checkUser();
 
+        let currSketchPromise, sketchListPromise;
         if (user) {
           this.fire('state-user-in', user);
+          currSketchPromise = this._readUserSketch(user, this.newState.session.route.segments[0]);
+          sketchListPromise = this._readUserSketchList(user);
         } else {
           this.fire('state-user-out');
+          currSketchPromise = Promise.resolve();
+          sketchListPromise = Promise.resolve();
         }
+        window.addEventListener('state-change-route', (e) => this._readUserSketch(this.newState.persistent.user, this.newState.session.route.segments[0]));
 
+        await sketchListPromise;
         this.fire('app-data-loaded');
       }
 
@@ -99,38 +87,45 @@
       // }
 
       _sketchListServedChanged(sketchList) {
-        this._fire("new-sketch-list", sketchList);
+        this.fire("new-sketch-list", sketchList);
       }
 
       _activeSketchServedChanged(sketch) {
-        this._fire("new-sketch-data", sketch);
+        this.fire("new-sketch-data", sketch);
       }
 
-//      _noDataForSketch(){
-//        this._fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
-        //this._fire("state-change-route", undefined);
-//      }
-//
+      //      _noDataForSketch(){
+      //        this.fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
+      //this.fire("state-change-route", undefined);
+      //      }
+      //
 
       async signIn() {
         try {
           const result = await this.$.auth.signIn();
-          const user = AppData.makeUser(result.user);
-          this.$.settings.activate();
-          this.fire('state-user-in', user);
-          this._readUserSettings(user);
-        } catch(err) {
+          if (result.user) {
+            const user = AppData.makeUser(result.user);
+            this.fire('state-user-in', user);
+            this._readUserSketch(user, this.newState.session.route.segments[0]);
+            this._readUserSketchList(user);
+          }
+        } catch (err) {
           throw new Error(err);
         }
       }
 
       async signOut() {
-        // if user is out disconnecting user settings fire-data
-        this.$.settings.deactivate();
         try {
           await this.$.auth.signOut();
+          this.navigate('unsaved');
           this.fire('state-user-out');
-        } catch(err) {
+          this.fire('state-server-sketch', {
+            info: {
+              sketchName: 'unsaved'
+            }
+          });
+          this.fire('state-server-sketchlist', null);
+        } catch (err) {
           throw new Error(err);
         }
       }
@@ -151,6 +146,28 @@
         return AppData.makeUser(user);
       }
 
+      async _readUserSketch(user, sketchId) {
+        if (!user)
+          return;
+        this.$.currentSketch.setPath(`/users/${user.uid}/sketches/${sketchId}`);
+        const currentSketch = await this.$.currentSketch.read();
+        if (currentSketch)
+          this.fire('state-server-sketch', currentSketch);
+        else
+          this.fire('state-server-sketch', {
+            info: {
+              sketchName: 'unsaved'
+            }
+          });
+      }
+
+      async _readUserSketchList(user) {
+        this.$.sketchList.setPath(`/viewSketchList/users/${user.uid}/sketches`);
+        const sketchList = await this.$.sketchList.read();
+        if (sketchList)
+          return this.fire('state-server-sketchlist', sketchList);
+      }
+
       saveChanges(sketchFluid) {
         if (sketchFluid)
           this.$.activeSketchDB.updateMerge(sketchFluid);
@@ -169,20 +186,8 @@
         );
       }
 
-      saveChangesDebouncedList(fluidListSnap) {
-        this._saveDebouncerList = Polymer.Debouncer.debounce(
-          this._saveDebouncerList,
-          Polymer.Async.timeOut.after(33),
-          this.saveChangesList.bind(this, fluidListSnap)
-        );
-      }
-
       _validateName(user, name) {
         return user && name && name !== "unsaved";
-      }
-
-      _fire(name, detail) {
-        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
       }
 
       _BOOL(one) {
@@ -203,6 +208,11 @@
           bubbles: true,
           detail: detail
         }));
+      }
+
+      navigate(url) {
+        history.pushState({}, null, url);
+        window.dispatchEvent(new CustomEvent('location-changed'));
       }
     }
     customElements.define(AppData.is, AppData);

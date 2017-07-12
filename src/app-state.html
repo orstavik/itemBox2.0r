@@ -26,8 +26,7 @@
                 x: 0,
                 y: 0,
                 s: 1
-              },
-              sketchId: "unsaved"
+              }
             })
           }
         }
@@ -36,13 +35,14 @@
       connectedCallback() {
         super.connectedCallback();
 
-        window.addEventListener('app-connected',              this._appConnected.bind(this));
-        window.addEventListener('state-user-in',              this._stateUserIn.bind(this));
-        window.addEventListener('state-user-out',             this._stateUserOut.bind(this));
-        // window.addEventListener('state-server-albums',        this._stateServerAlbums.bind(this));
-        // window.addEventListener('state-server-settings',      this._stateServerSettings.bind(this));
-        // window.addEventListener('state-change-settings',      this._stateChangeSettings.bind(this));
-        window.addEventListener('state-change-route',         this._stateChangeRoute.bind(this));
+        window.addEventListener('app-connected',                this._appConnected.bind(this));
+        window.addEventListener('state-user-in',                this._stateUserIn.bind(this));
+        window.addEventListener('state-user-out',               this._stateUserOut.bind(this));
+        window.addEventListener('state-server-sketch',          this._stateServerSketch.bind(this));
+        window.addEventListener('state-server-sketchlist',      this._stateServerSketchList.bind(this));
+        window.addEventListener("state-change-viewport",        this._stateChangeViewport.bind(this));
+
+        window.addEventListener('state-change-route',           this._stateChangeRoute.bind(this));
 
       }
 
@@ -91,20 +91,41 @@
       _stateUserIn(e) {
         console.log(e.type, performance.now());
         const user = e.detail;
-        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['user'], user));
+        const statePrst = Tools.setIn(this.state.persistent, ['user'], user, true);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateUserOut(e) {
         console.log(e.type, performance.now());
-        const statePrst = Tools.deepFreeze(Tools.setIn(this.state.persistent, ['user'], null));
+        const statePrst = Tools.setIn(this.state.persistent, ['user'], null, true);
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateServerSketch(e) {
+        console.log(e.type, performance.now());
+        const sketch = e.detail;
+        const statePrst = Tools.setIn(this.state.persistent, ['currentSketch'], sketch, true);
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateServerSketchList(e) {
+        console.log(e.type, performance.now());
+        const sketchList = e.detail;
+        const statePrst = Tools.setIn(this.state.persistent, ['sketchList'], sketchList, true);
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateChangeViewport(e) {
+        console.log(e.type, performance.now());
+        const viewPort = e.detail;
+        const statePrst = Tools.setIn(this.state.persistent, ['viewPort'], viewPort, true);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateChangeRoute(e) {
         console.log(e.type, performance.now());
         const route = e.detail;
-        const stateSess = Tools.deepFreeze(Tools.setIn(this.state.session, ['route'], route));
+        const stateSess = Tools.setIn(this.state.session, ['route'], route, true);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 

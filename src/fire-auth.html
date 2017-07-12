@@ -16,7 +16,7 @@
             type: Object,
             value: () => {
               const provider = new firebase.auth.GoogleAuthProvider();
-              provider.addScope('https://www.googleapis.com/auth/contacts.readonly'); // OAuth 2.0
+              // provider.addScope('https://www.googleapis.com/auth/contacts.readonly'); // OAuth 2.0
               return provider;
             }
           },
