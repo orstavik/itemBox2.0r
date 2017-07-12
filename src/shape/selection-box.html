@@ -34,6 +34,7 @@
       static get properties() {
         return {
           state: Object,
+          newState: Object,
           heldKeys: Object,
           rect: {
             type: Object,
@@ -73,7 +74,7 @@
             break;
         }
         e.preventDefault();
-        this.fire("select", {});
+        this.fire("state-new-selected", {});
         this.start = e;
       }
 
@@ -114,8 +115,8 @@
       _rectChanged() {
         let mutated = false;
         let newSelects = {};
-        let currentSelection = this.state.now.selects || {};
-        let rects = this.state.now.rects || {};
+        let currentSelection = this.newState.session.selected || {};
+        let rects = this.newState.session.shapeRects || {};
         for (let key in rects) {
           let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, rects[key].center);
           if (pointIsWithinBorders)
@@ -124,18 +125,18 @@
             mutated = true;
         }
         if (mutated)
-          this.fire("select", newSelects);
+          this.fire("state-new-selected", newSelects);
       }
 
       _downOnShapeObject(e) {
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
           this.selectionTimer = setTimeout(function () {
-            this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, true));
+            this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, true));
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else {
-          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, this.heldKeys.shift()));
+          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, this.heldKeys.shift()));
         }
       }
 
@@ -143,7 +144,7 @@
         e.stopPropagation();
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
-          this.fire("select", SelectionBox.makeSelectsObject(e.target.id, this.state.now.selects, false));
+          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, false));
         }
       }
 

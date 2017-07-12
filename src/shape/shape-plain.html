@@ -20,16 +20,16 @@
     </style>
 
     <coordinate-lines view-port="[[newState.persistent.viewPort]]"></coordinate-lines>
-    <shape-box id="shapeBox" shapes="[[selecteds]]" view-port="[[state.now.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
+    <shape-box id="shapeBox" shapes="[[selectedShapes]]" view-port="[[newState.persistent.viewPort]]"></shape-box>
+    <selection-box id="selection" state="[[state]]" new-state="[[newState]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
       <space-camera id="camera" view-port="[[newState.persistent.viewPort]]" moveable$="[[moveable]]">
         <template is="dom-repeat" items="[[shapesArray]]">
           <shape-object id$="[[item.key]]"
                         selectable
                         selected$="[[item.value.selected]]"
                         color="[[item.value.color]]"
-                        matrix-data="[[item.value.matrix]]"
-          ></shape-object>
+                        matrix-data="[[item.value.matrix]]">
+          </shape-object>
         </template>
       </space-camera>
     </selection-box>
@@ -52,9 +52,9 @@
             reflectToAttribute: true,
             computed: "_makeMoveable(heldKeys)"
           },
-          selecteds: {                        //partial now: the selected shapes in the active sketch
+          selectedShapes: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelecteds(state.now.sketchMerged, state.now.selects, state.now.rects)"
+            computed: "_makeSelectedShapes(newState.persistent.currentSketch, newState.session.selected, newState.session.shapeRects)"
           },
           shapesArray: {
             type: Array,
@@ -85,12 +85,12 @@
         this.fire("new-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 
-      _makeSelecteds(sketchMerged, selects, rects) {
-        if (!sketchMerged || !selects)
+      _makeSelectedShapes(sketch, selected, rects) {
+        if (!sketch || !selected)
           return undefined;
         let selectsShapes = {};
-        for (let key in selects)
-          selectsShapes[key] = {matrix: sketchMerged.shapes[key].matrix, rect: rects[key]};
+        for (let key in selected)
+          selectsShapes[key] = {matrix: sketch.shapes[key].matrix, rect: rects[key]};
         return selectsShapes;
       }
 

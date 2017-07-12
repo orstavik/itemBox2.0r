@@ -64,8 +64,8 @@
 
       constructor() {
         super();
-        this.addEventListener("new-user", this._newUser.bind(this));
-        this.addEventListener("new-sketch-list", this._newSketchListServer.bind(this));
+        // this.addEventListener("new-user", this._newUser.bind(this));
+        // this.addEventListener("new-sketch-list", this._newSketchListServer.bind(this));
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
 
         this.addEventListener("save-sketch", this._saveSketch.bind(this));
@@ -78,8 +78,8 @@
         this.addEventListener("delete-selected", this._deleteSelected.bind(this));
         this.addEventListener("new-color", this._newColor.bind(this));
 
-        this.addEventListener("select", this._select.bind(this));
-        this.addEventListener("shape-location", this._shapeLocation.bind(this));
+        // this.addEventListener("state-new-selected", this._select.bind(this));
+        // this.addEventListener("state-shape-location", this._shapeLocation.bind(this));
 
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("system-error", this._systemMessage.bind(this));

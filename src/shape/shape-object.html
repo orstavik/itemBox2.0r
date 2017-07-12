@@ -80,7 +80,7 @@
       }
 
       alertLocation() {
-        this._fire("shape-location", {
+        this._fire("state-shape-location", {
           key: this.id,
           value: Rectangle.addCenter(this.$.body.getBoundingClientRect())
         });

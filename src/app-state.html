@@ -22,6 +22,12 @@
           initialState: {
             type: Object,
             value: () => ({
+              sketchList: {},
+              currentSketch: {
+                info: {
+                  sketchName: 'unsaved'
+                }
+              },
               viewPort: {
                 x: 0,
                 y: 0,
@@ -35,14 +41,16 @@
       connectedCallback() {
         super.connectedCallback();
 
-        window.addEventListener('app-connected',                this._appConnected.bind(this));
-        window.addEventListener('state-user-in',                this._stateUserIn.bind(this));
-        window.addEventListener('state-user-out',               this._stateUserOut.bind(this));
-        window.addEventListener('state-server-sketch',          this._stateServerSketch.bind(this));
-        window.addEventListener('state-server-sketchlist',      this._stateServerSketchList.bind(this));
-        window.addEventListener("state-change-viewport",        _.throttle(this._stateChangeViewport.bind(this), 1000/60));
+        window.addEventListener('state-change-route', this._stateChangeRoute.bind(this));
+        window.addEventListener('app-connected', this._appConnected.bind(this));
+        window.addEventListener('state-user-in', this._stateUserIn.bind(this));
+        window.addEventListener('state-user-out', this._stateUserOut.bind(this));
+        window.addEventListener('state-server-sketch', this._stateServerSketch.bind(this));
+        window.addEventListener('state-server-sketchlist', this._stateServerSketchList.bind(this));
+        window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
 
-        window.addEventListener('state-change-route',           this._stateChangeRoute.bind(this));
+        window.addEventListener("state-shape-location", this._stateShapeLocation.bind(this));
+        window.addEventListener("state-new-selected", this._stateNewSelected.bind(this));
 
       }
 
@@ -73,6 +81,21 @@
           newHistory.settings = [snap].concat(history.settings);
 
         return newHistory;
+      }
+
+      _storeState(state) {
+        localStorage.setItem('state', JSON.stringify(state));
+      }
+
+      _getState() {
+        return JSON.parse(localStorage.getItem('state'));
+      }
+
+      _stateChangeRoute(e) {
+        console.log(e.type, performance.now());
+        const route = e.detail;
+        const stateSess = Tools.setIn(this.state.session, ['route'], route, true);
+        this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _appConnected(e) {
@@ -122,19 +145,24 @@
         this._updateState(statePrst, this.state.session, e.type);
       }
 
-      _stateChangeRoute(e) {
+      _stateShapeLocation(e) {
         console.log(e.type, performance.now());
-        const route = e.detail;
-        const stateSess = Tools.setIn(this.state.session, ['route'], route, true);
+        const shapeLocation = e.detail;
+        const stateSess = Tools.setIn(this.state.session, ["shapeRects", shapeLocation.key], shapeLocation.value, true);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
-      _storeState(state) {
-        localStorage.setItem('state', JSON.stringify(state));
-      }
-
-      _getState() {
-        return JSON.parse(localStorage.getItem('state'));
+      _stateNewSelected(e) {
+        console.log(e.type, performance.now());
+        const selected = e.detail;
+        let stateSess = Tools.setIn(this.state.session, ["selected"], selected);
+        const keys = Object.keys(selected);
+        if (keys && keys.length > 0) {
+          const key = keys[0];
+          const color = this.state.persistent.currentSketch.shapes[key].color;
+          stateSess = Tools.setIn(stateSess, ["editColor"], color);
+        }
+        this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       fire(name, detail) {
