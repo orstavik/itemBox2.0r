@@ -43,15 +43,18 @@
 
         window.addEventListener('state-change-route', this._stateChangeRoute.bind(this));
         window.addEventListener('app-connected', this._appConnected.bind(this));
+
         window.addEventListener('state-user-in', this._stateUserIn.bind(this));
         window.addEventListener('state-user-out', this._stateUserOut.bind(this));
+
         window.addEventListener('state-server-sketch', this._stateServerSketch.bind(this));
         window.addEventListener('state-server-sketchlist', this._stateServerSketchList.bind(this));
-        window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
 
         window.addEventListener("state-shape-location", this._stateShapeLocation.bind(this));
         window.addEventListener("state-new-selected", this._stateNewSelected.bind(this));
 
+        window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
+        window.addEventListener("state-change-color", _.throttle(this._stateChangeColor.bind(this), 1000 / 30));
       }
 
       _updateState(statePrst, stateSess, action) {
@@ -143,6 +146,22 @@
         const viewPort = e.detail;
         const statePrst = Tools.setIn(this.state.persistent, ['viewPort'], viewPort, true);
         this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateChangeColor(e) {
+        console.log(e.type, performance.now());
+        const color = e.detail;
+        let colors = {};
+        for (let key in this.state.session.selected)
+          colors[key] = {
+            color: color
+          };
+        const currentSketch = Tools.mergeDeepWithNullToDelete(this.state.persistent.currentSketch, {
+          shapes: colors
+        });
+        const statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, true);
+        const stateSess = Tools.setIn(this.state.session, ["editColor"], color, true);
+        this._updateState(statePrst, stateSess, e.type);
       }
 
       _stateShapeLocation(e) {

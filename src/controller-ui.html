@@ -120,7 +120,7 @@
         <object-viewer json="[[newState]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
-        <color-palette id="palette" color="[[state.now.session.color]]"></color-palette>
+        <color-palette id="palette" color="[[newState.session.editColor]]"></color-palette>
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">

@@ -202,25 +202,25 @@
       _hueChange(e) {
         const newColor = Object.assign({}, this.hsla);
         newColor.hue = Math.round(e.detail/this.$.colorSlider1.height*360);
-        this._fire("new-color", newColor);
+        this._fire("state-change-color", newColor);
       }
 
       _saturationChange(e) {
         const newColor = Object.assign({}, this.hsla);
         newColor.saturation = Math.round((1-(e.detail/this.$.colorBox.height))*100);
-        this._fire("new-color", newColor);
+        this._fire("state-change-color", newColor);
       }
 
       _lightnessChange(e) {
         const newColor = Object.assign({}, this.hsla);
         newColor.lightness = Math.round(e.detail/this.$.colorBox.width*100);
-        this._fire("new-color", newColor);
+        this._fire("state-change-color", newColor);
       }
 
       _alphaChange(e) {
         const newColor = Object.assign({}, this.hsla);
         newColor.alpha = ColorPalette.roundTo(1 - (e.detail / this.$.colorSlider2.height), 2);
-        this._fire("new-color", newColor);
+        this._fire("state-change-color", newColor);
       }
 
       _validate(e) {
@@ -228,7 +228,7 @@
           return;
         const newColor = Object.assign({}, this.hsla);
         newColor[e.target.dataset.type] = e.target.value;
-        this._fire("new-color", newColor);
+        this._fire("state-change-color", newColor);
       }
 
       _calcFromHue(h) {
