@@ -39,7 +39,19 @@
             observer: "_activeSketchServedChanged"
           },
           state: Object,
-          newState: Object,
+          user: Object,
+          sketchId: {
+            type: String,
+            observer: '_readUserSketch'
+          },
+          currentSketch: {
+            type: Object,
+            observer: "_writeUserSketch"
+          },
+          sketchList: {
+            type: Object,
+            // observer: "_writeUserSketch"
+          },
           // sketchFluid: {
           //   type: Object,
           //   computed: "_getFluidActiveSketch(state.now.sketchFluid)",
@@ -69,14 +81,13 @@
         let currSketchPromise, sketchListPromise;
         if (user) {
           this.fire('state-user-in', user);
-          currSketchPromise = this._readUserSketch(user, this.newState.session.route.segments[0]);
+          currSketchPromise = this._readUserSketch(this.sketchId);
           sketchListPromise = this._readUserSketchList(user);
         } else {
           this.fire('state-user-out');
           currSketchPromise = Promise.resolve();
           sketchListPromise = Promise.resolve();
         }
-        window.addEventListener('state-change-route', (e) => this._readUserSketch(this.newState.persistent.user, this.newState.session.route.segments[0]));
 
         await sketchListPromise;
         this.fire('app-data-loaded');
@@ -106,7 +117,7 @@
           if (result.user) {
             const user = AppData.makeUser(result.user);
             this.fire('state-user-in', user);
-            this._readUserSketch(user, this.newState.session.route.segments[0]);
+            this._readUserSketch(this.sketchId);
             this._readUserSketchList(user);
           }
         } catch (err) {
@@ -146,10 +157,10 @@
         return AppData.makeUser(user);
       }
 
-      async _readUserSketch(user, sketchId) {
-        if (!user)
+      async _readUserSketch(sketchId) {
+        if (!this.user)
           return;
-        this.$.currentSketch.setPath(`/users/${user.uid}/sketches/${sketchId}`);
+        this.$.currentSketch.setPath(`/users/${this.user.uid}/sketches/${sketchId}`);
         const currentSketch = await this.$.currentSketch.read();
         if (currentSketch)
           this.fire('state-server-sketch', currentSketch);
@@ -166,6 +177,13 @@
         const sketchList = await this.$.sketchList.read();
         if (sketchList)
           return this.fire('state-server-sketchlist', sketchList);
+      }
+
+      _writeUserSketch(sketch) {
+        if (navigator.onLine && this.user) {
+          this.$.currentSketch.write(sketch);
+          console.log('sketch written');
+        }
       }
 
       saveChanges(sketchFluid) {
