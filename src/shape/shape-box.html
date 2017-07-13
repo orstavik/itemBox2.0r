@@ -169,7 +169,7 @@
             return this._transformShapes(e.currentTarget, e.detail);
           case 'end':
             e.currentTarget.removeAttribute("active");
-            this._fire("change-shapes-end", this.action);
+            this._fire("state-edit-shape-end", this.action);
             this.set("action", "");
         }
       }
@@ -194,7 +194,7 @@
         let matrices = {};
         for (let key in this.shapes)
           matrices[key] = {matrix: MatrixData.move(this.shapes[key].matrix, x / s, y / s)};
-        this._fire("change-shapes", matrices);
+        this._fire("state-edit-shape", matrices);
       }
 
       _rotateShapes(x, y, ddx, ddy, s) {
@@ -215,7 +215,7 @@
           let move = Rectangle.calculateRotationMovement(this.rect.center, shape.rect.center, a);
           matrices[key] = {matrix: MatrixData.rotate(shape.matrix, a, move.x / s, move.y / s)};
         }
-        this._fire("change-shapes", matrices);
+        this._fire("state-edit-shape", matrices);
       }
 
       _scaleShapes(id, dx, dy, s) {
@@ -266,7 +266,7 @@
             )
           };
         }
-        this._fire("change-shapes", matrices);
+        this._fire("state-edit-shape", matrices);
       }
 
       _fire(name, detail){

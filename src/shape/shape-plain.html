@@ -82,7 +82,7 @@
 
       _newShape(e) {
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.now.viewPort, e.x || e.detail.x, e.y || e.detail.y);
-        this.fire("new-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
+        this.fire("state-add-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 
       _makeSelectedShapes(sketch, selected, rects) {
@@ -90,7 +90,8 @@
           return undefined;
         let selectsShapes = {};
         for (let key in selected)
-          selectsShapes[key] = {matrix: sketch.shapes[key].matrix, rect: rects[key]};
+          if (sketch.shapes[key] && rects[key])
+            selectsShapes[key] = {matrix: sketch.shapes[key].matrix, rect: rects[key]};
         return selectsShapes;
       }
 

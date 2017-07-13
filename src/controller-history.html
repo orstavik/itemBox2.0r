@@ -69,7 +69,7 @@
       }
 
       _makeEditHistory(now) {
-        return ControllerHistory._unshiftIf(now, this.edits, ["change-shapes-end", "new-shape", "delete-selected"]);
+        return ControllerHistory._unshiftIf(now, this.edits, ["state-edit-shape-end", "new-shape", "delete-selected"]);
       }
 
       _makeSystemMessageHistory(now) {

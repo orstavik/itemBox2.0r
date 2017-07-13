@@ -112,7 +112,7 @@
           "height: " + r.height + "px;";
       }
 
-      _rectChanged() {
+      _rectChanged() { // VERY BAD SELECTION: FIRES EVENTS TOOOOO OFTEN!!!
         let mutated = false;
         let newSelects = {};
         let currentSelection = this.newState.session.selected || {};

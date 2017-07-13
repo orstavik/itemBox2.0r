@@ -76,10 +76,10 @@
         this.addEventListener("edit-sketch", this._editSketch.bind(this));
         this.addEventListener("delete-sketch", this._deleteSketch.bind(this));
 
-        this.addEventListener("new-shape", this._newShape.bind(this));
-        this.addEventListener("change-shapes", this._changeShapes.bind(this));
-        this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
-        this.addEventListener("delete-selected", this._deleteSelected.bind(this));
+        // this.addEventListener("state-add-shape", this._newShape.bind(this));
+        // this.addEventListener("change-shapes", this._changeShapes.bind(this));
+        // this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
+        // this.addEventListener("delete-selected", this._deleteSelected.bind(this));
         // this.addEventListener("state-change-color", this._newColor.bind(this));
 
         // this.addEventListener("state-new-selected", this._select.bind(this));
@@ -88,8 +88,8 @@
         this.addEventListener("system-message", this._systemMessage.bind(this));
         this.addEventListener("system-error", this._systemMessage.bind(this));
         this.addEventListener("help-message", this._helpMessage.bind(this));
-        this.addEventListener("sign-in", this._signIn.bind(this));
-        this.addEventListener("sign-out", this._signOut.bind(this));
+        // this.addEventListener("sign-in", this._signIn.bind(this));
+        // this.addEventListener("sign-out", this._signOut.bind(this));
 
         this.setSnap({
           type: "startup",

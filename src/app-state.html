@@ -19,7 +19,7 @@
               }
             })
           },
-          initialState: {
+          initialStatePrst: {
             type: Object,
             value: () => ({
               sketchList: {},
@@ -34,6 +34,21 @@
                 s: 1
               }
             })
+          },
+          initialStateSess: {
+            type: Object,
+            value: () => ({
+              editColor: {
+                hue: 0,
+                saturation: 0,
+                lightness: 0,
+                alpha: 0
+              }
+            })
+          },
+          _frozen: {
+            type: Boolean,
+            value: true
           }
         }
       }
@@ -50,8 +65,13 @@
         window.addEventListener('state-server-sketch', this._stateServerSketch.bind(this));
         window.addEventListener('state-server-sketchlist', this._stateServerSketchList.bind(this));
 
+        window.addEventListener('state-add-shape', this._stateAddShape.bind(this));
+        window.addEventListener('state-edit-shape', this._stateEditShape.bind(this));
+        window.addEventListener('state-edit-shape-end', this._stateEditShapeEnd.bind(this));
+        window.addEventListener('state-delete-shape', this._stateDeleteShape.bind(this));
+
         window.addEventListener("state-shape-location", this._stateShapeLocation.bind(this));
-        window.addEventListener("state-new-selected", this._stateNewSelected.bind(this));
+        window.addEventListener("state-new-selected", _.throttle(this._stateNewSelected.bind(this), 1000 / 10)); // THROTTLE FOR BAD SELECTION
 
         window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
         window.addEventListener("state-change-color", _.throttle(this._stateChangeColor.bind(this), 1000 / 30));
@@ -97,54 +117,105 @@
       _stateChangeRoute(e) {
         console.log(e.type, performance.now());
         const route = e.detail;
-        const stateSess = Tools.setIn(this.state.session, ['route'], route, true);
+        const stateSess = Tools.setIn(this.state.session, ['route'], route, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _appConnected(e) {
         console.log(e.type, performance.now());
+
+        // instantiate state.persistent
         let statePrst = this.state.persistent;
         if (!statePrst) {
           const storedState = this._getState();
           if (storedState)
             statePrst = Tools.deepFreeze(Object.assign(storedState));
           else
-            statePrst = Tools.deepFreeze(Object.assign(this.initialState));
+            statePrst = Tools.deepFreeze(Object.assign(this.initialStatePrst));
         }
-        this._updateState(statePrst, this.state.session, e.type);
+
+        // instantiate state.session
+        const stateSess = Tools.mergeDeepWithNullToDelete(this.state.session, this.initialStateSess, this._frozen);
+
+        // create snapshot
+        this._updateState(statePrst, stateSess, e.type);
       }
 
       _stateUserIn(e) {
         console.log(e.type, performance.now());
         const user = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['user'], user, true);
+        const statePrst = Tools.setIn(this.state.persistent, ['user'], user, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateUserOut(e) {
         console.log(e.type, performance.now());
-        const statePrst = Tools.setIn(this.state.persistent, ['user'], null, true);
+        const statePrst = Tools.setIn(this.state.persistent, ['user'], null, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateServerSketch(e) {
         console.log(e.type, performance.now());
         const sketch = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['currentSketch'], sketch, true);
+        const statePrst = Tools.setIn(this.state.persistent, ['currentSketch'], sketch, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateServerSketchList(e) {
         console.log(e.type, performance.now());
         const sketchList = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['sketchList'], sketchList, true);
+        const statePrst = Tools.setIn(this.state.persistent, ['sketchList'], sketchList, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateAddShape(e) {
+        console.log(e.type, performance.now());
+        const shapeMatrix = e.detail;
+        const statePrst = Tools.setIn(this.state.persistent, ["currentSketch", "shapes", Tools.genKey()], {
+          matrix: e.detail,
+          color: this.state.session.editColor
+        }, this._frozen);
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateEditShape(e) {
+        console.log(e.type, performance.now());
+        const shapes = e.detail;
+        const statePrst = Tools.mergeDeepWithNullToDelete(this.state.persistent, {
+          currentSketch: {
+            shapes: shapes
+          }
+        }, this._frozen);
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateEditShapeEnd(e) {
+        console.log(e.type, performance.now());
+        const statePrst = Tools.deepFreeze(Object.assign(this.state.persistent));
+        this._updateState(statePrst, this.state.session, e.type);
+      }
+
+      _stateDeleteShape(e) {
+        console.log(e.type, performance.now());
+        let deletes = {};
+        for (let key in this.state.session.selected)
+          deletes[key] = null;
+        const statePrst = Tools.mergeDeepWithNullToDelete(this.state.persistent, {
+          currentSketch: {
+            shapes: deletes
+          }
+        }, this._frozen);
+        let stateSess = Tools.setIn(this.state.session, ["selected"], {}, this._frozen);
+        stateSess = Tools.mergeDeepWithNullToDelete(this.state.session, {
+          shapeRects: deletes
+        }, this._frozen);
+        this._updateState(statePrst, stateSess, e.type);
       }
 
       _stateChangeViewport(e) {
         console.log(e.type, performance.now());
         const viewPort = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['viewPort'], viewPort, true);
+        const statePrst = Tools.setIn(this.state.persistent, ['viewPort'], viewPort, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
@@ -160,29 +231,29 @@
             };
           const currentSketch = Tools.mergeDeepWithNullToDelete(this.state.persistent.currentSketch, {
             shapes: colors
-          });
-          statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, true);
+          }, this._frozen);
+          statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, this._frozen);
         }
-        const stateSess = Tools.setIn(this.state.session, ["editColor"], color, true);
+        const stateSess = Tools.setIn(this.state.session, ["editColor"], color, this._frozen);
         this._updateState(statePrst, stateSess, e.type);
       }
 
       _stateShapeLocation(e) {
         console.log(e.type, performance.now());
         const shapeLocation = e.detail;
-        const stateSess = Tools.setIn(this.state.session, ["shapeRects", shapeLocation.key], shapeLocation.value, true);
+        const stateSess = Tools.setIn(this.state.session, ["shapeRects", shapeLocation.key], shapeLocation.value, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _stateNewSelected(e) {
         console.log(e.type, performance.now());
         const selected = e.detail;
-        let stateSess = Tools.setIn(this.state.session, ["selected"], selected);
+        let stateSess = Tools.setIn(this.state.session, ["selected"], selected, this._frozen);
         const keys = Object.keys(selected);
         if (keys && keys.length > 0) {
           const key = keys[0];
           const color = this.state.persistent.currentSketch.shapes[key].color;
-          stateSess = Tools.setIn(stateSess, ["editColor"], color);
+          stateSess = Tools.setIn(stateSess, ["editColor"], color, this._frozen);
         }
         this._updateState(this.state.persistent, stateSess, e.type);
       }

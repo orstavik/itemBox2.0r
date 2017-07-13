@@ -42,7 +42,7 @@ class Tools {
       if (c === a)
         continue;
       hasMutated = true;
-      if (c === undefined)
+      if (c === null)
         delete C[key];
       else
         C[key] = c;     //null is also set as a value in C

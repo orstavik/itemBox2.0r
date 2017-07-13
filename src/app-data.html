@@ -74,12 +74,12 @@
         // window.addEventListener('offline',            this._appOffline.bind(this));
         this._ref = firebase.database().ref();
 
-        this._writeUserSketch = _.throttle((sketch) => {
-          if (navigator.onLine && this.user) {
-            this.$.currentSketch.write(sketch);
-            console.log('sketch written');
-          }
-        }, 1000);
+        // this._writeUserSketch = _.throttle((sketch) => {
+        //   if (navigator.onLine && this.user) {
+        //     this.$.currentSketch.write(sketch);
+        //     console.log('sketch written');
+        //   }
+        // }, 1000);
       }
 
       async _appConnected() {
@@ -179,6 +179,15 @@
           });
       }
 
+      _writeUserSketch() {
+        this.debounce(() => {
+          if (navigator.onLine && this.user) {
+            this.$.currentSketch.write(this.currentSketch);
+            console.log('sketch written');
+          }
+        }, 200);
+      }
+
       async _readUserSketchList(user) {
         this.$.sketchList.setPath(`/viewSketchList/users/${user.uid}/sketches`);
         const sketchList = await this.$.sketchList.read();
@@ -226,6 +235,13 @@
           bubbles: true,
           detail: detail
         }));
+      }
+
+      debounce(callback, timeout) {
+        this._debouncer = Polymer.Debouncer.debounce(
+          this._debouncer, // initially undefined
+          Polymer.Async.timeOut.after(timeout),
+          callback);
       }
 
       navigate(url) {
