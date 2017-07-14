@@ -50,7 +50,7 @@ class Tools {
     if (!hasMutated)
       return freeze ? Object.freeze(A) : A;
     if (Object.keys(C).length === 0)
-      return undefined;
+      return {};
     return freeze ? Object.freeze(C) : C;
   }
 
