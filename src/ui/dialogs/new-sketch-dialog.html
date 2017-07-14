@@ -136,7 +136,7 @@
 
       _createSketch() {
         if (this.$.nameInput.validate()) {
-          this._fire("save-sketch", this.data);
+          this._fire("state-save-sketch", this.data);
           this._closeDialog();
         }
       }

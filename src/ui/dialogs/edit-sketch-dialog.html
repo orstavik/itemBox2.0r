@@ -104,7 +104,12 @@
 
       static get properties() {
         return {
-          data: Object
+          data: {
+            type: Object,
+            value: () => ({
+              info: {}
+            })
+          }
         }
       }
 
@@ -120,7 +125,7 @@
 
       _saveSketch() {
         if (this.$.nameInput.validate()) {
-          this._fire("edit-sketch", this.data);
+          this._fire("state-edit-sketch", this.data);
           this._closeDialog();
         }
       }
