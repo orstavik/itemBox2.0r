@@ -127,8 +127,21 @@
         const route = e.detail;
         let statePrst = this.state.persistent;
         const stateSess = Tools.setIn(this.state.session, ['route'], route, this._frozen);
-        if (statePrst)
-          statePrst = Tools.setIn(this.state.persistent, ['currentSketch', 'id'], route.segments[0]);
+        if (statePrst) {
+          statePrst = Tools.setIn(this.state.persistent, ['currentSketch', 'id'], route.segments[0], this._frozen);
+
+          if (statePrst.currentSketch.id !== 'unsaved') {
+            const sketchInfo = statePrst.sketchList[statePrst.currentSketch.id].info;
+            statePrst = Tools.setIn(statePrst, ['currentSketch', 'info'], sketchInfo, this._frozen);
+          } else {
+            statePrst = Tools.setIn(statePrst, ['currentSketch'], {
+              id: 'unsaved',
+              info: {
+                sketchName: 'unsaved'
+              }
+            }, this._frozen);
+          }
+        }
         this._updateState(statePrst, stateSess, e.type);
       }
 
@@ -150,7 +163,15 @@
         const stateSess = Tools.mergeDeepWithNullToDelete(this.state.session, this.initialStateSess, this._frozen);
 
         // set the currentSketch key from url
-        statePrst = Tools.setIn(statePrst, ['currentSketch', 'id'], stateSess.route.segments[0]);
+        if (stateSess.route.segments[0] !== 'unsaved')
+          statePrst = Tools.setIn(statePrst, ['currentSketch', 'id'], stateSess.route.segments[0], this._frozen);
+        else
+          statePrst = Tools.setIn(statePrst, ['currentSketch'], {
+            id: 'unsaved',
+            info: {
+              sketchName: 'unsaved'
+            }
+          }, this._frozen);
 
         // create snapshot
         this._updateState(statePrst, stateSess, e.type);
@@ -171,15 +192,19 @@
 
       _stateServerSketch(e) {
         console.log(e.type, performance.now());
-        const sketch = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['currentSketch'], sketch, this._frozen);
+        const sketchShapes = e.detail.shapes;
+        const statePrst = Tools.setIn(this.state.persistent, ['currentSketch', 'shapes'], sketchShapes, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
 
       _stateServerSketchList(e) {
         console.log(e.type, performance.now());
         const sketchList = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ['sketchList'], sketchList, this._frozen);
+        let statePrst = Tools.setIn(this.state.persistent, ['sketchList'], sketchList, this._frozen);
+        if (statePrst.currentSketch.id !== 'unsaved') {
+          const sketchInfo = sketchList[statePrst.currentSketch.id].info;
+          statePrst = Tools.setIn(statePrst, ['currentSketch', 'info'], sketchInfo, this._frozen);
+        }
         this._updateState(statePrst, this.state.session, e.type);
       }
 
@@ -197,7 +222,9 @@
         statePrst = Tools.setIn(statePrst, ["sketchList", key, 'info'], currentSketch.info, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
         this.fire('data-write-sketch', {
-          sketch: this.state.persistent.currentSketch,
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes
+          },
           key: key
         });
         this.fire('data-write-sketchlist', this.state.persistent.sketchList);
@@ -210,10 +237,6 @@
         let statePrst = Tools.setIn(this.state.persistent, ["currentSketch", "info"], sketch.info, this._frozen);
         statePrst = Tools.setIn(statePrst, ["sketchList", sketch.key, "info"], sketch.info, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
-        this.fire('data-write-sketch', {
-          sketch: this.state.persistent.currentSketch,
-          key: sketch.key
-        });
         this.fire('data-write-sketchlist', this.state.persistent.sketchList);
       }
 

@@ -43,7 +43,7 @@
           user: Object,
           sketchId: {
             type: String,
-            observer: '_readServerSketch'
+            observer: '_readSketch'
           },
           currentSketch: {
             type: Object,
@@ -92,7 +92,7 @@
         let currSketchPromise, sketchListPromise;
         if (this.user) {
           this.fire('state-user-in', this.user);
-          currSketchPromise = this._readServerSketch();
+          currSketchPromise = this._readSketch();
           sketchListPromise = this._readSketchList();
         } else {
           this.fire('state-user-out');
@@ -170,24 +170,18 @@
         return AppData.makeUser(user);
       }
 
-      async _readServerSketch() {
-        if (!this.user)
+      async _readSketch() {
+        if (!this.user || this.sketchId === 'unsaved')
           return;
         this.$.allSketches.setPath(`/sketches/${this.sketchId}`);
-        const currentSketch = await this.$.allSketches.read();
-        if (currentSketch) {
+        let currentSketch = await this.$.allSketches.read();
+        if (currentSketch)
           currentSketch.id = this.sketchId;
-          this.fire('state-server-sketch', currentSketch);
-        }
-        else {
-          this.fire('state-server-sketch', {
-            id: "unsaved",
-            info: {
-              sketchName: 'unsaved'
-            }
-          });
-          this.navigate('unsaved');
-        }
+        else
+          currentSketch = {
+            shapes: {}
+          }
+        this.fire('state-server-sketch', currentSketch);
       }
 
       async _readSketchList() {
@@ -197,15 +191,15 @@
           return this.fire('state-server-sketchlist', sketchList);
       }
 
-      _writeUserSketch() {
-        this.debounce(() => {
-          if (navigator.onLine && this.user && this.sketchId !== 'unsaved') {
-            this.$.allSketches.setPath(`sketches/${this.sketchId}`);
-            this.$.allSketches.write(this.currentSketch);
-            console.log('sketch written');
-          }
-        }, 200);
-      }
+      // _writeUserSketch() {
+      //   this.debounce(() => {
+      //     if (navigator.onLine && this.user && this.sketchId !== 'unsaved') {
+      //       this.$.allSketches.setPath(`sketches/${this.sketchId}`);
+      //       this.$.allSketches.write(this.currentSketch);
+      //       console.log('sketch written');
+      //     }
+      //   }, 200);
+      // }
 
       _writeSketchlist(e) {
         const sketchList = e.detail;
