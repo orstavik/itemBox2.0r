@@ -27,9 +27,12 @@
       }
 
       write(data) {
-        if (data && this.path && this.active) {
+        if (this.path && this.active) {
           const ref = firebase.database().ref(this.path);
-          ref.update(data);
+          if (data === null)
+            ref.remove();
+          else if (data)
+            ref.update(data);
         }
       }
 

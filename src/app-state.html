@@ -65,6 +65,10 @@
         window.addEventListener('state-server-sketch', this._stateServerSketch.bind(this));
         window.addEventListener('state-server-sketchlist', this._stateServerSketchList.bind(this));
 
+        window.addEventListener('state-save-sketch', this._stateSaveSketch.bind(this));
+        window.addEventListener('state-edit-sketch', this._stateEditSketch.bind(this));
+        window.addEventListener('state-delete-sketch', this._stateDeleteSketch.bind(this));
+
         window.addEventListener('state-add-shape', this._stateAddShape.bind(this));
         window.addEventListener('state-edit-shape', this._stateEditShape.bind(this));
         window.addEventListener('state-edit-shape-end', this._stateEditShapeEnd.bind(this));
@@ -75,6 +79,9 @@
 
         window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
         window.addEventListener("state-change-color", _.throttle(this._stateChangeColor.bind(this), 1000 / 30));
+
+        window.addEventListener("state-system-message", this._stateSystemMessage.bind(this));
+        window.addEventListener("state-help-message", this._stateHelpMessage.bind(this));
       }
 
       _updateState(statePrst, stateSess, action) {
@@ -100,8 +107,8 @@
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
 
-        if (action === 'state-change-settings')
-          newHistory.settings = [snap].concat(history.settings);
+        if (action === 'state-system-message')
+          newHistory.systemMessages = [snap].concat(history.systemMessages);
 
         return newHistory;
       }
@@ -117,8 +124,9 @@
       _stateChangeRoute(e) {
         console.log(e.type, performance.now());
         const route = e.detail;
+        let statePrst = this.state.persistent;
         const stateSess = Tools.setIn(this.state.session, ['route'], route, this._frozen);
-        this._updateState(this.state.persistent, stateSess, e.type);
+        this._updateState(statePrst, stateSess, e.type);
       }
 
       _appConnected(e) {
@@ -128,10 +136,11 @@
         let statePrst = this.state.persistent;
         if (!statePrst) {
           const storedState = this._getState();
-          if (storedState)
+          if (storedState) {
             statePrst = Tools.deepFreeze(Object.assign(storedState));
-          else
-            statePrst = Tools.deepFreeze(Object.assign(this.initialStatePrst));
+          } else {
+            statePrst = Tools.deepFreeze(Object.assign(this.initialStatePrst))
+          }
         }
 
         // instantiate state.session
@@ -168,6 +177,54 @@
         this._updateState(statePrst, this.state.session, e.type);
       }
 
+      _stateSaveSketch(e) {
+        console.log(e.type, performance.now());
+        //getData for the future
+        const sketch = e.detail;
+        let currentSketch = {};
+        currentSketch.shapes = sketch.clear ? null : (this.state.persistent.currentSketch.shapes || null);
+        const key = Tools.genKey();
+        //unset the old serverSketch Data and set the new sketchID
+        currentSketch.info = sketch.info;
+        currentSketch.info.created = new Date().getTime();
+        let statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, this._frozen);
+        statePrst = Tools.setIn(statePrst, ["sketchList", key, 'info'], currentSketch.info, this._frozen);
+        this._updateState(statePrst, this.state.session, e.type);
+        this.fire('data-write-sketch', {
+          sketch: this.state.persistent.currentSketch,
+          key: key
+        });
+        this.fire('data-write-sketchlist', this.state.persistent.sketchList);
+        this.navigate(key);
+      }
+
+      _stateEditSketch(e) {
+        console.log(e.type, performance.now());
+        const sketch = e.detail;
+        let statePrst = Tools.setIn(this.state.persistent, ["currentSketch", "info"], sketch.info, this._frozen);
+        statePrst = Tools.setIn(statePrst, ["sketchList", sketch.key, "info"], sketch.info, this._frozen);
+        this._updateState(statePrst, this.state.session, e.type);
+        this.fire('data-write-sketch', {
+          sketch: this.state.persistent.currentSketch,
+          key: sketch.key
+        });
+        this.fire('data-write-sketchlist', this.state.persistent.sketchList);
+      }
+
+      _stateDeleteSketch(e) {
+        console.log(e.type, performance.now());
+        const sketch = e.detail;
+        const statePrst = Tools.setIn(this.state.persistent, ["sketchList", sketch.key], null, this._frozen);
+        this._updateState(statePrst, this.state.session, e.type);
+        this.fire('data-write-sketch', {
+          sketch: null,
+          key: sketch.key
+        });
+        this.fire('data-write-sketchlist', this.state.persistent.sketchList);
+        if (this.state.session.route.segments[0] === sketch.key)
+          this.navigate('unsaved');
+      }
+
       _stateAddShape(e) {
         console.log(e.type, performance.now());
         const shapeMatrix = e.detail;
@@ -176,6 +233,10 @@
           color: this.state.session.editColor
         }, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
+        this.fire('write-server-sketch', {
+          sketch: this.state.persistent.currentSketch,
+          key: this.state.session.route.segments[0]
+        });
       }
 
       _stateEditShape(e) {
@@ -187,6 +248,10 @@
           }
         }, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
+        this.fire('write-server-sketch', {
+          sketch: this.state.persistent.currentSketch,
+          key: this.state.session.route.segments[0]
+        });
       }
 
       _stateEditShapeEnd(e) {
@@ -206,10 +271,14 @@
           }
         }, this._frozen);
         let stateSess = Tools.setIn(this.state.session, ["selected"], {}, this._frozen);
-        stateSess = Tools.mergeDeepWithNullToDelete(this.state.session, {
+        stateSess = Tools.mergeDeepWithNullToDelete(stateSess, {
           shapeRects: deletes
         }, this._frozen);
         this._updateState(statePrst, stateSess, e.type);
+        this.fire('write-server-sketch', {
+          sketch: this.state.persistent.currentSketch,
+          key: this.state.session.route.segments[0]
+        });
       }
 
       _stateChangeViewport(e) {
@@ -256,6 +325,25 @@
           stateSess = Tools.setIn(stateSess, ["editColor"], color, this._frozen);
         }
         this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      _stateSystemMessage(e) {
+        console.log(e.type, performance.now());
+        const message = e.detail;
+        const stateSess = Tools.setIn(this.state.session, ["systemMessage"], message, this._frozen);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      _stateHelpMessage(e) {
+        console.log(e.type, performance.now());
+        const message = e.detail;
+        const stateSess = Tools.setIn(this.state.session, ["helpMessage"], message, this._frozen);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      navigate(url) {
+        history.pushState({}, null, url);
+        window.dispatchEvent(new CustomEvent('location-changed'));
       }
 
       fire(name, detail) {

@@ -22,9 +22,7 @@
     <controller-history id="history" state="{{state}}" now="[[elaborateSnap]]"></controller-history>
     <app-data id="data" state="[[state]]"
               user="[[newState.persistent.user]]"
-              sketch-id="[[newState.session.route.segments.0]]"
-              current-sketch="[[newState.persistent.currentSketch]]"
-              sketch-list="[[newState.persistent.sketchList]]"></app-data>
+              sketch-id="[[newState.session.route.segments.0]]"></app-data>
     <controller-ui id="ui" state="[[state]]" new-state="[[newState]]"></controller-ui>
   </template>
   <script>
@@ -68,6 +66,7 @@
 
       constructor() {
         super();
+
         // this.addEventListener("new-user", this._newUser.bind(this));
         // this.addEventListener("new-sketch-list", this._newSketchListServer.bind(this));
         this.addEventListener("new-sketch-data", this._newSketchData.bind(this));

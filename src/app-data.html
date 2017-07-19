@@ -11,17 +11,18 @@
       }
     </style>
 
-    <firebase-on id="activeSketchDB"
+    <!-- <firebase-on id="activeSketchDB"
                  active="[[_validateName(newState.persistent.user.uid, newState.session.route.segments.0)]]"
                  result="{{activeSketchServed}}"
                  path="/users/[[newState.persistent.user.uid]]/sketches/[[newState.session.route.segments.0]]"></firebase-on>
     
     <firebase-on id="activeSketchListDB" write-only
                  active="[[_BOOL(newState.persistent.user.uid)]]"
-                 path="/users/[[newState.persistent.user.uid]]/sketches"></firebase-on>
+                 path="/users/[[newState.persistent.user.uid]]/sketches"></firebase-on> -->
 
     <fire-data id="currentSketch"></fire-data>
     <fire-data id="sketchList"></fire-data>
+    <fire-data id="allSketches"></fire-data>
 
     <fire-auth id="auth"></fire-auth>
 
@@ -42,15 +43,15 @@
           user: Object,
           sketchId: {
             type: String,
-            observer: '_readUserSketch'
+            observer: '_readServerSketch'
           },
           currentSketch: {
             type: Object,
-            observer: "_writeUserSketch"
+            // observer: "_writeUserSketch"
           },
           sketchList: {
             type: Object,
-            // observer: "_writeUserSketch"
+            // observer: "_writeUserSketchList"
           },
           // sketchFluid: {
           //   type: Object,
@@ -72,6 +73,9 @@
         window.addEventListener('app-connected', this._appConnected.bind(this));
         // window.addEventListener('online',             this._appOnline.bind(this));
         // window.addEventListener('offline',            this._appOffline.bind(this));
+
+        window.addEventListener('data-write-sketch', this._writeSketch.bind(this));
+        window.addEventListener('data-write-sketchlist', this._writeSketchlist.bind(this));
         this._ref = firebase.database().ref();
 
         // this._writeUserSketch = _.throttle((sketch) => {
@@ -83,13 +87,13 @@
       }
 
       async _appConnected() {
-        const user = await this._checkUser();
+        this.user = await this._checkUser();
 
         let currSketchPromise, sketchListPromise;
-        if (user) {
-          this.fire('state-user-in', user);
-          currSketchPromise = this._readUserSketch(this.sketchId);
-          sketchListPromise = this._readUserSketchList(user);
+        if (this.user) {
+          this.fire('state-user-in', this.user);
+          currSketchPromise = this._readServerSketch();
+          sketchListPromise = this._readSketchList();
         } else {
           this.fire('state-user-out');
           currSketchPromise = Promise.resolve();
@@ -98,6 +102,7 @@
 
         await sketchListPromise;
         this.fire('app-data-loaded');
+        this.fire('state-system-message', 'All data loaded!');
       }
 
       // _getFluidActiveSketch(sketchFluid) {
@@ -164,35 +169,58 @@
         return AppData.makeUser(user);
       }
 
-      async _readUserSketch(sketchId) {
+      async _readServerSketch() {
         if (!this.user)
           return;
-        this.$.currentSketch.setPath(`/users/${this.user.uid}/sketches/${sketchId}`);
-        const currentSketch = await this.$.currentSketch.read();
-        if (currentSketch)
+        this.$.allSketches.setPath(`/sketches/${this.sketchId}`);
+        const currentSketch = await this.$.allSketches.read();
+        if (currentSketch) {
           this.fire('state-server-sketch', currentSketch);
-        else
+        }
+        else {
           this.fire('state-server-sketch', {
             info: {
               sketchName: 'unsaved'
             }
           });
+          this.navigate('unsaved');
+        }
+      }
+
+      async _readSketchList() {
+        this.$.sketchList.setPath(`/users/${this.user.uid}/sketches`);
+        const sketchList = await this.$.sketchList.read();
+        if (sketchList)
+          return this.fire('state-server-sketchlist', sketchList);
       }
 
       _writeUserSketch() {
         this.debounce(() => {
-          if (navigator.onLine && this.user) {
-            this.$.currentSketch.write(this.currentSketch);
+          if (navigator.onLine && this.user && this.sketchId !== 'unsaved') {
+            this.$.allSketches.setPath(`sketches/${this.sketchId}`);
+            this.$.allSketches.write(this.currentSketch);
             console.log('sketch written');
           }
         }, 200);
       }
 
-      async _readUserSketchList(user) {
-        this.$.sketchList.setPath(`/viewSketchList/users/${user.uid}/sketches`);
-        const sketchList = await this.$.sketchList.read();
-        if (sketchList)
-          return this.fire('state-server-sketchlist', sketchList);
+      _writeSketchlist(e) {
+        const sketchList = e.detail;
+        if (navigator.onLine && this.user) {
+          this.$.sketchList.write(sketchList);
+          this.$.sketchList.setPath(`/users/${this.user.uid}/sketches`);
+          console.log('sketchlist written');
+        }
+      }
+
+      _writeSketch(e) {
+        const key = e.detail.key;
+        const sketch = e.detail.sketch;
+        if (key !== 'unsaved') {
+          this.$.allSketches.setPath(`/sketches/${key}`);
+          this.$.allSketches.write(sketch);
+          console.log('sketch written');
+        }
       }
 
       saveChanges(sketchFluid) {
