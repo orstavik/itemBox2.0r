@@ -11,15 +11,6 @@
       }
     </style>
 
-    <!-- <firebase-on id="activeSketchDB"
-                 active="[[_validateName(newState.persistent.user.uid, newState.session.route.segments.0)]]"
-                 result="{{activeSketchServed}}"
-                 path="/users/[[newState.persistent.user.uid]]/sketches/[[newState.session.route.segments.0]]"></firebase-on>
-    
-    <firebase-on id="activeSketchListDB" write-only
-                 active="[[_BOOL(newState.persistent.user.uid)]]"
-                 path="/users/[[newState.persistent.user.uid]]/sketches"></firebase-on> -->
-
     <fire-data id="currentSketch"></fire-data>
     <fire-data id="sketchList"></fire-data>
     <fire-data id="allSketches"></fire-data>
@@ -35,37 +26,13 @@
 
       static get properties() {
         return {
-          activeSketchServed: {
-            type: Object,
-            observer: "_activeSketchServedChanged"
-          },
           state: Object,
           user: Object,
           sketchId: {
             type: String,
             observer: '_readSketch'
-          },
-          currentSketch: {
-            type: Object,
-            // observer: "_writeUserSketch"
-          },
-          sketchList: {
-            type: Object,
-            // observer: "_writeUserSketchList"
-          },
-          // sketchFluid: {
-          //   type: Object,
-          //   computed: "_getFluidActiveSketch(state.now.sketchFluid)",
-          //   observer: "saveChangesDebounced"
-          // },
-          actionType: String
+          }
         };
-      }
-
-      static get observers() {
-        return [
-          "saveChangesDebounced(state.now.sketchFluid)",
-        ]
       }
 
       constructor() {
@@ -104,24 +71,6 @@
         this.fire('app-data-loaded');
         this.fire('state-system-message', 'All data loaded!');
       }
-
-      // _getFluidActiveSketch(sketchFluid) {
-      //   return sketchFluid;
-      // }
-
-      _sketchListServedChanged(sketchList) {
-        this.fire("new-sketch-list", sketchList);
-      }
-
-      _activeSketchServedChanged(sketch) {
-        this.fire("new-sketch-data", sketch);
-      }
-
-      //      _noDataForSketch(){
-      //        this.fire("system-message", "No data found for this user: "+ this.state.now.user.displayName + "\n for this sketchID: "+ this.state.now.session.sketchID);
-      //this.fire("state-change-route", undefined);
-      //      }
-      //
 
       async signIn() {
         try {
@@ -191,16 +140,6 @@
           return this.fire('state-server-sketchlist', sketchList);
       }
 
-      // _writeUserSketch() {
-      //   this.debounce(() => {
-      //     if (navigator.onLine && this.user && this.sketchId !== 'unsaved') {
-      //       this.$.allSketches.setPath(`sketches/${this.sketchId}`);
-      //       this.$.allSketches.write(this.currentSketch);
-      //       console.log('sketch written');
-      //     }
-      //   }, 200);
-      // }
-
       _writeSketchlist(e) {
         const sketchList = e.detail;
         if (navigator.onLine && this.user) {
@@ -211,47 +150,15 @@
       }
 
       _writeSketch(e) {
-        const key = e.detail.key;
-        const sketch = e.detail.sketch;
-        if (key !== 'unsaved') {
-          this.$.allSketches.setPath(`/sketches/${key}`);
-          this.$.allSketches.write(sketch);
-          console.log('sketch written');
-        }
-      }
-
-      saveChanges(sketchFluid) {
-        if (sketchFluid)
-          this.$.activeSketchDB.updateMerge(sketchFluid);
-      }
-
-      saveChangesList(sketchFluidList) {
-        if (sketchFluidList)
-          this.$.activeSketchListDB.updateMerge(sketchFluidList);
-      }
-
-      saveChangesDebounced(fluidSnap) {
-        this._saveDebouncer = Polymer.Debouncer.debounce(
-          this._saveDebouncer,
-          Polymer.Async.timeOut.after(33),
-          this.saveChanges.bind(this, fluidSnap)
-        );
-      }
-
-      _validateName(user, name) {
-        return user && name && name !== "unsaved";
-      }
-
-      _BOOL(one) {
-        return !!one;
-      }
-
-      _AND(one, two) {
-        return !!one && !!two;
-      }
-
-      _OR(one, two) {
-        return !!one || !!two;
+        this.debounce(() => {
+          const key = e.detail.key;
+          const sketch = e.detail.sketch;
+          if (key !== 'unsaved') {
+            this.$.allSketches.setPath(`/sketches/${key}`);
+            this.$.allSketches.write(sketch);
+            console.log('sketch written');
+          }
+        }, 200);
       }
 
       fire(name, detail) {

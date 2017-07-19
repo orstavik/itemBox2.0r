@@ -261,9 +261,13 @@
           matrix: e.detail,
           color: this.state.session.editColor
         }, this._frozen);
+
         this._updateState(statePrst, this.state.session, e.type);
-        this.fire('write-server-sketch', {
-          sketch: this.state.persistent.currentSketch,
+        
+        this.fire('data-write-sketch', {
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes,
+          },
           key: this.state.persistent.currentSketch.id
         });
       }
@@ -276,9 +280,13 @@
             shapes: shapes
           }
         }, this._frozen);
+
         this._updateState(statePrst, this.state.session, e.type);
-        this.fire('write-server-sketch', {
-          sketch: this.state.persistent.currentSketch,
+
+        this.fire('data-write-sketch', {
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes,
+          },
           key: this.state.persistent.currentSketch.id
         });
       }
@@ -286,7 +294,15 @@
       _stateEditShapeEnd(e) {
         console.log(e.type, performance.now());
         const statePrst = Tools.deepFreeze(Object.assign(this.state.persistent));
+
         this._updateState(statePrst, this.state.session, e.type);
+
+        this.fire('data-write-sketch', {
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes,
+          },
+          key: this.state.persistent.currentSketch.id
+        });
       }
 
       _stateDeleteShape(e) {
@@ -303,9 +319,13 @@
         stateSess = Tools.mergeDeepWithNullToDelete(stateSess, {
           shapeRects: deletes
         }, this._frozen);
+
         this._updateState(statePrst, stateSess, e.type);
-        this.fire('write-server-sketch', {
-          sketch: this.state.persistent.currentSketch,
+
+        this.fire('data-write-sketch', {
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes,
+          },
           key: this.state.persistent.currentSketch.id
         });
       }
