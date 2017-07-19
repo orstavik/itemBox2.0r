@@ -24,6 +24,7 @@
             value: () => ({
               sketchList: {},
               currentSketch: {
+                id: "unsaved",
                 info: {
                   sketchName: 'unsaved'
                 }
@@ -126,6 +127,8 @@
         const route = e.detail;
         let statePrst = this.state.persistent;
         const stateSess = Tools.setIn(this.state.session, ['route'], route, this._frozen);
+        if (statePrst)
+          statePrst = Tools.setIn(this.state.persistent, ['currentSketch', 'id'], route.segments[0]);
         this._updateState(statePrst, stateSess, e.type);
       }
 
@@ -145,6 +148,9 @@
 
         // instantiate state.session
         const stateSess = Tools.mergeDeepWithNullToDelete(this.state.session, this.initialStateSess, this._frozen);
+
+        // set the currentSketch key from url
+        statePrst = Tools.setIn(statePrst, ['currentSketch', 'id'], stateSess.route.segments[0]);
 
         // create snapshot
         this._updateState(statePrst, stateSess, e.type);
@@ -221,7 +227,7 @@
           key: sketch.key
         });
         this.fire('data-write-sketchlist', this.state.persistent.sketchList);
-        if (this.state.session.route.segments[0] === sketch.key)
+        if (this.state.persistent.currentSketch.id === sketch.key)
           this.navigate('unsaved');
       }
 
@@ -235,7 +241,7 @@
         this._updateState(statePrst, this.state.session, e.type);
         this.fire('write-server-sketch', {
           sketch: this.state.persistent.currentSketch,
-          key: this.state.session.route.segments[0]
+          key: this.state.persistent.currentSketch.id
         });
       }
 
@@ -250,7 +256,7 @@
         this._updateState(statePrst, this.state.session, e.type);
         this.fire('write-server-sketch', {
           sketch: this.state.persistent.currentSketch,
-          key: this.state.session.route.segments[0]
+          key: this.state.persistent.currentSketch.id
         });
       }
 
@@ -277,7 +283,7 @@
         this._updateState(statePrst, stateSess, e.type);
         this.fire('write-server-sketch', {
           sketch: this.state.persistent.currentSketch,
-          key: this.state.session.route.segments[0]
+          key: this.state.persistent.currentSketch.id
         });
       }
 

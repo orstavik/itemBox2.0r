@@ -109,7 +109,7 @@
 
     <paper-material id="sketchNamePaper" hidden$="[[!newState.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[newState.persistent.currentSketch.info.sketchName]]</div>
-      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.session.route.segments.0)]]">
+      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.persistent.currentSketch.id)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
@@ -130,7 +130,7 @@
 
     <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(newState.persistent.user)]]">
       <app-login user="[[newState.persistent.user]]">
-        <app-sketchlist uid="[[newState.persistent.user.uid]]" sketches="[[newState.persistent.sketchList]]" current-sketch="[[newState.session.route.segments.0]]"></app-sketchListMerged>
+        <app-sketchlist uid="[[newState.persistent.user.uid]]" sketches="[[newState.persistent.sketchList]]" current-sketch="[[newState.persistent.currentSketch.id]]"></app-sketchListMerged>
       </app-login>
     </account-button>
 

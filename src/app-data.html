@@ -143,6 +143,7 @@
           this.navigate('unsaved');
           this.fire('state-user-out');
           this.fire('state-server-sketch', {
+            id: "unsaved",
             info: {
               sketchName: 'unsaved'
             }
@@ -175,10 +176,12 @@
         this.$.allSketches.setPath(`/sketches/${this.sketchId}`);
         const currentSketch = await this.$.allSketches.read();
         if (currentSketch) {
+          currentSketch.id = this.sketchId;
           this.fire('state-server-sketch', currentSketch);
         }
         else {
           this.fire('state-server-sketch', {
+            id: "unsaved",
             info: {
               sketchName: 'unsaved'
             }
