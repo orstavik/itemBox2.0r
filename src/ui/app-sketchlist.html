@@ -3,7 +3,6 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/social-icons.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
-
 <link rel="import" href="../styles/css-reset.html">
 
 <dom-module id="app-sketchlist">
@@ -132,6 +131,7 @@
         </div>
       </paper-material>
     </template>
+
   </template>
   <script>
 
@@ -190,13 +190,11 @@
       }
 
       _editSketch(e) {
-        let key = e.target.dataset.key;
-        this._fire("edit-sketch-dialog", new SketchInfo(key, this.sketches[key]));
+        this._fire("edit-sketch-dialog", e.target.dataset.key);
       }
 
       _deleteSketch(e) {
-        let key = e.target.dataset.key;
-        this._fire("delete-sketch-dialog", new SketchInfo(key, this.sketches[key]));
+        this._fire("delete-sketch-dialog", e.target.dataset.key);
       }
 
       _isCurrent(current, key) {
