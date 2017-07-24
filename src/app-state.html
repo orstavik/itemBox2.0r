@@ -108,6 +108,9 @@
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
 
+        if (action === 'state-edit-shape-end' || action === 'state-add-shape' || action === 'state-delete-shape')
+          newHistory.sketchEdit = [snap].concat(history.sketchEdit);
+
         if (action === 'state-system-message')
           newHistory.systemMessages = [snap].concat(history.systemMessages);
 
@@ -215,6 +218,7 @@
         let currentSketch = {};
         currentSketch.shapes = sketch.clear ? null : (this.state.persistent.currentSketch.shapes || null);
         const key = Tools.genKey();
+        currentSketch.id = key;
         //unset the old serverSketch Data and set the new sketchID
         currentSketch.info = sketch.info;
         currentSketch.info.created = new Date().getTime();
@@ -225,7 +229,7 @@
           sketch: {
             shapes: this.state.persistent.currentSketch.shapes
           },
-          key: key
+          id: key
         });
         this.fire('data-write-sketchlist', this.state.persistent.sketchList);
         this.navigate(key);
@@ -247,7 +251,7 @@
         this._updateState(statePrst, this.state.session, e.type);
         this.fire('data-write-sketch', {
           sketch: null,
-          key: sketch.key
+          id: sketch.key
         });
         this.fire('data-write-sketchlist', this.state.persistent.sketchList);
         if (this.state.persistent.currentSketch.id === sketch.key)
@@ -263,12 +267,12 @@
         }, this._frozen);
 
         this._updateState(statePrst, this.state.session, e.type);
-        
+
         this.fire('data-write-sketch', {
           sketch: {
             shapes: this.state.persistent.currentSketch.shapes,
           },
-          key: this.state.persistent.currentSketch.id
+          id: this.state.persistent.currentSketch.id
         });
       }
 
@@ -287,7 +291,7 @@
           sketch: {
             shapes: this.state.persistent.currentSketch.shapes,
           },
-          key: this.state.persistent.currentSketch.id
+          id: this.state.persistent.currentSketch.id
         });
       }
 
@@ -301,7 +305,7 @@
           sketch: {
             shapes: this.state.persistent.currentSketch.shapes,
           },
-          key: this.state.persistent.currentSketch.id
+          id: this.state.persistent.currentSketch.id
         });
       }
 
@@ -326,7 +330,7 @@
           sketch: {
             shapes: this.state.persistent.currentSketch.shapes,
           },
-          key: this.state.persistent.currentSketch.id
+          id: this.state.persistent.currentSketch.id
         });
       }
 
@@ -353,7 +357,15 @@
           statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, this._frozen);
         }
         const stateSess = Tools.setIn(this.state.session, ["editColor"], color, this._frozen);
+        
         this._updateState(statePrst, stateSess, e.type);
+
+        this.fire('data-write-sketch', {
+          sketch: {
+            shapes: this.state.persistent.currentSketch.shapes,
+          },
+          id: this.state.persistent.currentSketch.id
+        });
       }
 
       _stateShapeLocation(e) {

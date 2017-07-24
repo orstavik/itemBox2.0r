@@ -43,7 +43,6 @@
 
         window.addEventListener('data-write-sketch', this._writeSketch.bind(this));
         window.addEventListener('data-write-sketchlist', this._writeSketchlist.bind(this));
-        this._ref = firebase.database().ref();
 
         // this._writeUserSketch = _.throttle((sketch) => {
         //   if (navigator.onLine && this.user) {
@@ -151,10 +150,10 @@
 
       _writeSketch(e) {
         this.debounce(() => {
-          const key = e.detail.key;
+          const id = e.detail.id;
           const sketch = e.detail.sketch;
-          if (key !== 'unsaved') {
-            this.$.allSketches.setPath(`/sketches/${key}`);
+          if (id !== 'unsaved') {
+            this.$.allSketches.setPath(`/sketches/${id}`);
             this.$.allSketches.write(sketch);
             console.log('sketch written');
           }

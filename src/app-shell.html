@@ -16,14 +16,13 @@
     </style>
 
     <app-state state="{{newState}}"></app-state>
-
     <app-router default-url="unsaved"></app-router>
-
-    <controller-history id="history" state="{{state}}" now="[[elaborateSnap]]"></controller-history>
     <app-data id="data" state="[[state]]"
               user="[[newState.persistent.user]]"
               sketch-id="[[newState.persistent.currentSketch.id]]"></app-data>
+
     <controller-ui id="ui" state="[[state]]" new-state="[[newState]]"></controller-ui>
+    
   </template>
   <script>
     class AppShell extends Polymer.Element {
