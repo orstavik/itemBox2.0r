@@ -19,10 +19,10 @@
       }
     </style>
 
-    <coordinate-lines view-port="[[newState.persistent.viewPort]]"></coordinate-lines>
-    <shape-box id="shapeBox" shapes="[[selectedShapes]]" view-port="[[newState.persistent.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" new-state="[[newState]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
-      <space-camera id="camera" view-port="[[newState.persistent.viewPort]]" moveable$="[[moveable]]">
+    <coordinate-lines view-port="[[state.persistent.viewPort]]"></coordinate-lines>
+    <shape-box id="shapeBox" shapes="[[selectedShapes]]" view-port="[[state.persistent.viewPort]]"></shape-box>
+    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
+      <space-camera id="camera" view-port="[[state.persistent.viewPort]]" moveable$="[[moveable]]">
         <template is="dom-repeat" items="[[shapesArray]]">
           <shape-object id$="[[item.key]]"
                         selectable
@@ -45,7 +45,6 @@
       static get properties() {
         return {
           state: Object,
-          newState: Object,
           heldKeys: Object,
           moveable: {
             type: Boolean,
@@ -54,12 +53,12 @@
           },
           selectedShapes: {                        //partial now: the selected shapes in the active sketch
             type: Object,
-            computed: "_makeSelectedShapes(newState.persistent.currentSketch, newState.session.selected, newState.session.shapeRects)"
+            computed: "_makeSelectedShapes(state.persistent.currentSketch, state.session.selected, state.session.shapeRects)"
           },
           shapesArray: {
             type: Array,
             // computed: "_toArray(state.now.sketchMerged.shapes)",
-            computed: "_toArray(newState.persistent.currentSketch.shapes)",
+            computed: "_toArray(state.persistent.currentSketch.shapes)",
           }
         }
       }
@@ -81,7 +80,7 @@
       }
 
       _newShape(e) {
-        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.newState.persistent.viewPort, e.x || e.detail.x, e.y || e.detail.y);
+        let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.persistent.viewPort, e.x || e.detail.x, e.y || e.detail.y);
         this.fire("state-add-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
       }
 

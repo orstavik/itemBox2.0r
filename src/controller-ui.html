@@ -118,11 +118,11 @@
 
     <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener>
 
-    <shape-plain id="shapePlain" state="[[state]]" new-state="[[newState]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
+    <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
 
-    <paper-material id="sketchNamePaper" hidden$="[[!newState.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
-      <div id="sketchName">[[newState.persistent.currentSketch.info.sketchName]]</div>
-      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(newState.persistent.currentSketch.id)]]">
+    <paper-material id="sketchNamePaper" hidden$="[[!state.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
+      <div id="sketchName">[[state.persistent.currentSketch.info.sketchName]]</div>
+      <div id="saveButton" on-tap="_saveSketchDialog" hidden$="[[_isNotUnsaved(state.session.route.segments.0)]]">
         <paper-ripple></paper-ripple>
         <iron-icon icon="add"></iron-icon>
       </div>
@@ -130,20 +130,20 @@
 
     <tools-button id="tools" icon="icons:build">
       <tools-item-button id="buttA" menu="Json" child-button icon="icons:settings-ethernet" slot="a">
-        <object-viewer json="[[newState]]" name="state"></object-viewer>
+        <object-viewer json="[[state]]" name="state"></object-viewer>
       </tools-item-button>
       <tools-item-button id="buttB" menu="Palette" child-button icon="image:color-lens" slot="b">
-        <color-palette id="palette" color="[[newState.session.editColor]]"></color-palette>
+        <color-palette id="palette" color="[[state.session.editColor]]"></color-palette>
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
-        <app-history history="[[newState.history.sketchEdit]]" parent-active="[[historyActive]]"></app-history>
+        <app-history history="[[state.history.sketchEdit]]" parent-active="[[historyActive]]"></app-history>
       </tools-item-button>
     </tools-button>
 
-    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(newState.persistent.user)]]">
-      <app-login user="[[newState.persistent.user]]">
-        <app-sketchlist uid="[[newState.persistent.user.uid]]" sketches="[[newState.persistent.sketchList]]" current-sketch="[[newState.persistent.currentSketch.id]]"></app-sketchListMerged>
+    <account-button id="account" class="top right" icon="account-circle" signed$="[[_BOOL(state.persistent.user)]]">
+      <app-login user="[[state.persistent.user]]">
+        <app-sketchlist uid="[[state.persistent.user.uid]]" sketches="[[state.persistent.sketchList]]" current-sketch="[[state.session.route.segments.0]]"></app-sketchListMerged>
       </app-login>
     </account-button>
 
@@ -179,8 +179,8 @@
     <app-dialog id="editDialog">
       <span slot="title">Edit Sketch</span>
 
-      <paper-input slot="content" id="editSketchName" label="Sketch Name" required error-message="Name your sketch!" value="[[newState.persistent.currentSketch.info.sketchName]]"></paper-input>
-      <paper-radio-group slot="content" id="editSketchPermissions" selected="[[newState.persistent.currentSketch.info.permissions]]">
+      <paper-input slot="content" id="editSketchName" label="Sketch Name" required error-message="Name your sketch!" value="[[state.persistent.currentSketch.info.sketchName]]"></paper-input>
+      <paper-radio-group slot="content" id="editSketchPermissions" selected="[[state.persistent.currentSketch.info.permissions]]">
         <paper-radio-button name="private">Private</paper-radio-button>
         <paper-radio-button name="read">Public(read)</paper-radio-button>
         <paper-radio-button name="edit">Public(edit)</paper-radio-button>
@@ -193,14 +193,14 @@
     <app-dialog id="deleteDialog">
       <span slot="title">Delete Sketch</span>
 
-      <span slot="content" style="font-size: 14px;">Do you really want to delete "[[newState.persistent.currentSketch.info.sketchName]]"?</span>
+      <span slot="content" style="font-size: 14px;">Do you really want to delete "[[state.persistent.currentSketch.info.sketchName]]"?</span>
 
       <paper-button id="close" slot="actions" on-tap="_closeDialog">Close</paper-button>
       <paper-button id="submit" slot="actions" on-tap="_submitDeleteDialog">Delete</paper-button>
     </app-dialog>
 
-    <messages-help messages="[[newState.history.helpMessages]]" count=3></messages-help>
-    <messages-system messages="[[newState.history.systemMessages]]" count=5></messages-system>
+    <messages-help messages="[[state.history.helpMessages]]" count=3></messages-help>
+    <messages-system messages="[[state.history.systemMessages]]" count=5></messages-system>
   </template>
 
   <script>
@@ -212,8 +212,6 @@
       static get properties() {
         return {
           state: Object,
-          newState: Object,
-          history: Array,
           firebase: {
             type: Object,
             value: () => firebase

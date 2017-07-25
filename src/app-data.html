@@ -11,9 +11,9 @@
       }
     </style>
 
-    <fire-data id="currentSketch"></fire-data>
+    <!-- <fire-data id="currentSketch"></fire-data>
     <fire-data id="sketchList"></fire-data>
-    <fire-data id="allSketches"></fire-data>
+    <fire-data id="allSketches"></fire-data> -->
 
     <fire-auth id="auth"></fire-auth>
 
@@ -30,7 +30,7 @@
           user: Object,
           sketchId: {
             type: String,
-            observer: '_readSketch'
+            observer: '_readCurrentSketch'
           }
         };
       }
@@ -42,14 +42,6 @@
         // window.addEventListener('offline',            this._appOffline.bind(this));
 
         window.addEventListener('data-write-sketch', this._writeSketch.bind(this));
-        window.addEventListener('data-write-sketchlist', this._writeSketchlist.bind(this));
-
-        // this._writeUserSketch = _.throttle((sketch) => {
-        //   if (navigator.onLine && this.user) {
-        //     this.$.currentSketch.write(sketch);
-        //     console.log('sketch written');
-        //   }
-        // }, 1000);
       }
 
       async _appConnected() {
@@ -58,7 +50,7 @@
         let currSketchPromise, sketchListPromise;
         if (this.user) {
           this.fire('state-user-in', this.user);
-          currSketchPromise = this._readSketch();
+          currSketchPromise = this._readCurrentSketch();
           sketchListPromise = this._readSketchList();
         } else {
           this.fire('state-user-out');
@@ -66,7 +58,7 @@
           sketchListPromise = Promise.resolve();
         }
 
-        await sketchListPromise;
+        await currSketchPromise, await sketchListPromise;
         this.fire('app-data-loaded');
         this.fire('state-system-message', 'All data loaded!');
       }
@@ -118,44 +110,47 @@
         return AppData.makeUser(user);
       }
 
-      async _readSketch() {
+      async _readCurrentSketch() {
         if (!this.user || this.sketchId === 'unsaved')
           return;
-        this.$.allSketches.setPath(`/sketches/${this.sketchId}`);
-        let currentSketch = await this.$.allSketches.read();
-        if (currentSketch)
-          currentSketch.id = this.sketchId;
-        else
-          currentSketch = {
-            shapes: {}
-          }
+
+        // read data
+        const ref = `/users/${this.user.uid}/sketches/${this.sketchId}`;
+        const snapshot = await firebase.database().ref(ref).once('value');
+        const currentSketch = snapshot.val();
         this.fire('state-server-sketch', currentSketch);
+
+        // add new listener
+        firebase.database().ref(ref).on('value', snapshot => {
+          if (snapshot.key === this.sketchId)
+            this.fire('state-server-sketch', snapshot.val());
+        });
       }
 
       async _readSketchList() {
-        this.$.sketchList.setPath(`/users/${this.user.uid}/sketches`);
-        const sketchList = await this.$.sketchList.read();
-        if (sketchList)
-          return this.fire('state-server-sketchlist', sketchList);
-      }
+        if (!this.user)
+          return;
+        const ref = `users/${this.user.uid}/__sketchesOnlyInfo`;
+        const snapshot = await firebase.database().ref(ref).once('value');
+        const sketchList = snapshot.val();
+        this.fire('state-server-sketchlist', sketchList);
 
-      _writeSketchlist(e) {
-        const sketchList = e.detail;
-        if (navigator.onLine && this.user) {
-          this.$.sketchList.write(sketchList);
-          this.$.sketchList.setPath(`/users/${this.user.uid}/sketches`);
-          console.log('sketchlist written');
-        }
+        // add new listener
+        firebase.database().ref(ref).on('value', snapshot => {
+          this.fire('state-server-sketchlist', snapshot.val());
+        });
       }
 
       _writeSketch(e) {
-        this.debounce(() => {
+        if (!this.user)
+          return;
+        this.debounce(async() => {
+          console.log(e.type, performance.now());
           const id = e.detail.id;
           const sketch = e.detail.sketch;
           if (id !== 'unsaved') {
-            this.$.allSketches.setPath(`/sketches/${id}`);
-            this.$.allSketches.write(sketch);
-            console.log('sketch written');
+            const ref = `users/${this.user.uid}/sketches/${id}`;
+            await firebase.database().ref(ref).set(sketch);
           }
         }, 200);
       }

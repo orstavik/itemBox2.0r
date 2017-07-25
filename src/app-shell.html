@@ -15,13 +15,13 @@
       :host { height: 100%; }
     </style>
 
-    <app-state state="{{newState}}"></app-state>
+    <app-state state="{{state}}"></app-state>
     <app-router default-url="unsaved"></app-router>
     <app-data id="data" state="[[state]]"
-              user="[[newState.persistent.user]]"
-              sketch-id="[[newState.persistent.currentSketch.id]]"></app-data>
+              user="[[state.persistent.user]]"
+              sketch-id="[[state.session.route.segments.0]]"></app-data>
 
-    <controller-ui id="ui" state="[[state]]" new-state="[[newState]]"></controller-ui>
+    <controller-ui id="ui" state="[[state]]"></controller-ui>
     
   </template>
   <script>
@@ -32,171 +32,13 @@
 
       static get properties() {
         return {
-          state: Object,
-          defaultSnap: {
-            type: Object,
-            value: function () {
-              return {
-                viewPort: {
-                  x: 0,
-                  y: 0,
-                  s: 1
-                },
-                session: {
-                  sketchID: "unsaved"
-                }
-              };
-            }
-          },
-          snap: Object,
-          // sketchMerged: {
-          //   type: Object,
-          //   computed: "_makeSketchMerged(snap.sketchServer, snap.sketchFluid)"
-          // },
-          elaborateSnap: Object //elaboration on now: the active sketch
+          state: Object
         }
-      }
-
-      static get observers() {
-        return [
-          "_makeElaborateSnap(snap)" //this observer runs after all the computeds are finished (at least two rounds).
-        ];
-      }
-
-      constructor() {
-        super();
-
-        // this.addEventListener("new-user", this._newUser.bind(this));
-        // this.addEventListener("new-sketch-list", this._newSketchListServer.bind(this));
-        // this.addEventListener("new-sketch-data", this._newSketchData.bind(this));
-
-        // this.addEventListener("state-save-sketch", this._saveSketch.bind(this));
-        // this.addEventListener("state-edit-sketch", this._editSketch.bind(this));
-        // this.addEventListener("state-delete-sketch", this._deleteSketch.bind(this));
-
-        // this.addEventListener("state-add-shape", this._newShape.bind(this));
-        // this.addEventListener("change-shapes", this._changeShapes.bind(this));
-        // this.addEventListener("change-shapes-end", this._changeShapesEnd.bind(this));
-        // this.addEventListener("delete-selected", this._deleteSelected.bind(this));
-        // this.addEventListener("state-change-color", this._newColor.bind(this));
-
-        // this.addEventListener("state-new-selected", this._select.bind(this));
-        // this.addEventListener("state-shape-location", this._shapeLocation.bind(this));
-
-        // this.addEventListener("state-system-message", this._systemMessage.bind(this));
-        // this.addEventListener("system-error", this._systemMessage.bind(this));
-        // this.addEventListener("state-help-message", this._helpMessage.bind(this));
-        // this.addEventListener("sign-in", this._signIn.bind(this));
-        // this.addEventListener("sign-out", this._signOut.bind(this));
-
-        this.setSnap({
-          type: "startup",
-          timeStamp: new Date().getTime()
-        }, Object.assign({}, this.defaultSnap));
-        this.set("state", Object.assign({}, {now: this.snap })); //this is needed for the first route operations
       }
 
       connectedCallback() {
         super.connectedCallback();
         this.fire('app-connected');
-      }
-
-      _newUser(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["user"], e.detail));
-      }
-
-      _newSketchListServer(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["sketchListServer"], e.detail));
-      }
-
-      _newSketchData(e) {
-        const newSnap = Tools.setIn(this.state.now, ["sketchServer"], e.detail);
-        let reduced = AppShell.reduceFluidMatrix(this.state.now, e.detail);
-        if (reduced) {
-          newSnap.sketchFluid = reduced.sketchFluid;
-          newSnap.rects = reduced.rects;
-          newSnap.selects = reduced.selects;
-        }
-        this.setSnap(e, newSnap);
-      }
-
-      _saveSketch(e) {
-        //getData for the future
-        let screenData = e.detail.clear ? undefined : this.state.now.sketchMerged;
-        let key = Tools.genKey();
-        //unset the old serverSketch Data and set the new sketchID
-        const newNow = Tools.setIn(this.state.now, ["session", "sketchID"], key);
-        newNow.sketchServer = {};
-        this.setSnap(e, newNow);
-        //set the screenData
-        let info = e.detail.info;
-        info.created = new Date().getTime();
-        let newNow2 = Tools.setIn(this.state.now, ["sketchFluid"], screenData);
-        newNow2 = Tools.setIn(newNow2, ["sketchFluid", "info"], info);
-        this.setSnap(e, newNow2);
-      }
-
-      _editSketch(e) {
-        let newNow = Tools.setIn(this.state.now, ["sketchListFluid", e.detail.key, "info"], e.detail.info);
-        this.setSnap(e, newNow);
-      }
-
-      _deleteSketch(e) {
-        let newNow = Tools.setIn(this.state.now, ["sketchListFluid", e.detail.key], null);
-        this.setSnap(e, newNow);
-      }
-
-      _newShape(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["sketchFluid", "shapes", Tools.genKey()], {
-          matrix: e.detail,
-          color: this.state.now.session.color
-        }));
-      }
-
-      _changeShapes(e) {
-        this.setSnap(e, Tools.mergeDeepWithNullToDelete(this.state.now, {
-          sketchFluid: {
-            shapes: e.detail
-          }
-        }));
-      }
-
-      _changeShapesEnd(e) {
-        this.setSnap(e, Object.assign({}, this.state.now));
-      }
-
-      _deleteSelected(e) {
-        let deletes = {};
-        for (let key in this.state.now.selects)
-          deletes[key] = null;
-        const newSnap = Object.assign({}, this.state.now);
-        newSnap.sketchFluid = Tools.mergeDeepWithNullToDelete(this.state.now.sketchFluid, {
-          shapes: deletes
-        });
-        newSnap.rects = Tools.mergeDeepWithNullToDelete(this.state.now.rects, deletes);
-        newSnap.selects = undefined;
-        this.setSnap(e, newSnap);
-      }
-
-      _newColor(e) {
-        let colors = {};
-        for (let key in this.state.now.selects)
-          colors[key] = {
-            color: e.detail
-          };
-        let sketchFluid = Tools.mergeDeepWithNullToDelete(this.state.now.sketchFluid, {
-          shapes: colors
-        });
-        this.setSnap(e, Tools.setIn(this.state.now, ["sketchFluid"], sketchFluid));
-        this.setSnap(e, Tools.setIn(this.state.now, ["session", "color"], e.detail));
-      }
-
-      _newSketch(e) {
-        this.setSnap(e, Object.assign({}, this.defaultSnap, {
-          session: {
-            sketchID: e.detail.url
-          }
-        }));
       }
 
       _signIn() {
@@ -205,82 +47,6 @@
 
       _signOut(e) {
         this.$.data.signOut();
-        this.setSnap(e, Object.assign({}, this.defaultSnap));
-      }
-
-      _systemMessage(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["systemMessage"], e.detail));
-      }
-
-      _helpMessage(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["helpMessage"], e.detail));
-      }
-
-      _select(e) {
-        let newNow = Tools.setIn(this.state.now, ["selects"], e.detail);
-        const keys = Object.keys(e.detail);
-        if (keys && keys.length > 0) {
-          const key = keys[0];
-          const color = this.state.now.sketchMerged.shapes[key].color;
-          newNow = Tools.setIn(newNow, ["session", "color"], color);
-        }
-        this.setSnap(e, newNow);
-      }
-
-      _shapeLocation(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["rects", e.detail.key], e.detail.value));
-      }
-
-      _viewChanged(e) {
-        this.setSnap(e, Tools.setIn(this.state.now, ["viewPort"], e.detail));
-      }
-
-      setSnap(e, newSnap) {
-        if (e instanceof Event)
-          e.stopPropagation();
-        newSnap.action = e;
-        this.set("snap", newSnap);
-      }
-
-      static reduceFluidMatrix(now, sketchServer) {
-        let diffSketch = undefined;
-        //filter the matrices
-        if (sketchServer) {
-          diffSketch = Tools.filterDeep(now.sketchFluid, sketchServer);
-          for (let key in diffSketch) { //custom algorithm for removing shapes deleted FROM server first.
-            if (!sketchServer.shapes[key] && !diffSketch[key].matrix)
-              delete diffSketch[key];
-          }
-        }
-        if (!now.sketchMerged || !now.sketchMerged.shapes)
-          return {"sketchFluid": diffSketch};
-        //filter rects
-        let resRects = {};
-        for (let key in now.rects) {
-          if (now.sketchMerged.shapes[key])
-            resRects[key] = now.rects[key];
-        }
-        //filter selects
-        let resSelects = {};
-        for (let key in now.selects) {
-          if (now.sketchMerged.shapes[key])
-            resSelects[key] = true;
-        }
-        return {
-          "sketchFluid": diffSketch,
-          "rects": resRects,
-          "selects": resSelects
-        };
-      }
-
-      _makeElaborateSnap(snap) {
-        snap.sketchMerged = Tools.mergeDeepWithNullToDelete(snap.sketchServer, snap.sketchFluid);
-        snap.sketchListMerged = Tools.mergeDeepWithNullToDelete(snap.sketchListServer, snap.sketchListFluid);
-        this.set("elaborateSnap", snap);
-      }
-
-      _makeSketchMerged(sketchServer, sketchFluid) {
-        return Tools.mergeDeepWithNullToDelete(sketchServer, sketchFluid);
       }
 
       fire(name, detail) {

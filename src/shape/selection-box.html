@@ -34,7 +34,6 @@
       static get properties() {
         return {
           state: Object,
-          newState: Object,
           heldKeys: Object,
           rect: {
             type: Object,
@@ -115,8 +114,8 @@
       _rectChanged() { // VERY BAD SELECTION: FIRES EVENTS TOOOOO OFTEN!!!
         let mutated = false;
         let newSelects = {};
-        let currentSelection = this.newState.session.selected || {};
-        let rects = this.newState.session.shapeRects || {};
+        let currentSelection = this.state.session.selected || {};
+        let rects = this.state.session.shapeRects || {};
         for (let key in rects) {
           let pointIsWithinBorders = Rectangle.pointIsWithinBorders(this.rect, rects[key].center);
           if (pointIsWithinBorders)
@@ -132,11 +131,11 @@
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
           this.selectionTimer = setTimeout(function () {
-            this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, true));
+            this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, true));
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else {
-          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, this.heldKeys.shift()));
+          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, this.heldKeys.shift()));
         }
       }
 
@@ -144,7 +143,7 @@
         e.stopPropagation();
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
-          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.newState.session.selected, false));
+          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, false));
         }
       }
 

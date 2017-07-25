@@ -168,7 +168,7 @@
             return {
               key: key,
               name: info.sketchName,
-              date: (info.created ? new Date(info.created).toLocaleString() : "no creation date"),
+              date: (info._created ? new Date(info._created).toLocaleString() : "no creation date"),
               icon: this._getIcon(info.permissions)
             };
         }.bind(this));
