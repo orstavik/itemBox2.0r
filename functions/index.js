@@ -1,7 +1,20 @@
 const functions = require('firebase-functions');
-
 const admin = require('firebase-admin');
+
 admin.initializeApp(functions.config().firebase);
+
+exports.makeHollowSketchList = functions.database.ref('/users/{userID}/sketches/{sketchID}/info')
+  .onWrite(event => {
+    const data = event.data.val();
+    const ref = `/users/${event.params.userID}/__sketchesOnlyInfo/${event.params.sketchID}/info`;
+    return admin.database().ref(ref).set(data);
+  });
+
+exports.setSketchCreatedTime = functions.database.ref('/users/{userID}/sketches/{sketchID}')
+  .onCreate(event => {
+    const ref = `/users/${event.params.userID}/sketches/${event.params.sketchID}/info/_created`;
+    return admin.database().ref(ref).set(admin.database.ServerValue.TIMESTAMP);
+  });
 
 // exports.makeSketchListNamePropView =
 //  functions.database.ref('/users/{userID}/sketches/{sketchID}/info').onWrite(event => {
