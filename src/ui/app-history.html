@@ -1,3 +1,6 @@
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+
 <dom-module id="app-history">
   <template>
     <style>
@@ -125,7 +128,10 @@
 
       static get properties() {
         return {
-          history: Array,
+          history: {
+            type: Array,
+            value: []
+          },
           activePoint: {
             type: Number,
             value: 0
@@ -171,7 +177,9 @@
       }
 
       _isEmptyArray(a) {
-        return !!a || a.length !== 0;
+        if (a)
+          return a.length !== 0;
+        return !!a;
       }
 
       _isActive(index) {

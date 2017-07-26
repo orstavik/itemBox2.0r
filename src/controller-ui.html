@@ -137,7 +137,7 @@
       </tools-item-button>
       <tools-item-button id="buttC" menu="History" child-button icon="icons:restore" slot="c"
                          active="{{historyActive}}">
-        <app-history history="[[state.history.sketchEdit]]" parent-active="[[historyActive]]"></app-history>
+        <app-history history="[[_currentHistory(state.history.sketchEdit, state.session.route.segments.0)]]" parent-active="[[historyActive]]"></app-history>
       </tools-item-button>
     </tools-button>
 
@@ -224,6 +224,10 @@
         this.addEventListener("new-sketch-dialog", e => this.$.newDialog.open() );
         this.addEventListener("edit-sketch-dialog", e => this.$.editDialog.open({key: e.detail}) );
         this.addEventListener("delete-sketch-dialog", e => this.$.deleteDialog.open({key: e.detail}) );
+      }
+
+      _currentHistory(history, id) {
+        return history[id];
       }
 
       _submitNewDialog(e) {

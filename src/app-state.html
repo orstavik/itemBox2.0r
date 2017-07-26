@@ -13,7 +13,7 @@
             value: () => ({
               history: {
                 all: [],
-                sketchEdit: [],
+                sketchEdit: {},
                 systemMessages: [],
                 helpMessages: []
               }
@@ -107,8 +107,12 @@
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
 
-        if (action === 'state-edit-shape-end' || action === 'state-add-shape' || action === 'state-delete-shape')
-          newHistory.sketchEdit = [snap].concat(history.sketchEdit);
+        if (action === 'state-edit-shape-end' || action === 'state-add-shape' || action === 'state-delete-shape') {
+          const sketchId = snapshot.session.route.segments[0];
+          if (!history.sketchEdit[sketchId])
+            history.sketchEdit[sketchId] = []
+          newHistory.sketchEdit[sketchId] = [snap].concat(history.sketchEdit[sketchId]);
+        }
 
         if (action === 'state-system-message')
           newHistory.systemMessages = [snap].concat(history.systemMessages);
