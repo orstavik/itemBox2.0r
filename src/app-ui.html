@@ -23,7 +23,7 @@
 
 <link rel="import" href="lib/keyboard-listener.html">
 
-<dom-module id="controller-ui">
+<dom-module id="app-ui">
   <template>
     <style>
       :host {
@@ -204,9 +204,9 @@
   </template>
 
   <script>
-    class ControllerUI extends Polymer.GestureEventListeners(Polymer.Element) {
+    class appUi extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
-        return "controller-ui";
+        return "app-ui";
       }
 
       static get properties() {
@@ -359,6 +359,6 @@
         }));
       }
     }
-    customElements.define(ControllerUI.is, ControllerUI);
+    customElements.define(appUi.is, appUi);
   </script>
 </dom-module>

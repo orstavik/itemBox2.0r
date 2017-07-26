@@ -1,9 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <link rel="import" href="app-state.html">
-<link rel="import" href="controller-ui.html">
+<link rel="import" href="app-ui.html">
 <link rel="import" href="app-data.html">
-<link rel="import" href="controller-history.html">
 <link rel="import" href="app-router.html">
 <script src="js/tools.js"></script>
 <script src="js/rectangle.js"></script>
@@ -20,8 +19,7 @@
     <app-data id="data" state="[[state]]"
               user="[[state.persistent.user]]"
               sketch-id="[[state.session.route.segments.0]]"></app-data>
-
-    <controller-ui id="ui" state="[[state]]"></controller-ui>
+    <app-ui state="[[state]]"></app-ui>
     
   </template>
   <script>
