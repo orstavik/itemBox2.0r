@@ -171,11 +171,11 @@
       }
 
       _signIn() {
-        this.dispatchEvent(new CustomEvent("sign-in", {composed: true, bubbles: true}));
+        this.dispatchEvent(new CustomEvent("data-sign-in", {composed: true, bubbles: true}));
       }
 
       _signOut() {
-        this.dispatchEvent(new CustomEvent("sign-out", {composed: true, bubbles: true}));
+        this.dispatchEvent(new CustomEvent("data-sign-out", {composed: true, bubbles: true}));
       }
 
       _setUserName(user) {

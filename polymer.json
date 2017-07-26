@@ -12,7 +12,8 @@
     ".firebaserc",
     "firebase.json",
     "database.rules.json",
-    "bower_components/webcomponentsjs/webcomponents-loader.js"
+    "bower_components/webcomponentsjs/webcomponents-loader.js",
+    "functions/**/*"
   ],
   "lint": {
     "rules": [

@@ -1,6 +1,3 @@
-<link rel="import" href="indexed-mirror.html">
-<link rel="import" href="firebase-on.html">
-<link rel="import" href="fire-data.html">
 <link rel="import" href="fire-auth.html">
 
 <dom-module id="app-data">
@@ -10,10 +7,6 @@
         display: none;
       }
     </style>
-
-    <!-- <fire-data id="currentSketch"></fire-data>
-    <fire-data id="sketchList"></fire-data>
-    <fire-data id="allSketches"></fire-data> -->
 
     <fire-auth id="auth"></fire-auth>
 
@@ -41,6 +34,8 @@
         // window.addEventListener('online',             this._appOnline.bind(this));
         // window.addEventListener('offline',            this._appOffline.bind(this));
 
+        window.addEventListener('data-sign-in', this._signIn.bind(this));
+        window.addEventListener('data-sign-out', this._signOut.bind(this));
         window.addEventListener('data-write-sketch', this._writeSketch.bind(this));
       }
 
@@ -63,21 +58,21 @@
         this.fire('state-system-message', 'All data loaded!');
       }
 
-      async signIn() {
+      async _signIn() {
         try {
           const result = await this.$.auth.signIn();
           if (result.user) {
             const user = AppData.makeUser(result.user);
             this.fire('state-user-in', user);
-            this._readUserSketch(this.sketchId);
-            this._readUserSketchList(user);
+            this._readCurrentSketch();
+            this._readSketchList();
           }
         } catch (err) {
           throw new Error(err);
         }
       }
 
-      async signOut() {
+      async _signOut() {
         try {
           await this.$.auth.signOut();
           this.navigate('unsaved');

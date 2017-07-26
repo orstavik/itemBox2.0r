@@ -41,14 +41,6 @@
         this.fire('app-connected');
       }
 
-      _signIn() {
-        this.$.data.signIn();
-      }
-
-      _signOut(e) {
-        this.$.data.signOut();
-      }
-
       fire(name, detail) {
         this.dispatchEvent(new CustomEvent(name, {
           composed: true,
