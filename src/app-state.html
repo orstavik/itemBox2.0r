@@ -71,8 +71,13 @@
 
         window.addEventListener('state-add-shape', this._stateAddShape.bind(this));
         window.addEventListener('state-edit-shape', this._stateEditShape.bind(this));
-        window.addEventListener('state-edit-shape-end', this._stateEditShapeEnd.bind(this));
+        window.addEventListener('state-move-shape', this._stateEditShapeEnd.bind(this));
+        window.addEventListener('state-scale-shape', this._stateEditShapeEnd.bind(this));
+        window.addEventListener('state-rotate-shape', this._stateEditShapeEnd.bind(this));
         window.addEventListener('state-delete-shape', this._stateDeleteShape.bind(this));
+
+        window.addEventListener('state-preview', this._statePreview.bind(this));
+        window.addEventListener('state-revert', this._stateRevert.bind(this));
 
         window.addEventListener("state-shape-location", this._stateShapeLocation.bind(this));
         window.addEventListener("state-new-selected", _.throttle(this._stateNewSelected.bind(this), 1000 / 10)); // THROTTLE FOR BAD SELECTION
@@ -101,13 +106,13 @@
         const snap = {
           action: action,
           snapshot: snapshot,
-          timestamp: performance.now()
+          timestamp: new Date().getTime()
         }
 
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
 
-        if (action === 'state-edit-shape-end' || action === 'state-add-shape' || action === 'state-delete-shape') {
+        if (['state-add-shape','state-delete-shape','state-move-shape','state-scale-shape','state-rotate-shape','state-change-color','state-revert'].indexOf(action) !== -1) {
           const sketchId = snapshot.session.route.segments[0];
           if (!history.sketchEdit[sketchId])
             history.sketchEdit[sketchId] = []
@@ -293,12 +298,6 @@
         const statePrst = Tools.deepFreeze(Object.assign(this.state.persistent));
 
         this._updateState(statePrst, this.state.session, e.type);
-
-        if(this.state.session.route.segments[0] !== 'unsaved')
-          this.fire('data-write-sketch', {
-            sketch: this.state.persistent.currentSketch,
-            id: this.state.session.route.segments[0]
-          });
       }
 
       _stateDeleteShape(e) {
@@ -318,6 +317,24 @@
 
         this._updateState(statePrst, stateSess, e.type);
 
+        if(this.state.session.route.segments[0] !== 'unsaved')
+          this.fire('data-write-sketch', {
+            sketch: this.state.persistent.currentSketch,
+            id: this.state.session.route.segments[0]
+          });
+      }
+
+      _statePreview(e) {
+        console.log(e.type, performance.now());
+        const state = e.detail;
+        this._updateState(state.persistent, state.session, e.type);
+      }
+
+      _stateRevert(e) {
+        console.log(e.type, performance.now());
+        const state = e.detail;
+        this._updateState(state.persistent, state.session, e.type);
+        
         if(this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,

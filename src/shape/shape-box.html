@@ -135,7 +135,7 @@
         if (this._isEmpty(shapes))
           return undefined;
         if (this._isMulti(shapes)) {
-          if (action === "shape-rotate")
+          if (action === "rotate-shape")
             return Object.assign({}, this.rect);
 
           let shape = ShapeBox._getFirstShape(shapes);
@@ -169,7 +169,7 @@
             return this._transformShapes(e.currentTarget, e.detail);
           case 'end':
             e.currentTarget.removeAttribute("active");
-            this._fire("state-edit-shape-end", this.action);
+            this._fire(`state-${this.action}`);
             this.set("action", "");
         }
       }
@@ -179,13 +179,13 @@
         const ddy = e.ddy !== undefined ? e.ddy : e.dy;
         switch (target.getAttribute("type")) {
           case "grabber":
-            this.set("action", "shape-move");
+            this.set("action", "move-shape");
             return this._moveShapes(ddx, ddy, this.viewPort.s);
           case "point":
-            this.set("action", "shape-scale");
+            this.set("action", "scale-shape");
             return this._scaleShapes(target.id, ddx, ddy, this.viewPort.s);
           case "rotator":
-            this.set("action", "shape-rotate");
+            this.set("action", "rotate-shape");
             return this._rotateShapes(e.x, e.y, ddx, ddy, this.viewPort.s);
         }
       }

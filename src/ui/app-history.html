@@ -85,16 +85,19 @@
         text-align: center;
         font-size: 12px;
       }
-      .historyPoint.new-shape {
+      .historyPoint.add-shape {
         background-color: var(--paper-green-300);
       }
-      .historyPoint.shape-move, .historyPoint.shape-scale, .historyPoint.shape-rotate {
+      .historyPoint.move-shape, .historyPoint.scale-shape, .historyPoint.rotate-shape {
         background-color: var(--paper-blue-300);
+      }
+      .historyPoint.change-color {
+        background-color: var(--paper-pink-300);
       }
       .historyPoint.delete-shape {
         background-color: var(--paper-red-300);
       }
-      .historyPoint.set {
+      .historyPoint.revert {
         background-color: var(--paper-yellow-300);
       }
 
@@ -103,7 +106,7 @@
     <div class="filledCard">
       <div id="historyPipe">
         <template is="dom-repeat" items="[[history]]">
-          <div class$="historyPoint [[item.action.type]]"
+          <div class$="historyPoint [[item.action]]"
                active$="[[_isActive(index, activePoint)]]"
                data-index$="[[index]]"
                style$="[[_calcStyle(activePoint, index)]]"
@@ -113,7 +116,7 @@
         </template>
       </div>
       <div id="pointDescr" hidden="[[!historyPoint]]">
-        <span class="pointType">[[historyPoint.action.type]]</span>
+        <span class="pointType">[[historyPoint.action]]</span>
         <span class="pointTime">[[_howLongAgo(historyPoint)]]</span>
       </div>
       <span class="emptyCard" hidden$="[[_isEmptyArray(history)]]">You haven't done anything!</span>
@@ -128,10 +131,7 @@
 
       static get properties() {
         return {
-          history: {
-            type: Array,
-            value: []
-          },
+          history: Array,
           activePoint: {
             type: Number,
             value: 0
@@ -154,8 +154,6 @@
       _parentActiveChange() {
         if (this.parentActive)
           this._fire("state-help-message", "Scroll to view old version. Click the expanded historypoint to roll back.");
-        else
-          this._fire("timetravel-off");
       }
 
       constructor() {
@@ -167,8 +165,9 @@
         if (activePoint < 0 || !history || history.length === 0)
           return null;
         let historyPoint = history[activePoint];
-        if (this.parentActive && historyPoint && historyPoint.state)
-          this._fire("timetravel-on", historyPoint.state);
+        historyPoint.action = historyPoint.action.replace('state-', '');
+        if (this.parentActive && historyPoint && historyPoint.snapshot)
+          this._fire("state-preview", historyPoint.snapshot);
         return historyPoint;
       }
 
@@ -204,7 +203,7 @@
         if (!historyPoint)
           return null;
         const current = new Date().getTime();
-        const then = historyPoint.action.timeStamp;
+        const then = historyPoint.timestamp;
         const differenceInSec = (current - then) / 1000;
         if (differenceInSec < 60)
           return Math.floor(differenceInSec) + " sec. ago";
@@ -222,7 +221,7 @@
 
       _tap(e) {
         if (e.target.hasAttribute("active"))
-          this._fire("revert", this.historyPoint.state);
+          this._fire("state-revert", this.historyPoint.snapshot);
         else
           this.set("activePoint", Number(e.target.dataset.index));
       }
