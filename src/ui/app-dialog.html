@@ -113,7 +113,7 @@
 
       constructor() {
         super();
-        window.addEventListener("keydown", (e) => this._handleKeyPress(e));
+        window.addEventListener("keydown", (e) => this._keyDown(e));
       }
 
       open(content) {
@@ -126,7 +126,7 @@
         this.active = false;
       }
 
-      _handleKeyPress(e) {
+      _keyDown(e) {
         if (!this.active)
           return;
         if (e.key === "Escape") {

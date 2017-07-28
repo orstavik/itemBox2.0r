@@ -21,8 +21,8 @@
 
     <coordinate-lines view-port="[[state.persistent.viewPort]]"></coordinate-lines>
     <shape-box id="shapeBox" shapes="[[selectedShapes]]" view-port="[[state.persistent.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" held-keys="[[heldKeys]]" activate="[[!moveable]]">
-      <space-camera id="camera" view-port="[[state.persistent.viewPort]]" moveable$="[[moveable]]">
+    <selection-box id="selection" state="[[state]]" activate="[[!keyDowns.space]]" shift="[[keyDowns.shift]]">
+      <space-camera id="camera" view-port="[[state.persistent.viewPort]]" moveable$="[[keyDowns.space]]">
         <template is="dom-repeat" items="[[shapesArray]]">
           <shape-object id$="[[item.key]]"
                         selectable
@@ -31,12 +31,11 @@
                         matrix-data="[[item.value.matrix]]">
           </shape-object>
         </template>
-      </space-camera>
-    </selection-box>
+  </space-camera>
+  </selection-box>
   </template>
 
   <script>
-
     class ShapePlain extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() {
         return "shape-plain";
@@ -45,19 +44,19 @@
       static get properties() {
         return {
           state: Object,
-          heldKeys: Object,
-          moveable: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_makeMoveable(heldKeys)"
+          keyDowns: {
+            type: Object,
+            value: () => ({
+              space: false,
+              shift: false,
+            })
           },
-          selectedShapes: {                        //partial now: the selected shapes in the active sketch
+          selectedShapes: { //partial now: the selected shapes in the active sketch
             type: Object,
             computed: "_makeSelectedShapes(state.persistent.currentSketch, state.session.selected, state.session.shapeRects)"
           },
           shapesArray: {
             type: Array,
-            // computed: "_toArray(state.now.sketchMerged.shapes)",
             computed: "_toArray(state.persistent.currentSketch.shapes)",
           }
         }
@@ -65,10 +64,14 @@
 
       connectedCallback() {
         super.connectedCallback();
+        this.focusable();
         this.addEventListener("dblclick", this._newShape.bind(this));
         this.addEventListener("long-press", this._newShape.bind(this));
 
-        const styleChangedObserver = new MutationObserver(function (mutations) {
+        window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000/30, {leading: true, trailing: false}));
+        window.addEventListener('keyup', this._keyUp.bind(this));
+
+        const styleChangedObserver = new MutationObserver(function(mutations) {
           for (let mutation of mutations) {
             if (mutation.attributeName === "style")
               for (let node of this.shadowRoot.querySelectorAll("shape-object"))
@@ -76,12 +79,20 @@
           }
         }.bind(this));
         //todo do we always have access to this.$.camera at this point? ...
-        styleChangedObserver.observe(this.$.camera, {attributes: true});
+        styleChangedObserver.observe(this.$.camera, {
+          attributes: true
+        });
       }
 
       _newShape(e) {
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.persistent.viewPort, e.x || e.detail.x, e.y || e.detail.y);
-        this.fire("state-add-shape", {x: pos.x, y: pos.y, sx: 1, sy: 1, a: 0});
+        this.fire("state-add-shape", {
+          x: pos.x,
+          y: pos.y,
+          sx: 1,
+          sy: 1,
+          a: 0
+        });
       }
 
       _makeSelectedShapes(sketch, selected, rects) {
@@ -90,23 +101,83 @@
         let selectsShapes = {};
         for (let key in selected)
           if (sketch.shapes[key] && rects[key])
-            selectsShapes[key] = {matrix: sketch.shapes[key].matrix, rect: rects[key]};
+            selectsShapes[key] = {
+              matrix: sketch.shapes[key].matrix,
+              rect: rects[key]
+            };
         return selectsShapes;
       }
 
       _toArray(shapes) {
         const res = [];
         for (let key in shapes)
-          if (shapes[key]) res.push({key: key, value: shapes[key]});
+          if (shapes[key]) res.push({
+            key: key,
+            value: shapes[key]
+          });
         return res;
       }
 
-      _makeMoveable(heldKeys) {
-        return heldKeys ? heldKeys.isDown("Space") : false;
+      _keyDown(e) {
+        if (!this.focused)
+          return
+        switch (e.code) {
+          case 'Escape': {
+              this.fire('state-deselect-shapes');
+              return;
+            }
+          case 'Delete': {
+              this.fire('state-delete-shape');
+              return;
+            }
+          case 'Space': {
+              this.set('keyDowns.space', true);
+              return
+            }
+          case 'ShiftLeft': {
+              this.set('keyDowns.shift', true);
+              return;
+            }
+        }
+      }
+
+      _keyUp(e) {
+        if (!this.focused)
+          return
+        switch (e.code) {
+          case 'Space': {
+              this.set('keyDowns.space', false);
+              return;
+            }
+          case 'ShiftLeft': {
+              this.set('keyDowns.shift', false);
+              return;
+            }
+        }
+      }
+
+      focusable() {
+        this.setAttribute('tabindex', '0');
+        this.focused = false;
+        this.onfocus = () => {
+          this.focused = true
+        };
+        this.onblur = () => {
+          this.focused = false,
+          this.set('keyDowns', {
+            space: false,
+            shift: false
+          });
+        };
+        this.addEventListener('mousedown', () => this.focus());
       }
 
       fire(name, detail) {
-        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+        this.dispatchEvent(new CustomEvent(name, {
+          composed: true,
+          bubbles: true,
+          detail: detail
+        }));
       }
     }
     customElements.define(ShapePlain.is, ShapePlain);

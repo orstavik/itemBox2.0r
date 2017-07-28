@@ -116,9 +116,9 @@
       }
     </style>
 
-    <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener>
+    <!-- <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener> -->
 
-    <shape-plain id="shapePlain" state="[[state]]" held-keys="[[heldKeys]]" on-deselect-all="deselect"></shape-plain>
+    <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[state.persistent.currentSketch.info.sketchName]]</div>
@@ -287,27 +287,15 @@
         this.$.tools.deactivate();
       }
 
-      _checkKey(e) {
-        this.set("heldKeys", e.detail);
-        switch (e.detail.code()) {
-          case "Enter":
-            this.$.clef.turnKeyRight();
-            return;
-          case "Tab":
-            this.$.clef.turnKeyLeft();
-            return;
-          case "Backspace":
-            this.$.clef.turnModusRight();
-            return;
-          case "Backquote":
-            this.$.clef.turnModusLeft();
-            return;
-          case "Escape":
-            this._fire("deselect-all");
-            return;
-          case "Delete":
-            this._fire("state-delete-shape");
-            return;
+      // _checkKey(e) {
+      //   this.set("heldKeys", e.detail);
+      //   switch (e.detail.code()) {
+      //     case "Escape":
+      //       this._fire("state-deselect-all");
+      //       return;
+      //     case "Delete":
+      //       this._fire("state-delete-shape");
+      //       return;
             //          case "KeyN":
             //            let copy = confirm("Do you want to copy the current sketch?");
             //            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
@@ -324,24 +312,24 @@
             //          case "PageDown":
             //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zDown()));
             //            return;
-        }
-        if (e.detail.ctrl()) {
-          if (e.detail.code() === "Digit0")
-            this._fire("state-change-viewport", {
-              x: 0,
-              y: 0,
-              s: 1
-            });
+        // }
+        // if (e.detail.ctrl()) {
+        //   if (e.detail.code() === "Digit0")
+        //     this._fire("state-change-viewport", {
+        //       x: 0,
+        //       y: 0,
+        //       s: 1
+        //     });
           //          else if (e.detail.code() === "KeyC")
           //            this.copy();
           //          else if (e.detail.code() === "KeyV")
           //            this.paste();
-        }
-      }
+      //   }
+      // }
 
-      _keyUp(e) {
-        this.set("heldKeys", e.detail);
-      }
+      // _keyUp(e) {
+      //   this.set("heldKeys", e.detail);
+      // }
 
       _BOOL(obj) {
         return !!obj;

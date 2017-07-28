@@ -80,7 +80,8 @@
         window.addEventListener('state-revert', this._stateRevert.bind(this));
 
         window.addEventListener("state-shape-location", this._stateShapeLocation.bind(this));
-        window.addEventListener("state-new-selected", _.throttle(this._stateNewSelected.bind(this), 1000 / 10)); // THROTTLE FOR BAD SELECTION
+        window.addEventListener("state-select-shapes", _.throttle(this._stateSelectShapes.bind(this), 1000 / 10)); // THROTTLE FOR BAD SELECTION
+        window.addEventListener("state-deselect-shapes", this._stateDeselectShapes.bind(this));
 
         window.addEventListener("state-change-viewport", _.throttle(this._stateChangeViewport.bind(this), 1000 / 60));
         window.addEventListener("state-change-color", _.throttle(this._stateChangeColor.bind(this), 1000 / 30));
@@ -382,7 +383,7 @@
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
-      _stateNewSelected(e) {
+      _stateSelectShapes(e) {
         console.log(e.type, performance.now());
         const selected = e.detail;
         let stateSess = Tools.setIn(this.state.session, ["selected"], selected, this._frozen);
@@ -392,6 +393,12 @@
           const color = this.state.persistent.currentSketch.shapes[key].color;
           stateSess = Tools.setIn(stateSess, ["editColor"], color, this._frozen);
         }
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      _stateDeselectShapes(e) {
+        console.log(e.type, performance.now());
+        let stateSess = Tools.setIn(this.state.session, ["selected"], {}, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 

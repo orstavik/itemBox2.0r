@@ -34,7 +34,6 @@
       static get properties() {
         return {
           state: Object,
-          heldKeys: Object,
           rect: {
             type: Object,
             observer: "_rectChanged"
@@ -48,7 +47,8 @@
             value: false,
             reflectToAttribute: true
           },
-          activate: Boolean
+          activate: Boolean,
+          shift: Boolean
         }
       }
 
@@ -73,7 +73,7 @@
             break;
         }
         e.preventDefault();
-        this.fire("state-new-selected", {});
+        this.fire("state-select-shapes", {});
         this.start = e;
       }
 
@@ -124,18 +124,18 @@
             mutated = true;
         }
         if (mutated)
-          this.fire("state-new-selected", newSelects);
+          this.fire("state-select-shapes", newSelects);
       }
 
       _downOnShapeObject(e) {
         e.stopPropagation();
         if (e.detail.sourceEvent instanceof Touch)
           this.selectionTimer = setTimeout(function () {
-            this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, true));
+            this.fire("state-select-shapes", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, true));
             this.selectionTimer = undefined;
           }.bind(this), 600);
         else {
-          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, this.heldKeys.shift()));
+          this.fire("state-select-shapes", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, this.shift));
         }
       }
 
@@ -143,7 +143,7 @@
         e.stopPropagation();
         if (this.selectionTimer) {
           clearTimeout(this.selectionTimer);
-          this.fire("state-new-selected", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, false));
+          this.fire("state-select-shapes", SelectionBox.makeSelectsObject(e.target.id, this.state.session.selected, false));
         }
       }
 
