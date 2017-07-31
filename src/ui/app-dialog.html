@@ -113,7 +113,11 @@
 
       constructor() {
         super();
-        window.addEventListener("keydown", (e) => this._keyDown(e));
+        
+        window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000 / 30, {
+          leading: true,
+          trailing: false
+        }));
       }
 
       open(content) {
@@ -129,10 +133,13 @@
       _keyDown(e) {
         if (!this.active)
           return;
-        if (e.key === "Escape") {
-          this.close();
-        } else if (e.key === "Enter") {
-          this.querySelector('#submit').click();
+        switch(e.code) {
+          case 'Escape':
+            this.close();
+            return;
+          case 'Enter':
+            this.querySelector('#submit').click();
+            return;
         }
       }
 

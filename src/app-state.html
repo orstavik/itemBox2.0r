@@ -56,6 +56,12 @@
       connectedCallback() {
         super.connectedCallback();
 
+        window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000 / 30, {
+          leading: true,
+          trailing: false
+        }));
+        window.addEventListener('keyup', this._keyUp.bind(this));
+
         window.addEventListener('state-change-route', this._stateChangeRoute.bind(this));
         window.addEventListener('app-connected', this._appConnected.bind(this));
 
@@ -113,7 +119,7 @@
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
 
-        if (['state-add-shape','state-delete-shape','state-move-shape','state-scale-shape','state-rotate-shape','state-change-color','state-revert'].indexOf(action) !== -1) {
+        if (['state-add-shape', 'state-delete-shape', 'state-move-shape', 'state-scale-shape', 'state-rotate-shape', 'state-change-color', 'state-revert'].indexOf(action) !== -1) {
           const sketchId = snapshot.session.route.segments[0];
           if (!history.sketchEdit[sketchId])
             history.sketchEdit[sketchId] = []
@@ -132,6 +138,20 @@
 
       _getState() {
         return JSON.parse(localStorage.getItem('state'));
+      }
+
+      _keyDown(e) {
+        console.log(e.type, performance.now());
+        const key = e.code;
+        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], true);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      _keyUp(e) {
+        console.log(e.type, performance.now());
+        const key = e.code;
+        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], false);
+        this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _stateChangeRoute(e) {
@@ -269,7 +289,7 @@
 
         this._updateState(statePrst, this.state.session, e.type);
 
-        if(this.state.session.route.segments[0] !== 'unsaved')
+        if (this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]
@@ -287,7 +307,7 @@
 
         this._updateState(statePrst, this.state.session, e.type);
 
-        if(this.state.session.route.segments[0] !== 'unsaved')
+        if (this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]
@@ -318,7 +338,7 @@
 
         this._updateState(statePrst, stateSess, e.type);
 
-        if(this.state.session.route.segments[0] !== 'unsaved')
+        if (this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]
@@ -335,8 +355,8 @@
         console.log(e.type, performance.now());
         const state = e.detail;
         this._updateState(state.persistent, state.session, e.type);
-        
-        if(this.state.session.route.segments[0] !== 'unsaved')
+
+        if (this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]
@@ -366,10 +386,10 @@
           statePrst = Tools.setIn(this.state.persistent, ["currentSketch"], currentSketch, this._frozen);
         }
         const stateSess = Tools.setIn(this.state.session, ["editColor"], color, this._frozen);
-        
+
         this._updateState(statePrst, stateSess, e.type);
 
-        if(this.state.session.route.segments[0] !== 'unsaved')
+        if (this.state.session.route.segments[0] !== 'unsaved')
           this.fire('data-write-sketch', {
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]

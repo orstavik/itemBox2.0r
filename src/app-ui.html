@@ -116,9 +116,7 @@
       }
     </style>
 
-    <!-- <keyboard-listener on-key-down="_checkKey" on-key-up="_keyUp" exclude-repeats></keyboard-listener> -->
-
-    <shape-plain id="shapePlain" state="[[state]]"></shape-plain>
+    <shape-plain id="shapePlain" state="[[state]]" key-downs="[[state.session.keyDowns]]"></shape-plain>
 
     <paper-material id="sketchNamePaper" hidden$="[[!state.persistent.user]]" status$="[[state.now.savedStatus]]" elevation=1>
       <div id="sketchName">[[state.persistent.currentSketch.info.sketchName]]</div>
@@ -290,12 +288,6 @@
       // _checkKey(e) {
       //   this.set("heldKeys", e.detail);
       //   switch (e.detail.code()) {
-      //     case "Escape":
-      //       this._fire("state-deselect-all");
-      //       return;
-      //     case "Delete":
-      //       this._fire("state-delete-shape");
-      //       return;
             //          case "KeyN":
             //            let copy = confirm("Do you want to copy the current sketch?");
             //            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
@@ -325,10 +317,6 @@
           //          else if (e.detail.code() === "KeyV")
           //            this.paste();
       //   }
-      // }
-
-      // _keyUp(e) {
-      //   this.set("heldKeys", e.detail);
       // }
 
       _BOOL(obj) {

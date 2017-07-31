@@ -44,7 +44,10 @@
             observer: "_updateView"
           },
           _vPort: Object, // local version of viewPort: allows to use throttle on 'state-change-viewport' elsewhere
-          moveable: Boolean
+          moveable: {
+            type: Boolean,
+            value: false
+          }
         };
       }
 

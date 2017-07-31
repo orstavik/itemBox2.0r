@@ -21,8 +21,8 @@
 
     <coordinate-lines view-port="[[state.persistent.viewPort]]"></coordinate-lines>
     <shape-box id="shapeBox" shapes="[[selectedShapes]]" view-port="[[state.persistent.viewPort]]"></shape-box>
-    <selection-box id="selection" state="[[state]]" activate="[[!keyDowns.space]]" shift="[[keyDowns.shift]]">
-      <space-camera id="camera" view-port="[[state.persistent.viewPort]]" moveable$="[[keyDowns.space]]">
+    <selection-box id="selection" state="[[state]]" activate="[[!keyDowns.Space]]" shift="[[keyDowns.ShiftLeft]]">
+      <space-camera id="camera" view-port="[[state.persistent.viewPort]]" moveable$="[[keyDowns.Space]]">
         <template is="dom-repeat" items="[[shapesArray]]">
           <shape-object id$="[[item.key]]"
                         selectable
@@ -44,13 +44,7 @@
       static get properties() {
         return {
           state: Object,
-          keyDowns: {
-            type: Object,
-            value: () => ({
-              space: false,
-              shift: false,
-            })
-          },
+          keyDowns: Object,
           selectedShapes: { //partial now: the selected shapes in the active sketch
             type: Object,
             computed: "_makeSelectedShapes(state.persistent.currentSketch, state.session.selected, state.session.shapeRects)"
@@ -58,6 +52,10 @@
           shapesArray: {
             type: Array,
             computed: "_toArray(state.persistent.currentSketch.shapes)",
+          },
+          focused: {
+            type: Boolean,
+            value: false
           }
         }
       }
@@ -65,11 +63,14 @@
       connectedCallback() {
         super.connectedCallback();
         this.focusable();
+        this.addEventListener('mousedown', () => this.focus());
         this.addEventListener("dblclick", this._newShape.bind(this));
         this.addEventListener("long-press", this._newShape.bind(this));
 
-        window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000/30, {leading: true, trailing: false}));
-        window.addEventListener('keyup', this._keyUp.bind(this));
+        window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000 / 30, {
+          leading: true,
+          trailing: false
+        }));
 
         const styleChangedObserver = new MutationObserver(function(mutations) {
           for (let mutation of mutations) {
@@ -122,37 +123,20 @@
         if (!this.focused)
           return
         switch (e.code) {
-          case 'Escape': {
-              this.fire('state-deselect-shapes');
-              return;
-            }
-          case 'Delete': {
-              this.fire('state-delete-shape');
-              return;
-            }
-          case 'Space': {
-              this.set('keyDowns.space', true);
-              return
-            }
-          case 'ShiftLeft': {
-              this.set('keyDowns.shift', true);
-              return;
-            }
-        }
-      }
-
-      _keyUp(e) {
-        if (!this.focused)
-          return
-        switch (e.code) {
-          case 'Space': {
-              this.set('keyDowns.space', false);
-              return;
-            }
-          case 'ShiftLeft': {
-              this.set('keyDowns.shift', false);
-              return;
-            }
+          case 'Escape':
+            this.fire('state-deselect-shapes');
+            return;
+          case 'Delete':
+            this.fire('state-delete-shape');
+            return;
+          case 'Digit0':
+            if (e.ctrlKey)
+              this.fire("state-change-viewport", {
+                x: 0,
+                y: 0,
+                s: 1
+              });
+            return;
         }
       }
 
@@ -163,13 +147,8 @@
           this.focused = true
         };
         this.onblur = () => {
-          this.focused = false,
-          this.set('keyDowns', {
-            space: false,
-            shift: false
-          });
+          this.focused = false
         };
-        this.addEventListener('mousedown', () => this.focus());
       }
 
       fire(name, detail) {
