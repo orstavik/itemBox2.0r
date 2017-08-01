@@ -88,11 +88,13 @@
       _newShape(e) {
         let pos = ViewPort.calculatePositionFromCenterOfViewPort(this.state.persistent.viewPort, e.x || e.detail.x, e.y || e.detail.y);
         this.fire("state-add-shape", {
-          x: pos.x,
-          y: pos.y,
-          sx: 1,
-          sy: 1,
-          a: 0
+          matrix: {
+            x: pos.x,
+            y: pos.y,
+            sx: 1,
+            sy: 1,
+            a: 0
+          }
         });
       }
 
@@ -131,11 +133,19 @@
             return;
           case 'Digit0':
             if (e.ctrlKey)
-              this.fire("state-change-viewport", {
+              this.fire('state-change-viewport', {
                 x: 0,
                 y: 0,
                 s: 1
               });
+            return;
+          case 'KeyC':
+            if (e.ctrlKey)
+              this.fire('state-copy-shape');
+            return;
+          case 'KeyV':
+            if (e.ctrlKey)
+              this.fire('state-paste-shape');
             return;
         }
       }

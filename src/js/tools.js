@@ -16,6 +16,17 @@ class Tools {
     return o;
   }
 
+  static deepClone(obj, freeze) {
+    if (null == obj || "object" != typeof obj)
+      return obj;
+    let clone = Object.assign({}, obj);
+    for (let attr in obj) {
+      if (obj.hasOwnProperty(attr))
+        clone[attr] = Tools.deepClone(obj[attr], freeze);
+    }
+    return freeze ? Object.freeze(clone) : clone;
+  }
+
   //returns an immutable copy of A with the branches of B either
   // - merged (if they differ) or
   // - nulled out in result (if B point null value).
@@ -45,7 +56,7 @@ class Tools {
       if (c === null)
         delete C[key];
       else
-        C[key] = c;     //null is also set as a value in C
+        C[key] = c; //null is also set as a value in C
     }
     if (!hasMutated)
       return freeze ? Object.freeze(A) : A;
@@ -71,7 +82,7 @@ class Tools {
     startPath = startPath ? [startPath] : [];
     separator = separator || ".";
 
-    const _flattenImpl = function (obj, path, separator, res) {
+    const _flattenImpl = function(obj, path, separator, res) {
       if (obj instanceof Object) {
         for (let key of Object.keys(obj))
           _flattenImpl(obj[key], path.concat([key]), separator, res);
@@ -124,11 +135,11 @@ class Tools {
       if (res === null) return undefined;
     }
     res[path[path.length - 1]] = freeze ? Object.freeze(value) : value;
-    
+
     for (let i = 0; i < resPath.length; i++) {
       Object.freeze(resPath[i]);
     }
-    
+
     return freeze ? Object.freeze(rootRes) : rootRes;
   }
 
@@ -204,9 +215,9 @@ class Tools {
     for (let key of Object.keys(A)) {
       const a = A[key];
       const b = B[key];
-      if (a === null && b === undefined){
-        hasFiltered = true;                            //todo Work with this, maybe make a nicer model in realtimeboard.
-        continue;                                      /*second check is removing A[key]=null && B[key]=undefined*/
+      if (a === null && b === undefined) {
+        hasFiltered = true; //todo Work with this, maybe make a nicer model in realtimeboard.
+        continue; /*second check is removing A[key]=null && B[key]=undefined*/
       }
       let c = Tools.filterDeep(a, b);
       if (c !== a)

@@ -56,6 +56,7 @@
       connectedCallback() {
         super.connectedCallback();
 
+        window.addEventListener('mousemove', _.throttle(this._mouseMove.bind(this), 1000 / 30));
         window.addEventListener('keydown', _.debounce(this._keyDown.bind(this), 1000 / 30, {
           leading: true,
           trailing: false
@@ -81,6 +82,8 @@
         window.addEventListener('state-scale-shape', this._stateEditShapeEnd.bind(this));
         window.addEventListener('state-rotate-shape', this._stateEditShapeEnd.bind(this));
         window.addEventListener('state-delete-shape', this._stateDeleteShape.bind(this));
+        window.addEventListener('state-copy-shape', this._stateCopyShape.bind(this));
+        window.addEventListener('state-paste-shape', this._statePasteShape.bind(this));
 
         window.addEventListener('state-preview', this._statePreview.bind(this));
         window.addEventListener('state-revert', this._stateRevert.bind(this));
@@ -140,17 +143,25 @@
         return JSON.parse(localStorage.getItem('state'));
       }
 
+      _mouseMove(e) {
+        const viewPort = this.state.persistent.viewPort;
+        const mouse = {
+          x: (e.x-viewPort.x-window.innerWidth/2)/viewPort.s,
+          y: (e.y-viewPort.y-window.innerHeight/2)/viewPort.s
+        }
+        const stateSess = Tools.setIn(this.state.session, ['mouse'], mouse, this._frozen);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
       _keyDown(e) {
-        console.log(e.type, performance.now());
         const key = e.code;
-        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], true);
+        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], true, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
       _keyUp(e) {
-        console.log(e.type, performance.now());
         const key = e.code;
-        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], false);
+        const stateSess = Tools.setIn(this.state.session, ['keyDowns', key], false, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 
@@ -281,11 +292,10 @@
 
       _stateAddShape(e) {
         console.log(e.type, performance.now());
-        const shapeMatrix = e.detail;
-        const statePrst = Tools.setIn(this.state.persistent, ["currentSketch", "shapes", Tools.genKey()], {
-          matrix: e.detail,
-          color: this.state.session.editColor
-        }, this._frozen);
+        const shape = Object.assign({}, e.detail);
+        if (!shape.color)
+          shape.color = this.state.session.editColor
+        const statePrst = Tools.setIn(this.state.persistent, ["currentSketch", "shapes", Tools.genKey()], shape, this._frozen);
 
         this._updateState(statePrst, this.state.session, e.type);
 
@@ -343,6 +353,33 @@
             sketch: this.state.persistent.currentSketch,
             id: this.state.session.route.segments[0]
           });
+      }
+
+      _stateCopyShape(e) {
+        console.log(e.type, performance.now());
+        let clipboard = {};
+        for (let key in this.state.session.selected)
+          clipboard[key] = Tools.deepClone(this.state.persistent.currentSketch.shapes[key], this._frozen);
+        clipboard.mouse = this.state.session.mouse;
+        const stateSess = Tools.setIn(this.state.session, ["clipboard"], clipboard, this._frozen);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      _statePasteShape(e) {
+        console.log(e.type, performance.now());
+        const clipboard = Tools.deepClone(this.state.session.clipboard);
+        const diff = {
+          x: this.state.session.mouse.x - clipboard.mouse.x,
+          y: this.state.session.mouse.y - clipboard.mouse.y
+        };
+        for (let key in clipboard) {
+          if (key !== 'mouse') {
+            let matrix = clipboard[key].matrix;
+            matrix.x += diff.x;
+            matrix.y += diff.y;
+            this.fire('state-add-shape', clipboard[key]);
+          }
+        }
       }
 
       _statePreview(e) {
