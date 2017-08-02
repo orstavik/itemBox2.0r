@@ -37,6 +37,7 @@
         window.addEventListener('data-sign-in', this._signIn.bind(this));
         window.addEventListener('data-sign-out', this._signOut.bind(this));
         window.addEventListener('data-write-sketch', this._writeSketch.bind(this));
+        window.addEventListener('data-write-mouse', this._writeMouse.bind(this));
       }
 
       async _appConnected() {
@@ -47,6 +48,9 @@
           this.fire('state-user-in', this.user);
           currSketchPromise = this._readCurrentSketch();
           sketchListPromise = this._readSketchList();
+
+          // mouse experiment
+          this._listenUserMouses();
         } else {
           this.fire('state-user-out');
           currSketchPromise = Promise.resolve();
@@ -77,12 +81,6 @@
           await this.$.auth.signOut();
           this.navigate('unsaved');
           this.fire('state-user-out');
-          this.fire('state-server-sketch', {
-            id: "unsaved",
-            info: {
-              sketchName: 'unsaved'
-            }
-          });
           this.fire('state-server-sketchlist', null);
         } catch (err) {
           throw new Error(err);
@@ -113,6 +111,8 @@
         const ref = `/users/${this.user.uid}/sketches/${this.sketchId}`;
         const snapshot = await firebase.database().ref(ref).once('value');
         const currentSketch = snapshot.val();
+        if (!currentSketch)
+          return this.navigate('unsaved');
         this.fire('state-server-sketch', currentSketch);
 
         // add new listener
@@ -136,6 +136,18 @@
         });
       }
 
+      // mouse experiment
+      _listenUserMouses() {
+        firebase.database().ref('mouses').on('value', (snapshot) => {
+          const mouses = snapshot.val();
+          for (let key in mouses) {
+            if (key !== this.user.uid) {
+              this.fire('state-user-mouse', {mouse: mouses[key], key: key});
+            }
+          }
+        });
+      }
+
       _writeSketch(e) {
         if (!this.user)
           return;
@@ -148,6 +160,14 @@
             await firebase.database().ref(ref).set(sketch);
           }
         }, 200);
+      }
+
+      _writeMouse(e) {
+        const mouse = e.detail;
+        if (mouse && this.user) {
+          const ref = `mouses/${this.user.uid}`;
+          firebase.database().ref(ref).set(mouse);
+        }
       }
 
       fire(name, detail) {

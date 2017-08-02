@@ -17,6 +17,12 @@
       :host([moveable]) {
         cursor: -webkit-grab;
       }
+
+      .user-mouse {
+        width: 13px;
+        position: absolute;
+        transform-origin: top left;
+      }
     </style>
 
     <coordinate-lines view-port="[[state.persistent.viewPort]]"></coordinate-lines>
@@ -31,8 +37,14 @@
                         matrix-data="[[item.value.matrix]]">
           </shape-object>
         </template>
-  </space-camera>
-  </selection-box>
+
+        <!-- mouse experiment -->
+        <template is="dom-repeat" items="[[_toArray(state.session.mouses)]]">
+          <img class="user-mouse" style$="transform: translate([[item.value.x]]px, [[item.value.y]]px) scale(calc(1 / [[state.persistent.viewPort.s]])"
+               src="http://www.freeiconspng.com/uploads/white-mouse-cursor-arrow-by-qubodup-11.png"></img>
+        </template>
+      </space-camera>
+    </selection-box>
   </template>
 
   <script>

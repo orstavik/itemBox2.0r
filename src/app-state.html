@@ -97,6 +97,9 @@
 
         window.addEventListener("state-system-message", this._stateSystemMessage.bind(this));
         window.addEventListener("state-help-message", this._stateHelpMessage.bind(this));
+
+        // mouse experiment
+        window.addEventListener("state-user-mouse", this._stateUserMouse.bind(this));
       }
 
       _updateState(statePrst, stateSess, action) {
@@ -151,6 +154,7 @@
         }
         const stateSess = Tools.setIn(this.state.session, ['mouse'], mouse, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
+        this.fire('data-write-mouse', mouse);
       }
 
       _keyDown(e) {
@@ -470,6 +474,14 @@
         console.log(e.type, performance.now());
         const message = e.detail;
         const stateSess = Tools.setIn(this.state.session, ["helpMessage"], message, this._frozen);
+        this._updateState(this.state.persistent, stateSess, e.type);
+      }
+
+      // mouse experiment
+      _stateUserMouse(e) {
+        const mouse = e.detail.mouse;
+        const key = e.detail.key;
+        const stateSess = Tools.setIn(this.state.session, ["mouses", key], mouse, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
       }
 

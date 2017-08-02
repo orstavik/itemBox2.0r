@@ -285,40 +285,6 @@
         this.$.tools.deactivate();
       }
 
-      // _checkKey(e) {
-      //   this.set("heldKeys", e.detail);
-      //   switch (e.detail.code()) {
-            //          case "KeyN":
-            //            let copy = confirm("Do you want to copy the current sketch?");
-            //            this._fire("new-sketch", {url: Tools.genKey(), copy: copy});
-            //            return;
-            //          case "KeyM":
-            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.mirror()));
-            //            return;
-            //          case "KeyN":
-            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.center()));
-            //            return;
-            //          case "PageUp":
-            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zUp()));
-            //            return;
-            //          case "PageDown":
-            //            this._fire("change-shapes", this.getSelectedInfos().map(info => info.zDown()));
-            //            return;
-        // }
-        // if (e.detail.ctrl()) {
-        //   if (e.detail.code() === "Digit0")
-        //     this._fire("state-change-viewport", {
-        //       x: 0,
-        //       y: 0,
-        //       s: 1
-        //     });
-          //          else if (e.detail.code() === "KeyC")
-          //            this.copy();
-          //          else if (e.detail.code() === "KeyV")
-          //            this.paste();
-      //   }
-      // }
-
       _BOOL(obj) {
         return !!obj;
       }
