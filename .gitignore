@@ -1,6 +1,6 @@
-bower_components/
+functions/node_modules/
+public/bower_components/
 .idea/
 .vscode/
 build/
-functions/node_modules
 firebase-debug.log

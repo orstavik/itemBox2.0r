@@ -1,4 +1,5 @@
 <link rel="import" href="fire-auth.html">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
 <dom-module id="app-data">
   <template>
@@ -48,14 +49,13 @@
           this.fire('state-user-in', this.user);
           currSketchPromise = this._readCurrentSketch();
           sketchListPromise = this._readSketchList();
-
-          // mouse experiment
-          this._listenUserMouses();
         } else {
           this.fire('state-user-out');
           currSketchPromise = Promise.resolve();
           sketchListPromise = Promise.resolve();
         }
+
+        this._listenSocket();
 
         await currSketchPromise, await sketchListPromise;
         this.fire('app-data-loaded');
@@ -103,6 +103,12 @@
         return AppData.makeUser(user);
       }
 
+      _listenSocket() {
+        this.set('socket', io.connect('https://robotpad-762de.firebaseapp.com:4000'));
+        console.log(this.socket);
+        this._listenUserMouses();
+      }
+
       async _readCurrentSketch() {
         if (!this.user || this.sketchId === 'unsaved')
           return;
@@ -138,14 +144,18 @@
 
       // mouse experiment
       _listenUserMouses() {
-        firebase.database().ref('mouses').on('value', (snapshot) => {
-          const mouses = snapshot.val();
-          for (let key in mouses) {
-            if (key !== this.user.uid) {
-              this.fire('state-user-mouse', {mouse: mouses[key], key: key});
-            }
-          }
-        });
+        // firebase.database().ref('mouses').on('value', (snapshot) => {
+        //   const mouses = snapshot.val();
+        //   for (let key in mouses) {
+        //     if (key !== this.user.uid) {
+        //       this.fire('state-user-mouse', {mouse: mouses[key], key: key});
+        //     }
+        //   }
+        // });
+        this.socket.on('mouse-show', (data) => {
+          if (this.socket.id !== data.id)
+            this.fire('state-user-mouse', {mouse: data.mouse, key: data.id});
+        })
       }
 
       _writeSketch(e) {
@@ -164,10 +174,15 @@
 
       _writeMouse(e) {
         const mouse = e.detail;
-        if (mouse && this.user) {
-          const ref = `mouses/${this.user.uid}`;
-          firebase.database().ref(ref).set(mouse);
-        }
+        // if (mouse && this.user) {
+        //   const ref = `mouses/${this.user.uid}`;
+        //   firebase.database().ref(ref).set(mouse);
+        // }
+        
+        this.socket.emit('mouse-move', {
+          mouse: mouse,
+          id: this.socket.id
+        });
       }
 
       fire(name, detail) {

@@ -1,7 +1,25 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+// const http = require('http');
+// const url = require('url');
+const express = require('express');
+const client = require('socket.io').listen(4000).sockets;
 
 admin.initializeApp(functions.config().firebase);
+
+const app = express();
+app.get('*', (req, res) => {
+  res.redirect('/');
+  client.on('connection', (socket) => {
+    console.log('Succesfull connection!');
+    socket.on('mouse-move', (data) => {
+      client.emit('mouse-show', data);
+    })
+  });
+});
+
+
+exports.sockets = functions.https.onRequest(app);
 
 exports.makeHollowSketchList = functions.database.ref('/users/{userID}/sketches/{sketchID}/info')
   .onWrite(event => {
