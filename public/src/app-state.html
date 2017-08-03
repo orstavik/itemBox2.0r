@@ -147,6 +147,7 @@
       }
 
       _mouseMove(e) {
+        this.mouseTime = performance.now();
         const viewPort = this.state.persistent.viewPort;
         const mouse = {
           x: (e.x-viewPort.x-window.innerWidth/2)/viewPort.s,
@@ -479,6 +480,7 @@
 
       // mouse experiment
       _stateUserMouse(e) {
+        console.log('mouseTime: '+(performance.now()-this.mouseTime));
         const mouse = e.detail.mouse;
         const key = e.detail.key;
         const stateSess = Tools.setIn(this.state.session, ["mouses", key], mouse, this._frozen);
