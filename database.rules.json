@@ -1,14 +1,6 @@
 {
   "rules": {
-    "users": {
-      "$uid": {
-        "sketches": {
-          "$sketchid": {
-            ".read": "$uid == auth.uid || ((data.child('info/permissions').val() == 'read' || data.child('info/permissions').val() == 'edit') && auth != null)",
-            ".write": "$uid == auth.uid || (data.child('info/permissions').val() == 'edit' && auth != null)"
-          }
-        }
-      }
-    }
+    ".read": "auth !== null",
+    ".write": "auth !== null"
   }
 }
