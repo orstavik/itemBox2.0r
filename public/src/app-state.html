@@ -120,7 +120,7 @@
           action: action,
           snapshot: snapshot,
           timestamp: new Date().getTime()
-        }
+        };
 
         const newHistory = Object.assign(history);
         newHistory.all = [snap].concat(history.all);
@@ -152,7 +152,7 @@
         const mouse = {
           x: (e.x-viewPort.x-window.innerWidth/2)/viewPort.s,
           y: (e.y-viewPort.y-window.innerHeight/2)/viewPort.s
-        }
+        };
         const stateSess = Tools.setIn(this.state.session, ['mouse'], mouse, this._frozen);
         this._updateState(this.state.persistent, stateSess, e.type);
         this.fire('data-write-mouse', mouse);
@@ -237,7 +237,7 @@
             info: {
               sketchName: 'unsaved'
             }
-          }
+          };
         const statePrst = Tools.setIn(this.state.persistent, ['currentSketch'], currentSketch, this._frozen);
         this._updateState(statePrst, this.state.session, e.type);
       }
