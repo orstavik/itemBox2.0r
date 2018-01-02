@@ -1,0 +1,214 @@
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../styles/css-reset.html">
+
+<dom-module id="app-sketchlist">
+  <template>
+    <style include="css-reset">
+      :host {
+        display: flex;
+        flex-direction: column
+      }
+      .sketchCard {
+        order: 2;
+        display: flex;
+        height: 110px;
+        margin: 0 0 12px;
+        background-color: white;
+        border-radius: 3px;
+      }
+      .sketchCard[current] {
+        order: 1;
+      }
+      .contentBox {
+        display: flex;
+        box-sizing: border-box;
+        flex-direction: column;
+        flex-grow: 1;
+        align-content: flex-start;
+        justify-content: space-between;
+        padding: 12px;
+      }
+      .contentBox h4 {
+        display: inline-block;
+        margin: 0;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1;
+      }
+      .contentBox iron-icon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 12px;
+      }
+      .contentBox span {
+        display: block;
+        font-size: 10px;
+        color: gray;
+      }
+      .contentBox paper-button {
+        height: 32px;
+        margin: 0 0 0 12px;
+        font-size: 12px;
+        text-align: center;
+      }
+      .buttonRow {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .sketchCard[current] #loadLink {
+        display: none;
+      }
+      paper-button#load {
+        background-color: var(--paper-indigo-a200);
+        color: white;
+      }
+      paper-button#edit {
+        background-color: white;
+      }
+      paper-button#remove {
+        background-color: var(--paper-red-a200);
+        color: white;
+      }
+      #current {
+        font-style: italic;
+        text-transform: capitalize;
+        font-size: 14px;
+      }
+      .sketchCard:not([current]) #current {
+        display: none;
+      }
+      #saveBox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 6px 0 18px;
+      }
+      #saveBox .newSketch {
+        width: 36px;
+        min-width: initial;
+        height: 36px;
+        padding: 0;
+        margin-right: 12px;
+        background-color: var(--paper-green-600);
+        color: white;
+      }
+      #saveBox span {
+        color: #444;
+        font-weight: 500;
+        cursor: pointer;
+      }
+    </style>
+
+    <div id="saveBox" on-click="_newSketch">
+      <paper-button raised class="newSketch">
+        <iron-icon icon="add"></iron-icon>
+      </paper-button>
+      <span>New sketch</span>
+    </div>
+    <template is="dom-repeat" items="[[sketchesArray]]">
+      <paper-material elevation="1" class="sketchCard" current$="[[_isCurrent(currentSketch, item.key)]]">
+        <div class="contentBox">
+          <div>
+            <h4>[[item.name]]</h4>
+            <span>[[item.date]]</span>
+          </div>
+          <iron-icon icon="[[item.icon]]"></iron-icon>
+          <div class="buttonRow">
+            <a href="/[[item.key]]" id="loadLink">
+              <paper-button id="load" raised data-key$="[[item.key]]">Load</paper-button>
+            </a>
+            <span id="current">Opened</span>
+            <paper-button id="edit" raised on-tap="_editSketch" data-key$="[[item.key]]">Edit</paper-button>
+            <paper-button id="remove" raised on-tap="_deleteSketch" data-key$="[[item.key]]">Delete</paper-button>
+          </div>
+        </div>
+      </paper-material>
+    </template>
+  </template>
+  <script>
+
+    class SketchInfo {
+      constructor(key, value){
+        this.key = key;
+        this.info = value.info;
+      }
+    }
+
+    class AppSketchlist extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return "app-sketchlist";
+      }
+
+      static get properties() {
+        return {
+          uid: String,
+          sketchesArray: {
+            type: Array,
+            computed: "_toArray(sketches)"
+          },
+          sketches: Object,
+          currectSketch: String
+        }
+      }
+
+      _toArray(sketches) {
+        if (!sketches) return sketches;
+        return Object.keys(sketches)
+          .filter( i => sketches[i] !== null )
+          .map(function (key) {
+            let info = sketches[key].info;
+            return {
+              key: key,
+              name: info.sketchName,
+              date: (info.created ? new Date(info.created).toLocaleString() : "no creation date"),
+              icon: this._getIcon(info.permissions)
+            };
+        }.bind(this));
+      }
+
+      _getIcon(per) {
+        switch (per) {
+          case "private":
+            return "lock-outline";
+          case "read":
+            return "social:people-outline";
+          case "edit":
+            return "social:people-outline";
+        }
+      }
+
+      _newSketch(e) {
+        this._fire("new-sketch-dialog");
+      }
+
+      _editSketch(e) {
+        let key = e.target.dataset.key;
+        this._fire("edit-sketch-dialog", new SketchInfo(key, this.sketches[key]));
+      }
+
+      _deleteSketch(e) {
+        let key = e.target.dataset.key;
+        this._fire("delete-sketch-dialog", new SketchInfo(key, this.sketches[key]));
+      }
+
+      _isCurrent(current, key) {
+        return current === key;
+      }
+
+      _fire(name, detail) {
+        this.dispatchEvent(new CustomEvent(name, {composed: true, bubbles: true, detail: detail}));
+      }
+
+      _stopProp(e) {
+        e.stopPropagation();
+      }
+    }
+    customElements.define(AppSketchlist.is, AppSketchlist);
+  </script>
+</dom-module>

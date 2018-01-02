@@ -2,8 +2,15 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "dependencies": {
+<<<<<<< HEAD
+    "@google-cloud/storage": "^1.2.1",
     "firebase-admin": "^5.0.1",
-    "firebase-functions": "^0.6.0"
+    "firebase-functions": "^0.6.0",
+    "uglify-es": "^3.0.28"
+=======
+    "firebase-admin": "~4.1.2",
+    "firebase-functions": "^0.5"
+>>>>>>> b4727142ba7dcc347c5fd6ce4faec1ac4585fbe0
   },
   "private": true
 }
