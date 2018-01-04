@@ -438,3 +438,35 @@
 [info] i  hosting: Serving hosting files from: /
 [info] +  hosting: Local server: http://localhost:5000
 
+[debug] [2018-01-04T11:54:28.038Z] ----------------------------------------------------------------------
+[debug] [2018-01-04T11:54:28.040Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] [2018-01-04T11:54:28.040Z] CLI Version:   3.16.0
+[debug] [2018-01-04T11:54:28.040Z] Platform:      win32
+[debug] [2018-01-04T11:54:28.040Z] Node Version:  v9.2.0
+[debug] [2018-01-04T11:54:28.040Z] Time:          Thu Jan 04 2018 13:54:28 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-04T11:54:28.041Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-01-04T11:54:28.054Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-01-04T11:54:28.054Z] > authorizing via signed-in user
+[debug] [2018-01-04T11:54:28.056Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
+  
+ Thu Jan 04 2018 13:54:28 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-04T11:54:29.023Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-04T11:54:29.024Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
+  
+ Thu Jan 04 2018 13:54:29 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-04T11:54:29.738Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from 'E:\Programming\Intertext\Projects\itemBox2.0r'...
+[info] 
+[debug] [2018-01-04T11:54:29.740Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
+  
+ Thu Jan 04 2018 13:54:29 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-04T11:54:30.636Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-04T11:54:30.638Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
+  
+ Thu Jan 04 2018 13:54:30 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-04T11:54:31.287Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: /
+[info] +  hosting: Local server: http://localhost:5000
+
