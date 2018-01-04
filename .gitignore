@@ -1,10 +1,6 @@
-functions/node_modules/
-public/bower_components/
+bower_components/
 .idea/
 .vscode/
 build/
-<<<<<<< HEAD
-=======
 functions/node_modules
->>>>>>> b4727142ba7dcc347c5fd6ce4faec1ac4585fbe0
 firebase-debug.log
