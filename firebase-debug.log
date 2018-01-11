@@ -1,472 +1,64 @@
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve -p 5006
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Fri Apr 28 2017 13:16:49 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
+[debug] [2018-01-11T11:53:30.052Z] ----------------------------------------------------------------------
+[debug] [2018-01-11T11:53:30.054Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] [2018-01-11T11:53:30.054Z] CLI Version:   3.16.0
+[debug] [2018-01-11T11:53:30.054Z] Platform:      win32
+[debug] [2018-01-11T11:53:30.054Z] Node Version:  v9.2.0
+[debug] [2018-01-11T11:53:30.054Z] Time:          Thu Jan 11 2018 13:53:30 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T11:53:30.054Z] ----------------------------------------------------------------------
 [debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Fri Apr 28 2017 13:16:49 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Fri Apr 28 2017 13:16:50 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Fri Apr 28 2017 13:16:51 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Fri Apr 28 2017 13:16:52 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5006
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Tue May 02 2017 15:33:17 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Tue May 02 2017 15:33:17 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue May 02 2017 15:33:17 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue May 02 2017 15:33:18 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 02 2017 15:33:19 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 02 2017 15:33:20 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Tue May 02 2017 15:56:18 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue May 02 2017 15:56:18 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue May 02 2017 15:56:19 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 02 2017 15:56:20 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 02 2017 15:56:21 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Thu May 04 2017 13:19:01 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Thu May 04 2017 13:19:01 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Thu May 04 2017 13:19:02 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Thu May 04 2017 13:19:02 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Thu May 04 2017 13:19:03 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Thu May 04 2017 13:19:04 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Thu May 04 2017 17:05:41 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Thu May 04 2017 17:05:41 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Thu May 04 2017 17:05:41 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Thu May 04 2017 17:05:43 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Thu May 04 2017 17:05:44 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Thu May 04 2017 17:05:45 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Fri May 05 2017 11:18:27 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Fri May 05 2017 11:18:28 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Fri May 05 2017 11:18:28 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Fri May 05 2017 11:18:29 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Fri May 05 2017 11:18:30 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Fri May 05 2017 11:18:31 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Fri May 05 2017 11:41:03 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Fri May 05 2017 11:41:03 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Fri May 05 2017 11:41:04 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Fri May 05 2017 11:41:05 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Fri May 05 2017 11:41:06 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Fri May 05 2017 12:32:41 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Fri May 05 2017 12:32:41 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Fri May 05 2017 12:32:42 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Fri May 05 2017 12:32:43 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Fri May 05 2017 12:32:48 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Fri May 05 2017 12:32:48 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.6.1
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Fri May 05 2017 15:51:53 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Fri May 05 2017 15:51:53 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Fri May 05 2017 15:51:53 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Fri May 05 2017 15:51:55 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Starting Firebase development server...
-[info] 
-[info] Project Directory: D:\OneDrive\Programming\Polymer\interText\itemBox2.0r
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Fri May 05 2017 15:51:55 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Fri May 05 2017 15:51:56 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] Public Directory: /
-[info] 
-[info] Server listening at: http://localhost:5000
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.9.0
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Tue May 30 2017 10:53:30 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Tue May 30 2017 10:53:30 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue May 30 2017 10:53:30 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue May 30 2017 10:53:31 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] 
-[info] === Serving from 'D:\OneDrive\Programming\Polymer\interText\itemBox2.0r'...
-[info] 
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 30 2017 10:53:32 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 30 2017 10:53:33 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] i  hosting: Serving hosting files from: /
-[info] +  hosting: Local server: http://localhost:5000
-
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.9.0
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Tue May 30 2017 13:58:28 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Tue May 30 2017 13:58:28 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue May 30 2017 13:58:28 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue May 30 2017 13:58:29 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] 
-[info] === Serving from 'D:\OneDrive\Programming\Polymer\interText\itemBox2.0r'...
-[info] 
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 30 2017 13:58:30 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 30 2017 13:58:31 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[warn] !  hosting: Port 5000 is not available. Trying another port...
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 30 2017 13:58:32 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 30 2017 13:58:32 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] i  hosting: Serving hosting files from: /
-[info] +  hosting: Local server: http://localhost:5004
-
-[debug] ----------------------------------------------------------------------
-[debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve -p 8000
-[debug] CLI Version:  3.9.0
-[debug] Platform:     win32
-[debug] Node Version: v7.9.0
-[debug] Time:         Tue May 30 2017 14:45:49 GMT+0300 (FLE Daylight Time)
-[debug] ----------------------------------------------------------------------
-[debug] 
-[debug] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Tue May 30 2017 14:45:49 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue May 30 2017 14:45:49 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue May 30 2017 14:45:50 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] 
-[info] === Serving from 'D:\OneDrive\Programming\Polymer\interText\itemBox2.0r'...
-[info] 
-[debug] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue May 30 2017 14:45:51 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[debug] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue May 30 2017 14:45:52 GMT+0300 (FLE Daylight Time)
-[debug] <<< HTTP RESPONSE 200
-[info] i  hosting: Serving hosting files from: /
-[info] +  hosting: Local server: http://localhost:8000
-
-[info] Shutting down...
-[debug] [2017-07-04T08:27:56.137Z] ----------------------------------------------------------------------
-[debug] [2017-07-04T08:27:56.513Z] Command:      C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] [2017-07-04T08:27:56.516Z] CLI Version:  3.9.1
-[debug] [2017-07-04T08:27:56.516Z] Platform:     win32
-[debug] [2017-07-04T08:27:56.516Z] Node Version: v7.9.0
-[debug] [2017-07-04T08:27:56.741Z] Time:         Tue Jul 04 2017 11:27:56 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:27:56.741Z] ----------------------------------------------------------------------
-[debug] 
-[debug] [2017-07-04T08:27:57.752Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2017-07-04T08:27:57.752Z] > authorizing via signed-in user
-[debug] [2017-07-04T08:27:57.756Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] [2017-07-04T08:27:57.756Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token { refresh_token: '1/Usni1CDlisKJDDB0MXIU01jUTNsjXQDbKFcN_fMvtgk',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Tue Jul 04 2017 11:27:57 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:28:03.001Z] <<< HTTP RESPONSE 200
-[debug] [2017-07-04T08:28:03.862Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
- Tue Jul 04 2017 11:28:03 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:28:05.295Z] <<< HTTP RESPONSE 200
-[debug] [2017-07-04T08:28:05.297Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
- Tue Jul 04 2017 11:28:05 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:28:06.071Z] <<< HTTP RESPONSE 200
-[info] 
-[info] === Serving from 'D:\GDrive\Programming\Polymer\interText\itemBox2.0r'...
-[info] 
-[debug] [2017-07-04T08:28:06.606Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
- Tue Jul 04 2017 11:28:06 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:28:07.660Z] <<< HTTP RESPONSE 200
-[debug] [2017-07-04T08:28:07.661Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
- Tue Jul 04 2017 11:28:07 GMT+0300 (FLE Daylight Time)
-[debug] [2017-07-04T08:28:11.490Z] <<< HTTP RESPONSE 200
-[info] i  hosting: Serving hosting files from: /
-[info] +  hosting: Local server: http://localhost:5000
-
-[debug] [2018-01-04T11:54:28.038Z] ----------------------------------------------------------------------
-[debug] [2018-01-04T11:54:28.040Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] [2018-01-04T11:54:28.040Z] CLI Version:   3.16.0
-[debug] [2018-01-04T11:54:28.040Z] Platform:      win32
-[debug] [2018-01-04T11:54:28.040Z] Node Version:  v9.2.0
-[debug] [2018-01-04T11:54:28.040Z] Time:          Thu Jan 04 2018 13:54:28 GMT+0200 (FLE Standard Time)
-[debug] [2018-01-04T11:54:28.041Z] ----------------------------------------------------------------------
-[debug] 
-[debug] [2018-01-04T11:54:28.054Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2018-01-04T11:54:28.054Z] > authorizing via signed-in user
-[debug] [2018-01-04T11:54:28.056Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
+[debug] [2018-01-11T11:53:30.064Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-01-11T11:53:30.065Z] > authorizing via signed-in user
+[debug] [2018-01-11T11:53:30.066Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
   
- Thu Jan 04 2018 13:54:28 GMT+0200 (FLE Standard Time)
-[debug] [2018-01-04T11:54:29.023Z] <<< HTTP RESPONSE 200
-[debug] [2018-01-04T11:54:29.024Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
+ Thu Jan 11 2018 13:53:30 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T11:53:30.913Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-11T11:53:30.913Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
   
- Thu Jan 04 2018 13:54:29 GMT+0200 (FLE Standard Time)
-[debug] [2018-01-04T11:54:29.738Z] <<< HTTP RESPONSE 200
+ Thu Jan 11 2018 13:53:30 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T11:53:31.614Z] <<< HTTP RESPONSE 200
 [info] 
 [info] === Serving from 'E:\Programming\Intertext\Projects\itemBox2.0r'...
 [info] 
-[debug] [2018-01-04T11:54:29.740Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
+[debug] [2018-01-11T11:53:31.616Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
   
- Thu Jan 04 2018 13:54:29 GMT+0200 (FLE Standard Time)
-[debug] [2018-01-04T11:54:30.636Z] <<< HTTP RESPONSE 200
-[debug] [2018-01-04T11:54:30.638Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
+ Thu Jan 11 2018 13:53:31 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T11:53:33.266Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-11T11:53:33.267Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
   
- Thu Jan 04 2018 13:54:30 GMT+0200 (FLE Standard Time)
-[debug] [2018-01-04T11:54:31.287Z] <<< HTTP RESPONSE 200
+ Thu Jan 11 2018 13:53:33 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T11:53:33.760Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: /
+[info] +  hosting: Local server: http://localhost:5000
+
+[debug] [2018-01-11T12:52:31.340Z] ----------------------------------------------------------------------
+[debug] [2018-01-11T12:52:31.342Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\fales\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
+[debug] [2018-01-11T12:52:31.343Z] CLI Version:   3.16.0
+[debug] [2018-01-11T12:52:31.343Z] Platform:      win32
+[debug] [2018-01-11T12:52:31.343Z] Node Version:  v9.2.0
+[debug] [2018-01-11T12:52:31.343Z] Time:          Thu Jan 11 2018 14:52:31 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T12:52:31.343Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-01-11T12:52:31.354Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-01-11T12:52:31.355Z] > authorizing via signed-in user
+[debug] [2018-01-11T12:52:31.357Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/robotpad-762de  
+  
+ Thu Jan 11 2018 14:52:31 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T12:52:32.610Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-11T12:52:32.610Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/robotpad-762de/tokens  
+  
+ Thu Jan 11 2018 14:52:32 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T12:52:33.420Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from 'E:\Programming\Intertext\Projects\itemBox2.0r'...
+[info] 
+[debug] [2018-01-11T12:52:33.423Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/robotpad-762de  
+  
+ Thu Jan 11 2018 14:52:33 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T12:52:34.329Z] <<< HTTP RESPONSE 200
+[debug] [2018-01-11T12:52:34.330Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/367260361571/clients/_:getWebAppConfig  
+  
+ Thu Jan 11 2018 14:52:34 GMT+0200 (FLE Standard Time)
+[debug] [2018-01-11T12:52:35.114Z] <<< HTTP RESPONSE 200
 [info] i  hosting: Serving hosting files from: /
 [info] +  hosting: Local server: http://localhost:5000
 
